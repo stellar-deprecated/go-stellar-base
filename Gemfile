@@ -1,0 +1,1 @@
+gem 'xdrgen', path: File.expand_path("~/src/stellar/xdrgen")
