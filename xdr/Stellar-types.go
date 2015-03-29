@@ -1539,12 +1539,21 @@ type Currency struct {
 	isoCi *IsoCurrencyIssuer
 }
 
+func NewCurrencyNative() Currency {
+	return Currency{
+		aType: CurrencyTypeNative,
+	}
+}
+func NewCurrencyIso4217(val IsoCurrencyIssuer) Currency {
+	return Currency{
+		aType: CurrencyTypeIso4217,
+		isoCi: &val,
+	}
+}
 func (u *Currency) Type() CurrencyType {
 	return u.aType
 }
 func (u *Currency) IsoCi() IsoCurrencyIssuer {
-	//assert that the switch is one of the cases for this arm
-
 	return *u.isoCi
 }
 func DecodeCurrency(decoder *xdr.Decoder, result *Currency) (int, error) {
