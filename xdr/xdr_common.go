@@ -6,7 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/davecgh/go-xdr/xdr2"
+	"math"
 )
+
+const MaxXdrElements = math.MaxInt32
 
 // Primitive decoders
 
