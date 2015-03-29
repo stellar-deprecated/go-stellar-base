@@ -1,36 +1,101 @@
 package stellarcore
 
 import (
+	"bytes"
+	"errors"
 	"github.com/agl/ed25519"
-	"strings"
 )
 
-type PublicKey [ed25519.PublicKeySize]byte
-type PrivateKey [ed25519.PrivateKeySize]byte
+const RawSeedSize = 32
+
+type RawSeed [RawSeedSize]byte
+
+type Verifier interface {
+	Address() string
+	Verify(message []byte, signature Signature) bool
+}
+
+type Signer interface {
+	Verifier
+	Seed() string
+	Sign(message []byte) Signature
+}
+
+type PrivateKey struct {
+	rawSeed RawSeed
+	keyData [ed25519.PrivateKeySize]byte
+}
+
+type PublicKey struct {
+	keyData [ed25519.PublicKeySize]byte
+}
+
 type Signature [ed25519.SignatureSize]byte
 
-func GenerateKeyFromRawSeed(str string) (publicKey PublicKey, privateKey PrivateKey, err error) {
+func NewRawSeed(data []byte) (RawSeed, error) {
+	var result RawSeed
 
-	reader := strings.NewReader(str)
+	if len(data) != RawSeedSize {
+		return result, errors.New("Invalid seed size, must be 32 bytes")
+	}
+
+	copy(result[:], data[:])
+	return result, nil
+}
+
+func GenerateKeyFromRawSeed(rawSeed RawSeed) (publicKey PublicKey, privateKey PrivateKey, err error) {
+	reader := bytes.NewReader(rawSeed[:])
 	pub, priv, err := ed25519.GenerateKey(reader)
 
 	if err != nil {
 		return
 	}
 
-	publicKey = *pub
-	privateKey = *priv
+	privateKey = PrivateKey{rawSeed, *priv}
+	publicKey = PublicKey{*pub}
 	return
 }
 
-func Sign(privateKey PrivateKey, message []byte) Signature {
-	priv := [ed25519.PrivateKeySize]byte(privateKey)
-	return *ed25519.Sign(&priv, message)
+func GenerateKeyFromSeed(seed string) (publicKey PublicKey, privateKey PrivateKey, err error) {
+	decoded, err := DecodeBase58Check(VersionByteSeed, seed)
+
+	if err != nil {
+		return
+	}
+
+	rawSeed, err := NewRawSeed(decoded)
+
+	if err != nil {
+		return
+	}
+
+	return GenerateKeyFromRawSeed(rawSeed)
 }
 
-func Verify(publicKey PublicKey, message []byte, signature Signature) bool {
-	pub := [ed25519.PublicKeySize]byte(publicKey)
+func (privateKey *PrivateKey) Sign(message []byte) Signature {
+	return *ed25519.Sign(&privateKey.keyData, message)
+}
+
+func (privateKey *PrivateKey) PublicKey() PublicKey {
+	var pub [ed25519.PublicKeySize]byte
+	copy(privateKey.keyData[32:], pub[:])
+	return PublicKey{pub}
+}
+
+func (privateKey *PrivateKey) Seed() string {
+	return EncodeBase58Check(VersionByteSeed, privateKey.rawSeed[:])
+}
+
+func (publicKey *PublicKey) Verify(message []byte, signature Signature) bool {
 	sig := [ed25519.SignatureSize]byte(signature)
 
-	return ed25519.Verify(&pub, message, &sig)
+	return ed25519.Verify(&publicKey.keyData, message, &sig)
+}
+
+func (publicKey *PublicKey) Address() string {
+	return EncodeBase58Check(VersionByteAccountID, publicKey.keyData[:])
+}
+
+func (privateKey *PrivateKey) Address() string {
+	return EncodeBase58Check(VersionByteAccountID, privateKey.keyData[32:])
 }
