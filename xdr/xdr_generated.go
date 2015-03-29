@@ -1573,6 +1573,95 @@ func DecodeCurrency(decoder *xdr.Decoder, result *Currency) (int, error) {
 	*result = Currency{}
 	return totalRead, nil
 }
+func DecodeOptionalCurrency(decoder *xdr.Decoder, result **Currency) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val Currency
+
+	bytesRead, err = DecodeCurrency(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeCurrencyFixedArray(decoder *xdr.Decoder, result []Currency, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeCurrency(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeCurrencyArray(decoder *xdr.Decoder, result *[]Currency, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]Currency, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeCurrency(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
 
 // === xdr source ============================================================
 //
@@ -2758,6 +2847,95 @@ func DecodeLedgerEntry(decoder *xdr.Decoder, result *LedgerEntry) (int, error) {
 	*result = LedgerEntry{}
 	return totalRead, nil
 }
+func DecodeOptionalLedgerEntry(decoder *xdr.Decoder, result **LedgerEntry) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val LedgerEntry
+
+	bytesRead, err = DecodeLedgerEntry(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeLedgerEntryFixedArray(decoder *xdr.Decoder, result []LedgerEntry, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeLedgerEntry(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeLedgerEntryArray(decoder *xdr.Decoder, result *[]LedgerEntry, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]LedgerEntry, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeLedgerEntry(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
 
 // === xdr source ============================================================
 //
@@ -3408,6 +3586,95 @@ func DecodeLedgerKey(decoder *xdr.Decoder, result *LedgerKey) (int, error) {
 	*result = LedgerKey{}
 	return totalRead, nil
 }
+func DecodeOptionalLedgerKey(decoder *xdr.Decoder, result **LedgerKey) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val LedgerKey
+
+	bytesRead, err = DecodeLedgerKey(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeLedgerKeyFixedArray(decoder *xdr.Decoder, result []LedgerKey, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeLedgerKey(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeLedgerKeyArray(decoder *xdr.Decoder, result *[]LedgerKey, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]LedgerKey, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeLedgerKey(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
 
 // === xdr source ============================================================
 //
@@ -3584,6 +3851,95 @@ func DecodeClfEntry(decoder *xdr.Decoder, result *ClfEntry) (int, error) {
 	}
 
 	*result = ClfEntry{}
+	return totalRead, nil
+}
+func DecodeOptionalClfEntry(decoder *xdr.Decoder, result **ClfEntry) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val ClfEntry
+
+	bytesRead, err = DecodeClfEntry(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeClfEntryFixedArray(decoder *xdr.Decoder, result []ClfEntry, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeClfEntry(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeClfEntryArray(decoder *xdr.Decoder, result *[]ClfEntry, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]ClfEntry, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeClfEntry(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
 	return totalRead, nil
 }
 
@@ -5370,6 +5726,95 @@ func DecodeAllowTrustOpCurrency(decoder *xdr.Decoder, result *AllowTrustOpCurren
 	*result = AllowTrustOpCurrency{}
 	return totalRead, nil
 }
+func DecodeOptionalAllowTrustOpCurrency(decoder *xdr.Decoder, result **AllowTrustOpCurrency) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val AllowTrustOpCurrency
+
+	bytesRead, err = DecodeAllowTrustOpCurrency(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeAllowTrustOpCurrencyFixedArray(decoder *xdr.Decoder, result []AllowTrustOpCurrency, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeAllowTrustOpCurrency(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeAllowTrustOpCurrencyArray(decoder *xdr.Decoder, result *[]AllowTrustOpCurrency, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]AllowTrustOpCurrency, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeAllowTrustOpCurrency(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
 
 // === xdr source ============================================================
 //
@@ -5637,6 +6082,95 @@ func DecodeOperationBody(decoder *xdr.Decoder, result *OperationBody) (int, erro
 	}
 
 	*result = OperationBody{}
+	return totalRead, nil
+}
+func DecodeOptionalOperationBody(decoder *xdr.Decoder, result **OperationBody) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val OperationBody
+
+	bytesRead, err = DecodeOperationBody(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeOperationBodyFixedArray(decoder *xdr.Decoder, result []OperationBody, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeOperationBody(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeOperationBodyArray(decoder *xdr.Decoder, result *[]OperationBody, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]OperationBody, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeOperationBody(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
 	return totalRead, nil
 }
 
@@ -6463,6 +6997,95 @@ func DecodeOperationResultTr(decoder *xdr.Decoder, result *OperationResultTr) (i
 	*result = OperationResultTr{}
 	return totalRead, nil
 }
+func DecodeOptionalOperationResultTr(decoder *xdr.Decoder, result **OperationResultTr) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val OperationResultTr
+
+	bytesRead, err = DecodeOperationResultTr(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeOperationResultTrFixedArray(decoder *xdr.Decoder, result []OperationResultTr, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeOperationResultTr(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeOperationResultTrArray(decoder *xdr.Decoder, result *[]OperationResultTr, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]OperationResultTr, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeOperationResultTr(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
 
 // === xdr source ============================================================
 //
@@ -6541,6 +7164,95 @@ func DecodeOperationResult(decoder *xdr.Decoder, result *OperationResult) (int, 
 	}
 
 	*result = OperationResult{}
+	return totalRead, nil
+}
+func DecodeOptionalOperationResult(decoder *xdr.Decoder, result **OperationResult) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val OperationResult
+
+	bytesRead, err = DecodeOperationResult(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeOperationResultFixedArray(decoder *xdr.Decoder, result []OperationResult, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeOperationResult(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeOperationResultArray(decoder *xdr.Decoder, result *[]OperationResult, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]OperationResult, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeOperationResult(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
 	return totalRead, nil
 }
 
@@ -6781,6 +7493,95 @@ func DecodeTransactionResultResult(decoder *xdr.Decoder, result *TransactionResu
 	}
 
 	*result = TransactionResultResult{}
+	return totalRead, nil
+}
+func DecodeOptionalTransactionResultResult(decoder *xdr.Decoder, result **TransactionResultResult) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val TransactionResultResult
+
+	bytesRead, err = DecodeTransactionResultResult(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeTransactionResultResultFixedArray(decoder *xdr.Decoder, result []TransactionResultResult, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeTransactionResultResult(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeTransactionResultResultArray(decoder *xdr.Decoder, result *[]TransactionResultResult, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]TransactionResultResult, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeTransactionResultResult(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
 	return totalRead, nil
 }
 
@@ -7402,6 +8203,95 @@ func DecodePaymentResult(decoder *xdr.Decoder, result *PaymentResult) (int, erro
 	*result = PaymentResult{}
 	return totalRead, nil
 }
+func DecodeOptionalPaymentResult(decoder *xdr.Decoder, result **PaymentResult) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val PaymentResult
+
+	bytesRead, err = DecodePaymentResult(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodePaymentResultFixedArray(decoder *xdr.Decoder, result []PaymentResult, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodePaymentResult(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodePaymentResultArray(decoder *xdr.Decoder, result *[]PaymentResult, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]PaymentResult, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodePaymentResult(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
 
 // === xdr source ============================================================
 //
@@ -7719,6 +8609,95 @@ func DecodeCreateOfferSuccessResultOffer(decoder *xdr.Decoder, result *CreateOff
 	*result = CreateOfferSuccessResultOffer{}
 	return totalRead, nil
 }
+func DecodeOptionalCreateOfferSuccessResultOffer(decoder *xdr.Decoder, result **CreateOfferSuccessResultOffer) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val CreateOfferSuccessResultOffer
+
+	bytesRead, err = DecodeCreateOfferSuccessResultOffer(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeCreateOfferSuccessResultOfferFixedArray(decoder *xdr.Decoder, result []CreateOfferSuccessResultOffer, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeCreateOfferSuccessResultOffer(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeCreateOfferSuccessResultOfferArray(decoder *xdr.Decoder, result *[]CreateOfferSuccessResultOffer, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]CreateOfferSuccessResultOffer, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeCreateOfferSuccessResultOffer(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
 
 // === xdr source ============================================================
 //
@@ -7927,6 +8906,95 @@ func DecodeCreateOfferResult(decoder *xdr.Decoder, result *CreateOfferResult) (i
 	*result = CreateOfferResult{}
 	return totalRead, nil
 }
+func DecodeOptionalCreateOfferResult(decoder *xdr.Decoder, result **CreateOfferResult) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val CreateOfferResult
+
+	bytesRead, err = DecodeCreateOfferResult(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeCreateOfferResultFixedArray(decoder *xdr.Decoder, result []CreateOfferResult, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeCreateOfferResult(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeCreateOfferResultArray(decoder *xdr.Decoder, result *[]CreateOfferResult, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]CreateOfferResult, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeCreateOfferResult(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
 
 // === xdr source ============================================================
 //
@@ -8093,6 +9161,95 @@ func DecodeCancelOfferResult(decoder *xdr.Decoder, result *CancelOfferResult) (i
 	}
 
 	*result = CancelOfferResult{}
+	return totalRead, nil
+}
+func DecodeOptionalCancelOfferResult(decoder *xdr.Decoder, result **CancelOfferResult) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val CancelOfferResult
+
+	bytesRead, err = DecodeCancelOfferResult(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeCancelOfferResultFixedArray(decoder *xdr.Decoder, result []CancelOfferResult, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeCancelOfferResult(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeCancelOfferResultArray(decoder *xdr.Decoder, result *[]CancelOfferResult, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]CancelOfferResult, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeCancelOfferResult(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
 	return totalRead, nil
 }
 
@@ -8287,6 +9444,95 @@ func DecodeSetOptionsResult(decoder *xdr.Decoder, result *SetOptionsResult) (int
 	*result = SetOptionsResult{}
 	return totalRead, nil
 }
+func DecodeOptionalSetOptionsResult(decoder *xdr.Decoder, result **SetOptionsResult) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val SetOptionsResult
+
+	bytesRead, err = DecodeSetOptionsResult(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeSetOptionsResultFixedArray(decoder *xdr.Decoder, result []SetOptionsResult, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeSetOptionsResult(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeSetOptionsResultArray(decoder *xdr.Decoder, result *[]SetOptionsResult, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]SetOptionsResult, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeSetOptionsResult(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
 
 // === xdr source ============================================================
 //
@@ -8453,6 +9699,95 @@ func DecodeChangeTrustResult(decoder *xdr.Decoder, result *ChangeTrustResult) (i
 	}
 
 	*result = ChangeTrustResult{}
+	return totalRead, nil
+}
+func DecodeOptionalChangeTrustResult(decoder *xdr.Decoder, result **ChangeTrustResult) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val ChangeTrustResult
+
+	bytesRead, err = DecodeChangeTrustResult(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeChangeTrustResultFixedArray(decoder *xdr.Decoder, result []ChangeTrustResult, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeChangeTrustResult(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeChangeTrustResultArray(decoder *xdr.Decoder, result *[]ChangeTrustResult, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]ChangeTrustResult, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeChangeTrustResult(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
 	return totalRead, nil
 }
 
@@ -8629,6 +9964,95 @@ func DecodeAllowTrustResult(decoder *xdr.Decoder, result *AllowTrustResult) (int
 	}
 
 	*result = AllowTrustResult{}
+	return totalRead, nil
+}
+func DecodeOptionalAllowTrustResult(decoder *xdr.Decoder, result **AllowTrustResult) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val AllowTrustResult
+
+	bytesRead, err = DecodeAllowTrustResult(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeAllowTrustResultFixedArray(decoder *xdr.Decoder, result []AllowTrustResult, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeAllowTrustResult(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeAllowTrustResultArray(decoder *xdr.Decoder, result *[]AllowTrustResult, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]AllowTrustResult, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeAllowTrustResult(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
 	return totalRead, nil
 }
 
@@ -8813,6 +10237,95 @@ func DecodeAccountMergeResult(decoder *xdr.Decoder, result *AccountMergeResult) 
 	}
 
 	*result = AccountMergeResult{}
+	return totalRead, nil
+}
+func DecodeOptionalAccountMergeResult(decoder *xdr.Decoder, result **AccountMergeResult) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val AccountMergeResult
+
+	bytesRead, err = DecodeAccountMergeResult(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeAccountMergeResultFixedArray(decoder *xdr.Decoder, result []AccountMergeResult, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeAccountMergeResult(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeAccountMergeResultArray(decoder *xdr.Decoder, result *[]AccountMergeResult, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]AccountMergeResult, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeAccountMergeResult(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
 	return totalRead, nil
 }
 
@@ -9112,6 +10625,95 @@ func DecodeInflationResult(decoder *xdr.Decoder, result *InflationResult) (int, 
 	*result = InflationResult{}
 	return totalRead, nil
 }
+func DecodeOptionalInflationResult(decoder *xdr.Decoder, result **InflationResult) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val InflationResult
+
+	bytesRead, err = DecodeInflationResult(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeInflationResultFixedArray(decoder *xdr.Decoder, result []InflationResult, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeInflationResult(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeInflationResultArray(decoder *xdr.Decoder, result *[]InflationResult, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]InflationResult, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeInflationResult(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
 
 // === xdr source ============================================================
 //
@@ -9403,7 +11005,7 @@ func DecodeError(decoder *xdr.Decoder, result *Error) (int, error) {
 		return totalRead, err
 	}
 
-	bytesRead, err = DecodeString(decoder, result.Msg[:], 100)
+	bytesRead, err = DecodeString(decoder, &result.Msg, 100)
 	totalRead += bytesRead
 	if err != nil {
 		return totalRead, err
@@ -9531,7 +11133,7 @@ func DecodeHello(decoder *xdr.Decoder, result *Hello) (int, error) {
 		return totalRead, err
 	}
 
-	bytesRead, err = DecodeString(decoder, result.VersionStr[:], 100)
+	bytesRead, err = DecodeString(decoder, &result.VersionStr, 100)
 	totalRead += bytesRead
 	if err != nil {
 		return totalRead, err
@@ -10248,6 +11850,95 @@ func DecodeStellarMessage(decoder *xdr.Decoder, result *StellarMessage) (int, er
 	*result = StellarMessage{}
 	return totalRead, nil
 }
+func DecodeOptionalStellarMessage(decoder *xdr.Decoder, result **StellarMessage) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val StellarMessage
+
+	bytesRead, err = DecodeStellarMessage(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeStellarMessageFixedArray(decoder *xdr.Decoder, result []StellarMessage, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeStellarMessage(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeStellarMessageArray(decoder *xdr.Decoder, result *[]StellarMessage, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]StellarMessage, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeStellarMessage(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
 
 // === xdr source ============================================================
 //
@@ -10922,6 +12613,95 @@ func DecodeScpStatementPledges(decoder *xdr.Decoder, result *ScpStatementPledges
 	}
 
 	*result = ScpStatementPledges{}
+	return totalRead, nil
+}
+func DecodeOptionalScpStatementPledges(decoder *xdr.Decoder, result **ScpStatementPledges) (int, error) {
+	var (
+		isPresent bool
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeBool(decoder, &isPresent)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if !isPresent {
+		return totalRead, err
+	}
+
+	var val ScpStatementPledges
+
+	bytesRead, err = DecodeScpStatementPledges(decoder, &val)
+	totalRead += bytesRead
+	if err != nil {
+		return totalRead, err
+	}
+
+	*result = &val
+
+	return totalRead, nil
+}
+func DecodeScpStatementPledgesFixedArray(decoder *xdr.Decoder, result []ScpStatementPledges, size int) (int, error) {
+	var (
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	if len(result) != size {
+		errMsg := fmt.Sprintf("xdr: bad array len:%d, expected %d", len(result), size)
+		return 0, errors.New(errMsg)
+	}
+
+	for i := 0; i < size; i++ {
+		bytesRead, err = DecodeScpStatementPledges(decoder, &result[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
+	return totalRead, nil
+}
+
+func DecodeScpStatementPledgesArray(decoder *xdr.Decoder, result *[]ScpStatementPledges, maxSize int32) (int, error) {
+	var (
+		size      int32
+		totalRead int
+		bytesRead int
+		err       error
+	)
+
+	bytesRead, err = DecodeInt(decoder, &size)
+	totalRead += bytesRead
+
+	if err != nil {
+		return totalRead, err
+	}
+
+	if size > maxSize {
+		errMsg := fmt.Sprintf("xdr: encoded array size too large:%d, max:%d", size, maxSize)
+		return totalRead, errors.New(errMsg)
+	}
+
+	var theResult = make([]ScpStatementPledges, size)
+	*result = theResult
+
+	for i := int32(0); i < size; i++ {
+		bytesRead, err = DecodeScpStatementPledges(decoder, &theResult[i])
+		totalRead += bytesRead
+		if err != nil {
+			return totalRead, err
+		}
+
+	}
+
 	return totalRead, nil
 }
 
