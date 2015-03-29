@@ -37,7 +37,7 @@ func TestCurrency(t *testing.T) {
 
 }
 
-func TestPayment(t *testing.T) {
+func TestLowLevelPayment(t *testing.T) {
 	SkipConvey("A payment can be constructed", t, func() {
 		seed := "s3Fy8h5LEcYVE8aofthKWHeJpygbntw5HgcekFw93K6XqTW4gEx"
 		pub, priv, err := GenerateKeyFromSeed(seed)
@@ -45,7 +45,29 @@ func TestPayment(t *testing.T) {
 		_, _ = pub, priv
 
 		currency := xdr.NewCurrencyNative()
-		_ = currency
+		accountId := xdr.AccountId(pub.KeyData())
+
+		pOp := xdr.PaymentOp{
+			Destination: accountId,
+			Currency:    currency,
+			Amount:      100000000,
+			SendMax:     100000000,
+		}
+
+		opBody := xdr.NewOperationBodyPayment(pOp)
+
+		p := xdr.Operation{Body: opBody}
+
+		tx := xdr.Transaction{
+			Account:    accountId,
+			MaxFee:     10,
+			SeqNum:     1,
+			MinLedger:  1,
+			MaxLedger:  1000,
+			Operations: []xdr.Operation{p},
+		}
+
+		_ = tx
 	})
 
 }

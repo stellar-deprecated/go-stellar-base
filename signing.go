@@ -99,3 +99,11 @@ func (publicKey *PublicKey) Address() string {
 func (privateKey *PrivateKey) Address() string {
 	return EncodeBase58Check(VersionByteAccountID, privateKey.keyData[32:])
 }
+
+func (publicKey *PublicKey) KeyData() [ed25519.PublicKeySize]byte {
+	return publicKey.keyData
+}
+
+func (privateKey *PrivateKey) KeyData() [ed25519.PrivateKeySize]byte {
+	return privateKey.keyData
+}
