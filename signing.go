@@ -1,4 +1,4 @@
-package stellarcore
+package stellarbase
 
 import (
 	"bytes"

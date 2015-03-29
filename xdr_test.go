@@ -1,8 +1,8 @@
-package stellarcore
+package stellarbase
 
 import (
 	. "github.com/smartystreets/goconvey/convey"
-	"github.com/stellar/go-stellar-core/xdr"
+	"github.com/stellar/go-stellar-base/xdr"
 	"testing"
 )
 
