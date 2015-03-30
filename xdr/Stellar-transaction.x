@@ -342,21 +342,21 @@ union OperationResult switch(OperationResultCode code)
         union switch(OperationType type)
         {
             case PAYMENT:
-                Payment::PaymentResult paymentResult;
+                PaymentResult paymentResult;
             case CREATE_OFFER:
-                CreateOffer::CreateOfferResult createOfferResult;
+                CreateOfferResult createOfferResult;
             case CANCEL_OFFER:
-                CancelOffer::CancelOfferResult cancelOfferResult;
+                CancelOfferResult cancelOfferResult;
             case SET_OPTIONS:
-                SetOptions::SetOptionsResult setOptionsResult;
+                SetOptionsResult setOptionsResult;
             case CHANGE_TRUST:
-                ChangeTrust::ChangeTrustResult changeTrustResult;
+                ChangeTrustResult changeTrustResult;
             case ALLOW_TRUST:
-                AllowTrust::AllowTrustResult allowTrustResult;
+                AllowTrustResult allowTrustResult;
             case ACCOUNT_MERGE:
-                AccountMerge::AccountMergeResult accountMergeResult;
+                AccountMergeResult accountMergeResult;
             case INFLATION:
-                Inflation::InflationResult inflationResult;
+                InflationResult inflationResult;
         } tr;
     default:
         void;
