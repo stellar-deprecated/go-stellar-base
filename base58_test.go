@@ -76,4 +76,11 @@ func TestBase58(t *testing.T) {
 		})
 
 	})
+
+	Convey("Bad Input", t, func() {
+		_, err := DecodeBase58Check(VersionByteAccountID, "")
+		So(err, ShouldEqual, NotCheckEncodedError)
+
+	})
+
 }

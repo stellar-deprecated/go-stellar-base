@@ -1,6 +1,7 @@
 package stellarbase
 
 import (
+	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -19,6 +20,10 @@ func init() {
 		decodeMap[alphabet[i]] = byte(i)
 	}
 }
+
+var (
+	NotCheckEncodedError = errors.New("base58: input is not check encoded")
+)
 
 type CorruptInputError int64
 
@@ -80,10 +85,15 @@ func DecodeBase58(src string) ([]byte, error) {
 }
 
 func DecodeBase58Check(version VersionByte, src string) ([]byte, error) {
+
 	decoded, err := DecodeBase58(src)
 
 	if err != nil {
 		return []byte{}, err
+	}
+
+	if len(decoded) < 5 {
+		return []byte{}, NotCheckEncodedError
 	}
 
 	decodedVersion := VersionByte(decoded[0])
