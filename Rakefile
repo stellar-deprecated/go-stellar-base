@@ -12,7 +12,6 @@ namespace :xdr do
     "src/xdr/Stellar-overlay.x",
     "src/xdr/Stellar-transaction.x",
     "src/xdr/Stellar-types.x",
-    "src/overlay/StellarXDR.x",
     "src/scp/SCPXDR.x",
   ]
 
