@@ -104,7 +104,7 @@ func DecodeBase58Check(version VersionByte, src string) ([]byte, error) {
 		return []byte{}, InvalidVersionByteError{version, decodedVersion}
 	}
 
-	_ = checksum
+	_ = checksum //TODO
 
 	return payload, nil
 }
