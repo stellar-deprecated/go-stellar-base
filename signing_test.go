@@ -1,8 +1,9 @@
 package stellarbase
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestSeeds(t *testing.T) {

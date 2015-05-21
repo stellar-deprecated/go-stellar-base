@@ -20,7 +20,7 @@ namespace :xdr do
   task :download do
     require 'octokit'
     require 'base64'
-    
+
     client = Octokit::Client.new(:netrc => true)
 
     HAYASHI_XDR.each do |src|
@@ -38,8 +38,8 @@ namespace :xdr do
 
     paths = Pathname.glob("xdr/**/*.x")
     compilation = Xdrgen::Compilation.new(
-      paths, 
-      output_dir: "xdr", 
+      paths,
+      output_dir: "xdr",
       namespace:  "xdr",
       language:   :go
     )
