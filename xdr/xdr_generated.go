@@ -28,49 +28,49 @@ func Marshal(w io.Writer, v interface{}) (int, error) {
 	return xdr.Marshal(w, v)
 }
 
-// Signature is an XDR xdrgen::ast::definitions::typedef defines as:
+// Signature is an XDR Typedef defines as:
 //
 //   typedef opaque Signature[64];
 //
 type Signature [64]byte
 
-// Hash is an XDR xdrgen::ast::definitions::typedef defines as:
+// Hash is an XDR Typedef defines as:
 //
 //   typedef opaque Hash[32];
 //
 type Hash [32]byte
 
-// Uint256 is an XDR xdrgen::ast::definitions::typedef defines as:
+// Uint256 is an XDR Typedef defines as:
 //
 //   typedef opaque uint256[32];
 //
 type Uint256 [32]byte
 
-// Uint32 is an XDR xdrgen::ast::definitions::typedef defines as:
+// Uint32 is an XDR Typedef defines as:
 //
 //   typedef unsigned int uint32;
 //
 type Uint32 uint32
 
-// Uint64 is an XDR xdrgen::ast::definitions::typedef defines as:
+// Uint64 is an XDR Typedef defines as:
 //
 //   typedef unsigned hyper uint64;
 //
 type Uint64 uint64
 
-// Value is an XDR xdrgen::ast::definitions::typedef defines as:
+// Value is an XDR Typedef defines as:
 //
 //   typedef opaque Value<>;
 //
 type Value []byte
 
-// Evidence is an XDR xdrgen::ast::definitions::typedef defines as:
+// Evidence is an XDR Typedef defines as:
 //
 //   typedef opaque Evidence<>;
 //
 type Evidence []byte
 
-// ScpBallot is an XDR xdrgen::ast::definitions::struct defines as:
+// ScpBallot is an XDR Struct defines as:
 //
 //   struct SCPBallot
 //    {
@@ -83,7 +83,7 @@ type ScpBallot struct {
 	Value   Value
 }
 
-// ScpStatementType is an XDR xdrgen::ast::definitions::enum defines as:
+// ScpStatementType is an XDR Enum defines as:
 //
 //   enum SCPStatementType
 //    {
@@ -116,7 +116,7 @@ func (e ScpStatementType) ValidEnum(v int32) bool {
 	return ok
 }
 
-// ScpStatementPrepare is an XDR xdrgen::ast::definitions::nestedstruct defines as:
+// ScpStatementPrepare is an XDR NestedStruct defines as:
 //
 //   struct
 //            {
@@ -129,7 +129,7 @@ type ScpStatementPrepare struct {
 	Prepared *ScpBallot
 }
 
-// ScpStatementPledges is an XDR xdrgen::ast::definitions::nestedunion defines as:
+// ScpStatementPledges is an XDR NestedUnion defines as:
 //
 //   union switch (SCPStatementType type)
 //        {
@@ -173,6 +173,39 @@ func (u ScpStatementPledges) ArmForSwitch(sw int32) (string, bool) {
 	return "-", false
 }
 
+// NewScpStatementPledgesPreparing creates a new  ScpStatementPledges, initialized with
+// ScpStatementTypePreparing as the disciminant and the provided val
+func NewScpStatementPledgesPreparing(val ScpStatementPrepare) ScpStatementPledges {
+	return ScpStatementPledges{
+		Type:    ScpStatementTypePreparing,
+		Prepare: &val,
+	}
+}
+
+// NewScpStatementPledgesPrepared creates a new  ScpStatementPledges, initialized with
+// ScpStatementTypePrepared as the disciminant and the provided val
+func NewScpStatementPledgesPrepared() ScpStatementPledges {
+	return ScpStatementPledges{
+		Type: ScpStatementTypePrepared,
+	}
+}
+
+// NewScpStatementPledgesCommitting creates a new  ScpStatementPledges, initialized with
+// ScpStatementTypeCommitting as the disciminant and the provided val
+func NewScpStatementPledgesCommitting() ScpStatementPledges {
+	return ScpStatementPledges{
+		Type: ScpStatementTypeCommitting,
+	}
+}
+
+// NewScpStatementPledgesCommitted creates a new  ScpStatementPledges, initialized with
+// ScpStatementTypeCommitted as the disciminant and the provided val
+func NewScpStatementPledgesCommitted() ScpStatementPledges {
+	return ScpStatementPledges{
+		Type: ScpStatementTypeCommitted,
+	}
+}
+
 // MustPrepare retrieves the Prepare value from the union,
 // panicing if the value is not set.
 func (u ScpStatementPledges) MustPrepare() ScpStatementPrepare {
@@ -198,7 +231,7 @@ func (u ScpStatementPledges) GetPrepare() (result ScpStatementPrepare, ok bool) 
 	return
 }
 
-// ScpStatement is an XDR xdrgen::ast::definitions::struct defines as:
+// ScpStatement is an XDR Struct defines as:
 //
 //   struct SCPStatement
 //    {
@@ -229,7 +262,7 @@ type ScpStatement struct {
 	Pledges       ScpStatementPledges
 }
 
-// ScpEnvelope is an XDR xdrgen::ast::definitions::struct defines as:
+// ScpEnvelope is an XDR Struct defines as:
 //
 //   struct SCPEnvelope
 //    {
@@ -244,7 +277,7 @@ type ScpEnvelope struct {
 	Signature Signature
 }
 
-// ScpQuorumSet is an XDR xdrgen::ast::definitions::struct defines as:
+// ScpQuorumSet is an XDR Struct defines as:
 //
 //   struct SCPQuorumSet
 //    {
@@ -257,7 +290,7 @@ type ScpQuorumSet struct {
 	Validators []Hash
 }
 
-// LedgerEntryType is an XDR xdrgen::ast::definitions::enum defines as:
+// LedgerEntryType is an XDR Enum defines as:
 //
 //   enum LedgerEntryType
 //    {
@@ -287,7 +320,7 @@ func (e LedgerEntryType) ValidEnum(v int32) bool {
 	return ok
 }
 
-// Signer is an XDR xdrgen::ast::definitions::struct defines as:
+// Signer is an XDR Struct defines as:
 //
 //   struct Signer
 //    {
@@ -300,7 +333,7 @@ type Signer struct {
 	Weight Uint32
 }
 
-// AccountFlags is an XDR xdrgen::ast::definitions::enum defines as:
+// AccountFlags is an XDR Enum defines as:
 //
 //   enum AccountFlags
 //    { // masks for each flag
@@ -327,7 +360,7 @@ func (e AccountFlags) ValidEnum(v int32) bool {
 	return ok
 }
 
-// AccountEntry is an XDR xdrgen::ast::definitions::struct defines as:
+// AccountEntry is an XDR Struct defines as:
 //
 //   struct AccountEntry
 //    {
@@ -360,7 +393,7 @@ type AccountEntry struct {
 	Signers       []Signer
 }
 
-// TrustLineFlags is an XDR xdrgen::ast::definitions::enum defines as:
+// TrustLineFlags is an XDR Enum defines as:
 //
 //   enum TrustLineFlags
 //    {
@@ -384,7 +417,7 @@ func (e TrustLineFlags) ValidEnum(v int32) bool {
 	return ok
 }
 
-// TrustLineEntry is an XDR xdrgen::ast::definitions::struct defines as:
+// TrustLineEntry is an XDR Struct defines as:
 //
 //   struct TrustLineEntry
 //    {
@@ -405,7 +438,7 @@ type TrustLineEntry struct {
 	Flags     Uint32
 }
 
-// OfferEntry is an XDR xdrgen::ast::definitions::struct defines as:
+// OfferEntry is an XDR Struct defines as:
 //
 //   struct OfferEntry
 //    {
@@ -432,7 +465,7 @@ type OfferEntry struct {
 	Price     Price
 }
 
-// LedgerEntry is an XDR xdrgen::ast::definitions::union defines as:
+// LedgerEntry is an XDR Union defines as:
 //
 //   union LedgerEntry switch (LedgerEntryType type)
 //    {
@@ -472,6 +505,33 @@ func (u LedgerEntry) ArmForSwitch(sw int32) (string, bool) {
 	}
 
 	return "-", false
+}
+
+// NewLedgerEntryAccount creates a new  LedgerEntry, initialized with
+// LedgerEntryTypeAccount as the disciminant and the provided val
+func NewLedgerEntryAccount(val AccountEntry) LedgerEntry {
+	return LedgerEntry{
+		Type:    LedgerEntryTypeAccount,
+		Account: &val,
+	}
+}
+
+// NewLedgerEntryTrustline creates a new  LedgerEntry, initialized with
+// LedgerEntryTypeTrustline as the disciminant and the provided val
+func NewLedgerEntryTrustline(val TrustLineEntry) LedgerEntry {
+	return LedgerEntry{
+		Type:      LedgerEntryTypeTrustline,
+		TrustLine: &val,
+	}
+}
+
+// NewLedgerEntryOffer creates a new  LedgerEntry, initialized with
+// LedgerEntryTypeOffer as the disciminant and the provided val
+func NewLedgerEntryOffer(val OfferEntry) LedgerEntry {
+	return LedgerEntry{
+		Type:  LedgerEntryTypeOffer,
+		Offer: &val,
+	}
 }
 
 // MustAccount retrieves the Account value from the union,
@@ -549,7 +609,7 @@ func (u LedgerEntry) GetOffer() (result OfferEntry, ok bool) {
 	return
 }
 
-// LedgerHeader is an XDR xdrgen::ast::definitions::struct defines as:
+// LedgerHeader is an XDR Struct defines as:
 //
 //   struct LedgerHeader
 //    {
@@ -587,7 +647,7 @@ type LedgerHeader struct {
 	BaseReserve        Int32
 }
 
-// LedgerKeyAccount is an XDR xdrgen::ast::definitions::nestedstruct defines as:
+// LedgerKeyAccount is an XDR NestedStruct defines as:
 //
 //   struct
 //        {
@@ -598,7 +658,7 @@ type LedgerKeyAccount struct {
 	AccountId AccountId
 }
 
-// LedgerKeyTrustLine is an XDR xdrgen::ast::definitions::nestedstruct defines as:
+// LedgerKeyTrustLine is an XDR NestedStruct defines as:
 //
 //   struct
 //        {
@@ -611,7 +671,7 @@ type LedgerKeyTrustLine struct {
 	Currency  Currency
 }
 
-// LedgerKeyOffer is an XDR xdrgen::ast::definitions::nestedstruct defines as:
+// LedgerKeyOffer is an XDR NestedStruct defines as:
 //
 //   struct
 //        {
@@ -624,7 +684,7 @@ type LedgerKeyOffer struct {
 	OfferId   Uint64
 }
 
-// LedgerKey is an XDR xdrgen::ast::definitions::union defines as:
+// LedgerKey is an XDR Union defines as:
 //
 //   union LedgerKey switch (LedgerEntryType type)
 //    {
@@ -675,6 +735,33 @@ func (u LedgerKey) ArmForSwitch(sw int32) (string, bool) {
 	}
 
 	return "-", false
+}
+
+// NewLedgerKeyAccount creates a new  LedgerKey, initialized with
+// LedgerEntryTypeAccount as the disciminant and the provided val
+func NewLedgerKeyAccount(val LedgerKeyAccount) LedgerKey {
+	return LedgerKey{
+		Type:    LedgerEntryTypeAccount,
+		Account: &val,
+	}
+}
+
+// NewLedgerKeyTrustline creates a new  LedgerKey, initialized with
+// LedgerEntryTypeTrustline as the disciminant and the provided val
+func NewLedgerKeyTrustline(val LedgerKeyTrustLine) LedgerKey {
+	return LedgerKey{
+		Type:      LedgerEntryTypeTrustline,
+		TrustLine: &val,
+	}
+}
+
+// NewLedgerKeyOffer creates a new  LedgerKey, initialized with
+// LedgerEntryTypeOffer as the disciminant and the provided val
+func NewLedgerKeyOffer(val LedgerKeyOffer) LedgerKey {
+	return LedgerKey{
+		Type:  LedgerEntryTypeOffer,
+		Offer: &val,
+	}
 }
 
 // MustAccount retrieves the Account value from the union,
@@ -752,7 +839,7 @@ func (u LedgerKey) GetOffer() (result LedgerKeyOffer, ok bool) {
 	return
 }
 
-// BucketEntryType is an XDR xdrgen::ast::definitions::enum defines as:
+// BucketEntryType is an XDR Enum defines as:
 //
 //   enum BucketEntryType
 //    {
@@ -779,7 +866,7 @@ func (e BucketEntryType) ValidEnum(v int32) bool {
 	return ok
 }
 
-// BucketEntry is an XDR xdrgen::ast::definitions::union defines as:
+// BucketEntry is an XDR Union defines as:
 //
 //   union BucketEntry switch (BucketEntryType type)
 //    {
@@ -813,6 +900,24 @@ func (u BucketEntry) ArmForSwitch(sw int32) (string, bool) {
 	}
 
 	return "-", false
+}
+
+// NewBucketEntryLiveentry creates a new  BucketEntry, initialized with
+// BucketEntryTypeLiveentry as the disciminant and the provided val
+func NewBucketEntryLiveentry(val LedgerEntry) BucketEntry {
+	return BucketEntry{
+		Type:      BucketEntryTypeLiveentry,
+		LiveEntry: &val,
+	}
+}
+
+// NewBucketEntryDeadentry creates a new  BucketEntry, initialized with
+// BucketEntryTypeDeadentry as the disciminant and the provided val
+func NewBucketEntryDeadentry(val LedgerKey) BucketEntry {
+	return BucketEntry{
+		Type:      BucketEntryTypeDeadentry,
+		DeadEntry: &val,
+	}
 }
 
 // MustLiveEntry retrieves the LiveEntry value from the union,
@@ -865,7 +970,7 @@ func (u BucketEntry) GetDeadEntry() (result LedgerKey, ok bool) {
 	return
 }
 
-// TransactionSet is an XDR xdrgen::ast::definitions::struct defines as:
+// TransactionSet is an XDR Struct defines as:
 //
 //   struct TransactionSet
 //    {
@@ -878,7 +983,7 @@ type TransactionSet struct {
 	Txes               []TransactionEnvelope
 }
 
-// TransactionResultPair is an XDR xdrgen::ast::definitions::struct defines as:
+// TransactionResultPair is an XDR Struct defines as:
 //
 //   struct TransactionResultPair
 //    {
@@ -891,7 +996,7 @@ type TransactionResultPair struct {
 	Result          TransactionResult
 }
 
-// TransactionResultSet is an XDR xdrgen::ast::definitions::struct defines as:
+// TransactionResultSet is an XDR Struct defines as:
 //
 //   struct TransactionResultSet
 //    {
@@ -902,7 +1007,7 @@ type TransactionResultSet struct {
 	Results []TransactionResultPair
 }
 
-// TransactionHistoryEntry is an XDR xdrgen::ast::definitions::struct defines as:
+// TransactionHistoryEntry is an XDR Struct defines as:
 //
 //   struct TransactionHistoryEntry
 //    {
@@ -915,7 +1020,7 @@ type TransactionHistoryEntry struct {
 	TxSet     TransactionSet
 }
 
-// TransactionHistoryResultEntry is an XDR xdrgen::ast::definitions::struct defines as:
+// TransactionHistoryResultEntry is an XDR Struct defines as:
 //
 //   struct TransactionHistoryResultEntry
 //    {
@@ -928,7 +1033,7 @@ type TransactionHistoryResultEntry struct {
 	TxResultSet TransactionResultSet
 }
 
-// LedgerHeaderHistoryEntry is an XDR xdrgen::ast::definitions::struct defines as:
+// LedgerHeaderHistoryEntry is an XDR Struct defines as:
 //
 //   struct LedgerHeaderHistoryEntry
 //    {
@@ -941,7 +1046,7 @@ type LedgerHeaderHistoryEntry struct {
 	Header LedgerHeader
 }
 
-// LedgerEntryChangeType is an XDR xdrgen::ast::definitions::enum defines as:
+// LedgerEntryChangeType is an XDR Enum defines as:
 //
 //   enum LedgerEntryChangeType
 //    {
@@ -971,7 +1076,7 @@ func (e LedgerEntryChangeType) ValidEnum(v int32) bool {
 	return ok
 }
 
-// LedgerEntryChange is an XDR xdrgen::ast::definitions::union defines as:
+// LedgerEntryChange is an XDR Union defines as:
 //
 //   union LedgerEntryChange switch (LedgerEntryChangeType type)
 //    {
@@ -1009,6 +1114,33 @@ func (u LedgerEntryChange) ArmForSwitch(sw int32) (string, bool) {
 	}
 
 	return "-", false
+}
+
+// NewLedgerEntryChangeLedgerEntryCreated creates a new  LedgerEntryChange, initialized with
+// LedgerEntryChangeTypeLedgerEntryCreated as the disciminant and the provided val
+func NewLedgerEntryChangeLedgerEntryCreated(val LedgerEntry) LedgerEntryChange {
+	return LedgerEntryChange{
+		Type:    LedgerEntryChangeTypeLedgerEntryCreated,
+		Created: &val,
+	}
+}
+
+// NewLedgerEntryChangeLedgerEntryUpdated creates a new  LedgerEntryChange, initialized with
+// LedgerEntryChangeTypeLedgerEntryUpdated as the disciminant and the provided val
+func NewLedgerEntryChangeLedgerEntryUpdated(val LedgerEntry) LedgerEntryChange {
+	return LedgerEntryChange{
+		Type:    LedgerEntryChangeTypeLedgerEntryUpdated,
+		Updated: &val,
+	}
+}
+
+// NewLedgerEntryChangeLedgerEntryRemoved creates a new  LedgerEntryChange, initialized with
+// LedgerEntryChangeTypeLedgerEntryRemoved as the disciminant and the provided val
+func NewLedgerEntryChangeLedgerEntryRemoved(val LedgerKey) LedgerEntryChange {
+	return LedgerEntryChange{
+		Type:    LedgerEntryChangeTypeLedgerEntryRemoved,
+		Removed: &val,
+	}
 }
 
 // MustCreated retrieves the Created value from the union,
@@ -1086,7 +1218,7 @@ func (u LedgerEntryChange) GetRemoved() (result LedgerKey, ok bool) {
 	return
 }
 
-// TransactionMeta is an XDR xdrgen::ast::definitions::struct defines as:
+// TransactionMeta is an XDR Struct defines as:
 //
 //   struct TransactionMeta
 //    {
@@ -1097,7 +1229,7 @@ type TransactionMeta struct {
 	Changes []LedgerEntryChange
 }
 
-// StellarBallotValue is an XDR xdrgen::ast::definitions::struct defines as:
+// StellarBallotValue is an XDR Struct defines as:
 //
 //   struct StellarBallotValue
 //    {
@@ -1112,7 +1244,7 @@ type StellarBallotValue struct {
 	BaseFee   Uint32
 }
 
-// StellarBallot is an XDR xdrgen::ast::definitions::struct defines as:
+// StellarBallot is an XDR Struct defines as:
 //
 //   struct StellarBallot
 //    {
@@ -1127,7 +1259,7 @@ type StellarBallot struct {
 	Value     StellarBallotValue
 }
 
-// Error is an XDR xdrgen::ast::definitions::struct defines as:
+// Error is an XDR Struct defines as:
 //
 //   struct Error
 //    {
@@ -1140,7 +1272,7 @@ type Error struct {
 	Msg  string
 }
 
-// Hello is an XDR xdrgen::ast::definitions::struct defines as:
+// Hello is an XDR Struct defines as:
 //
 //   struct Hello
 //    {
@@ -1157,7 +1289,7 @@ type Hello struct {
 	PeerId          [32]byte
 }
 
-// PeerAddress is an XDR xdrgen::ast::definitions::struct defines as:
+// PeerAddress is an XDR Struct defines as:
 //
 //   struct PeerAddress
 //    {
@@ -1172,7 +1304,7 @@ type PeerAddress struct {
 	NumFailures Uint32
 }
 
-// MessageType is an XDR xdrgen::ast::definitions::enum defines as:
+// MessageType is an XDR Enum defines as:
 //
 //   enum MessageType
 //    {
@@ -1231,7 +1363,7 @@ func (e MessageType) ValidEnum(v int32) bool {
 	return ok
 }
 
-// DontHave is an XDR xdrgen::ast::definitions::struct defines as:
+// DontHave is an XDR Struct defines as:
 //
 //   struct DontHave
 //    {
@@ -1244,7 +1376,7 @@ type DontHave struct {
 	ReqHash Uint256
 }
 
-// StellarMessage is an XDR xdrgen::ast::definitions::union defines as:
+// StellarMessage is an XDR Union defines as:
 //
 //   union StellarMessage switch (MessageType type)
 //    {
@@ -1325,6 +1457,104 @@ func (u StellarMessage) ArmForSwitch(sw int32) (string, bool) {
 	}
 
 	return "-", false
+}
+
+// NewStellarMessageErrorMsg creates a new  StellarMessage, initialized with
+// MessageTypeErrorMsg as the disciminant and the provided val
+func NewStellarMessageErrorMsg(val Error) StellarMessage {
+	return StellarMessage{
+		Type:  MessageTypeErrorMsg,
+		Error: &val,
+	}
+}
+
+// NewStellarMessageHello creates a new  StellarMessage, initialized with
+// MessageTypeHello as the disciminant and the provided val
+func NewStellarMessageHello(val Hello) StellarMessage {
+	return StellarMessage{
+		Type:  MessageTypeHello,
+		Hello: &val,
+	}
+}
+
+// NewStellarMessageDontHave creates a new  StellarMessage, initialized with
+// MessageTypeDontHave as the disciminant and the provided val
+func NewStellarMessageDontHave(val DontHave) StellarMessage {
+	return StellarMessage{
+		Type:     MessageTypeDontHave,
+		DontHave: &val,
+	}
+}
+
+// NewStellarMessageGetPeer creates a new  StellarMessage, initialized with
+// MessageTypeGetPeer as the disciminant and the provided val
+func NewStellarMessageGetPeer() StellarMessage {
+	return StellarMessage{
+		Type: MessageTypeGetPeer,
+	}
+}
+
+// NewStellarMessagePeer creates a new  StellarMessage, initialized with
+// MessageTypePeer as the disciminant and the provided val
+func NewStellarMessagePeer(val []PeerAddress) StellarMessage {
+	return StellarMessage{
+		Type:  MessageTypePeer,
+		Peers: &val,
+	}
+}
+
+// NewStellarMessageGetTxSet creates a new  StellarMessage, initialized with
+// MessageTypeGetTxSet as the disciminant and the provided val
+func NewStellarMessageGetTxSet(val Uint256) StellarMessage {
+	return StellarMessage{
+		Type:      MessageTypeGetTxSet,
+		TxSetHash: &val,
+	}
+}
+
+// NewStellarMessageTxSet creates a new  StellarMessage, initialized with
+// MessageTypeTxSet as the disciminant and the provided val
+func NewStellarMessageTxSet(val TransactionSet) StellarMessage {
+	return StellarMessage{
+		Type:  MessageTypeTxSet,
+		TxSet: &val,
+	}
+}
+
+// NewStellarMessageTransaction creates a new  StellarMessage, initialized with
+// MessageTypeTransaction as the disciminant and the provided val
+func NewStellarMessageTransaction(val TransactionEnvelope) StellarMessage {
+	return StellarMessage{
+		Type:        MessageTypeTransaction,
+		Transaction: &val,
+	}
+}
+
+// NewStellarMessageGetScpQuorumset creates a new  StellarMessage, initialized with
+// MessageTypeGetScpQuorumset as the disciminant and the provided val
+func NewStellarMessageGetScpQuorumset(val Uint256) StellarMessage {
+	return StellarMessage{
+		Type:     MessageTypeGetScpQuorumset,
+		QSetHash: &val,
+	}
+}
+
+// NewStellarMessageScpQuorumset creates a new  StellarMessage, initialized with
+// MessageTypeScpQuorumset as the disciminant and the provided val
+func NewStellarMessageScpQuorumset(val ScpQuorumSet) StellarMessage {
+	return StellarMessage{
+		Type: MessageTypeScpQuorumset,
+		QSet: &val,
+	}
+}
+
+// NewStellarMessageScpMessage creates a new  StellarMessage, initialized with
+// MessageTypeScpMessage as the disciminant and the provided val
+func NewStellarMessageScpMessage(val ScpEnvelope) StellarMessage {
+	return StellarMessage{
+		Type:     MessageTypeScpMessage,
+		Envelope: &val,
+	}
 }
 
 // MustError retrieves the Error value from the union,
@@ -1577,7 +1807,7 @@ func (u StellarMessage) GetEnvelope() (result ScpEnvelope, ok bool) {
 	return
 }
 
-// DecoratedSignature is an XDR xdrgen::ast::definitions::struct defines as:
+// DecoratedSignature is an XDR Struct defines as:
 //
 //   struct DecoratedSignature
 //    {
@@ -1590,7 +1820,7 @@ type DecoratedSignature struct {
 	Signature Uint512
 }
 
-// OperationType is an XDR xdrgen::ast::definitions::enum defines as:
+// OperationType is an XDR Enum defines as:
 //
 //   enum OperationType
 //    {
@@ -1638,7 +1868,7 @@ func (e OperationType) ValidEnum(v int32) bool {
 	return ok
 }
 
-// CreateAccountOp is an XDR xdrgen::ast::definitions::struct defines as:
+// CreateAccountOp is an XDR Struct defines as:
 //
 //   struct CreateAccountOp
 //    {
@@ -1651,7 +1881,7 @@ type CreateAccountOp struct {
 	StartingBalance Int64
 }
 
-// PaymentOp is an XDR xdrgen::ast::definitions::struct defines as:
+// PaymentOp is an XDR Struct defines as:
 //
 //   struct PaymentOp
 //    {
@@ -1666,7 +1896,7 @@ type PaymentOp struct {
 	Amount      Int64
 }
 
-// PathPaymentOp is an XDR xdrgen::ast::definitions::struct defines as:
+// PathPaymentOp is an XDR Struct defines as:
 //
 //   struct PathPaymentOp
 //    {
@@ -1691,7 +1921,7 @@ type PathPaymentOp struct {
 	Path         []Currency
 }
 
-// CreateOfferOp is an XDR xdrgen::ast::definitions::struct defines as:
+// CreateOfferOp is an XDR Struct defines as:
 //
 //   struct CreateOfferOp
 //    {
@@ -1712,7 +1942,7 @@ type CreateOfferOp struct {
 	OfferId   Uint64
 }
 
-// SetOptionsOp is an XDR xdrgen::ast::definitions::struct defines as:
+// SetOptionsOp is an XDR Struct defines as:
 //
 //   struct SetOptionsOp
 //    {
@@ -1739,7 +1969,7 @@ type SetOptionsOp struct {
 	Signer        *Signer
 }
 
-// ChangeTrustOp is an XDR xdrgen::ast::definitions::struct defines as:
+// ChangeTrustOp is an XDR Struct defines as:
 //
 //   struct ChangeTrustOp
 //    {
@@ -1754,7 +1984,7 @@ type ChangeTrustOp struct {
 	Limit Int64
 }
 
-// AllowTrustOpCurrency is an XDR xdrgen::ast::definitions::nestedunion defines as:
+// AllowTrustOpCurrency is an XDR NestedUnion defines as:
 //
 //   union switch (CurrencyType type)
 //        {
@@ -1787,6 +2017,15 @@ func (u AllowTrustOpCurrency) ArmForSwitch(sw int32) (string, bool) {
 	return "-", false
 }
 
+// NewAllowTrustOpCurrencyCurrencyTypeAlphanum creates a new  AllowTrustOpCurrency, initialized with
+// CurrencyTypeCurrencyTypeAlphanum as the disciminant and the provided val
+func NewAllowTrustOpCurrencyCurrencyTypeAlphanum(val [4]byte) AllowTrustOpCurrency {
+	return AllowTrustOpCurrency{
+		Type:         CurrencyTypeCurrencyTypeAlphanum,
+		CurrencyCode: &val,
+	}
+}
+
 // MustCurrencyCode retrieves the CurrencyCode value from the union,
 // panicing if the value is not set.
 func (u AllowTrustOpCurrency) MustCurrencyCode() [4]byte {
@@ -1812,7 +2051,7 @@ func (u AllowTrustOpCurrency) GetCurrencyCode() (result [4]byte, ok bool) {
 	return
 }
 
-// AllowTrustOp is an XDR xdrgen::ast::definitions::struct defines as:
+// AllowTrustOp is an XDR Struct defines as:
 //
 //   struct AllowTrustOp
 //    {
@@ -1836,7 +2075,7 @@ type AllowTrustOp struct {
 	Authorize bool
 }
 
-// OperationBody is an XDR xdrgen::ast::definitions::nestedunion defines as:
+// OperationBody is an XDR NestedUnion defines as:
 //
 //   union switch (OperationType type)
 //        {
@@ -1903,6 +2142,86 @@ func (u OperationBody) ArmForSwitch(sw int32) (string, bool) {
 	}
 
 	return "-", false
+}
+
+// NewOperationBodyCreateAccount creates a new  OperationBody, initialized with
+// OperationTypeCreateAccount as the disciminant and the provided val
+func NewOperationBodyCreateAccount(val CreateAccountOp) OperationBody {
+	return OperationBody{
+		Type:            OperationTypeCreateAccount,
+		CreateAccountOp: &val,
+	}
+}
+
+// NewOperationBodyPayment creates a new  OperationBody, initialized with
+// OperationTypePayment as the disciminant and the provided val
+func NewOperationBodyPayment(val PaymentOp) OperationBody {
+	return OperationBody{
+		Type:      OperationTypePayment,
+		PaymentOp: &val,
+	}
+}
+
+// NewOperationBodyPathPayment creates a new  OperationBody, initialized with
+// OperationTypePathPayment as the disciminant and the provided val
+func NewOperationBodyPathPayment(val PathPaymentOp) OperationBody {
+	return OperationBody{
+		Type:          OperationTypePathPayment,
+		PathPaymentOp: &val,
+	}
+}
+
+// NewOperationBodyCreateOffer creates a new  OperationBody, initialized with
+// OperationTypeCreateOffer as the disciminant and the provided val
+func NewOperationBodyCreateOffer(val CreateOfferOp) OperationBody {
+	return OperationBody{
+		Type:          OperationTypeCreateOffer,
+		CreateOfferOp: &val,
+	}
+}
+
+// NewOperationBodySetOption creates a new  OperationBody, initialized with
+// OperationTypeSetOption as the disciminant and the provided val
+func NewOperationBodySetOption(val SetOptionsOp) OperationBody {
+	return OperationBody{
+		Type:         OperationTypeSetOption,
+		SetOptionsOp: &val,
+	}
+}
+
+// NewOperationBodyChangeTrust creates a new  OperationBody, initialized with
+// OperationTypeChangeTrust as the disciminant and the provided val
+func NewOperationBodyChangeTrust(val ChangeTrustOp) OperationBody {
+	return OperationBody{
+		Type:          OperationTypeChangeTrust,
+		ChangeTrustOp: &val,
+	}
+}
+
+// NewOperationBodyAllowTrust creates a new  OperationBody, initialized with
+// OperationTypeAllowTrust as the disciminant and the provided val
+func NewOperationBodyAllowTrust(val AllowTrustOp) OperationBody {
+	return OperationBody{
+		Type:         OperationTypeAllowTrust,
+		AllowTrustOp: &val,
+	}
+}
+
+// NewOperationBodyAccountMerge creates a new  OperationBody, initialized with
+// OperationTypeAccountMerge as the disciminant and the provided val
+func NewOperationBodyAccountMerge(val Uint256) OperationBody {
+	return OperationBody{
+		Type:        OperationTypeAccountMerge,
+		Destination: &val,
+	}
+}
+
+// NewOperationBodyInflation creates a new  OperationBody, initialized with
+// OperationTypeInflation as the disciminant and the provided val
+func NewOperationBodyInflation() OperationBody {
+	return OperationBody{
+		Type: OperationTypeInflation,
+	}
 }
 
 // MustCreateAccountOp retrieves the CreateAccountOp value from the union,
@@ -2105,7 +2424,7 @@ func (u OperationBody) GetDestination() (result Uint256, ok bool) {
 	return
 }
 
-// Operation is an XDR xdrgen::ast::definitions::struct defines as:
+// Operation is an XDR Struct defines as:
 //
 //   struct Operation
 //    {
@@ -2143,7 +2462,7 @@ type Operation struct {
 	Body          OperationBody
 }
 
-// MemoType is an XDR xdrgen::ast::definitions::enum defines as:
+// MemoType is an XDR Enum defines as:
 //
 //   enum MemoType
 //    {
@@ -2179,7 +2498,7 @@ func (e MemoType) ValidEnum(v int32) bool {
 	return ok
 }
 
-// Memo is an XDR xdrgen::ast::definitions::union defines as:
+// Memo is an XDR Union defines as:
 //
 //   union Memo switch (MemoType type)
 //    {
@@ -2226,6 +2545,50 @@ func (u Memo) ArmForSwitch(sw int32) (string, bool) {
 	}
 
 	return "-", false
+}
+
+// NewMemoMemoNone creates a new  Memo, initialized with
+// MemoTypeMemoNone as the disciminant and the provided val
+func NewMemoMemoNone() Memo {
+	return Memo{
+		Type: MemoTypeMemoNone,
+	}
+}
+
+// NewMemoMemoText creates a new  Memo, initialized with
+// MemoTypeMemoText as the disciminant and the provided val
+func NewMemoMemoText(val string) Memo {
+	return Memo{
+		Type: MemoTypeMemoText,
+		Text: &val,
+	}
+}
+
+// NewMemoMemoId creates a new  Memo, initialized with
+// MemoTypeMemoId as the disciminant and the provided val
+func NewMemoMemoId(val Uint64) Memo {
+	return Memo{
+		Type: MemoTypeMemoId,
+		Id:   &val,
+	}
+}
+
+// NewMemoMemoHash creates a new  Memo, initialized with
+// MemoTypeMemoHash as the disciminant and the provided val
+func NewMemoMemoHash(val Hash) Memo {
+	return Memo{
+		Type: MemoTypeMemoHash,
+		Hash: &val,
+	}
+}
+
+// NewMemoMemoReturn creates a new  Memo, initialized with
+// MemoTypeMemoReturn as the disciminant and the provided val
+func NewMemoMemoReturn(val Hash) Memo {
+	return Memo{
+		Type:    MemoTypeMemoReturn,
+		RetHash: &val,
+	}
 }
 
 // MustText retrieves the Text value from the union,
@@ -2328,7 +2691,7 @@ func (u Memo) GetRetHash() (result Hash, ok bool) {
 	return
 }
 
-// TimeBounds is an XDR xdrgen::ast::definitions::struct defines as:
+// TimeBounds is an XDR Struct defines as:
 //
 //   struct TimeBounds
 //    {
@@ -2341,7 +2704,7 @@ type TimeBounds struct {
 	MaxTime Uint64
 }
 
-// Transaction is an XDR xdrgen::ast::definitions::struct defines as:
+// Transaction is an XDR Struct defines as:
 //
 //   struct Transaction
 //    {
@@ -2371,7 +2734,7 @@ type Transaction struct {
 	Operations    []Operation
 }
 
-// TransactionEnvelope is an XDR xdrgen::ast::definitions::struct defines as:
+// TransactionEnvelope is an XDR Struct defines as:
 //
 //   struct TransactionEnvelope
 //    {
@@ -2384,7 +2747,7 @@ type TransactionEnvelope struct {
 	Signatures []DecoratedSignature
 }
 
-// ClaimOfferAtom is an XDR xdrgen::ast::definitions::struct defines as:
+// ClaimOfferAtom is an XDR Struct defines as:
 //
 //   struct ClaimOfferAtom
 //    {
@@ -2406,7 +2769,7 @@ type ClaimOfferAtom struct {
 	AmountClaimed   Int64
 }
 
-// CreateAccountResultCode is an XDR xdrgen::ast::definitions::enum defines as:
+// CreateAccountResultCode is an XDR Enum defines as:
 //
 //   enum CreateAccountResultCode
 //    {
@@ -2446,7 +2809,7 @@ func (e CreateAccountResultCode) ValidEnum(v int32) bool {
 	return ok
 }
 
-// CreateAccountResult is an XDR xdrgen::ast::definitions::union defines as:
+// CreateAccountResult is an XDR Union defines as:
 //
 //   union CreateAccountResult switch (CreateAccountResultCode code)
 //    {
@@ -2477,7 +2840,47 @@ func (u CreateAccountResult) ArmForSwitch(sw int32) (string, bool) {
 	}
 }
 
-// PaymentResultCode is an XDR xdrgen::ast::definitions::enum defines as:
+// NewCreateAccountResultCreateAccountSuccess creates a new  CreateAccountResult, initialized with
+// CreateAccountResultCodeCreateAccountSuccess as the disciminant and the provided val
+func NewCreateAccountResultCreateAccountSuccess() CreateAccountResult {
+	return CreateAccountResult{
+		Code: CreateAccountResultCodeCreateAccountSuccess,
+	}
+}
+
+// NewCreateAccountResultCreateAccountMalformed creates a new  CreateAccountResult, initialized with
+// CreateAccountResultCodeCreateAccountMalformed as the disciminant and the provided val
+func NewCreateAccountResultCreateAccountMalformed() CreateAccountResult {
+	return CreateAccountResult{
+		Code: CreateAccountResultCodeCreateAccountMalformed,
+	}
+}
+
+// NewCreateAccountResultCreateAccountUnderfunded creates a new  CreateAccountResult, initialized with
+// CreateAccountResultCodeCreateAccountUnderfunded as the disciminant and the provided val
+func NewCreateAccountResultCreateAccountUnderfunded() CreateAccountResult {
+	return CreateAccountResult{
+		Code: CreateAccountResultCodeCreateAccountUnderfunded,
+	}
+}
+
+// NewCreateAccountResultCreateAccountLowReserve creates a new  CreateAccountResult, initialized with
+// CreateAccountResultCodeCreateAccountLowReserve as the disciminant and the provided val
+func NewCreateAccountResultCreateAccountLowReserve() CreateAccountResult {
+	return CreateAccountResult{
+		Code: CreateAccountResultCodeCreateAccountLowReserve,
+	}
+}
+
+// NewCreateAccountResultCreateAccountAlreadyExist creates a new  CreateAccountResult, initialized with
+// CreateAccountResultCodeCreateAccountAlreadyExist as the disciminant and the provided val
+func NewCreateAccountResultCreateAccountAlreadyExist() CreateAccountResult {
+	return CreateAccountResult{
+		Code: CreateAccountResultCodeCreateAccountAlreadyExist,
+	}
+}
+
+// PaymentResultCode is an XDR Enum defines as:
 //
 //   enum PaymentResultCode
 //    {
@@ -2522,7 +2925,7 @@ func (e PaymentResultCode) ValidEnum(v int32) bool {
 	return ok
 }
 
-// PaymentResult is an XDR xdrgen::ast::definitions::union defines as:
+// PaymentResult is an XDR Union defines as:
 //
 //   union PaymentResult switch (PaymentResultCode code)
 //    {
@@ -2553,7 +2956,63 @@ func (u PaymentResult) ArmForSwitch(sw int32) (string, bool) {
 	}
 }
 
-// PathPaymentResultCode is an XDR xdrgen::ast::definitions::enum defines as:
+// NewPaymentResultPaymentSuccess creates a new  PaymentResult, initialized with
+// PaymentResultCodePaymentSuccess as the disciminant and the provided val
+func NewPaymentResultPaymentSuccess() PaymentResult {
+	return PaymentResult{
+		Code: PaymentResultCodePaymentSuccess,
+	}
+}
+
+// NewPaymentResultPaymentMalformed creates a new  PaymentResult, initialized with
+// PaymentResultCodePaymentMalformed as the disciminant and the provided val
+func NewPaymentResultPaymentMalformed() PaymentResult {
+	return PaymentResult{
+		Code: PaymentResultCodePaymentMalformed,
+	}
+}
+
+// NewPaymentResultPaymentUnderfunded creates a new  PaymentResult, initialized with
+// PaymentResultCodePaymentUnderfunded as the disciminant and the provided val
+func NewPaymentResultPaymentUnderfunded() PaymentResult {
+	return PaymentResult{
+		Code: PaymentResultCodePaymentUnderfunded,
+	}
+}
+
+// NewPaymentResultPaymentNoDestination creates a new  PaymentResult, initialized with
+// PaymentResultCodePaymentNoDestination as the disciminant and the provided val
+func NewPaymentResultPaymentNoDestination() PaymentResult {
+	return PaymentResult{
+		Code: PaymentResultCodePaymentNoDestination,
+	}
+}
+
+// NewPaymentResultPaymentNoTrust creates a new  PaymentResult, initialized with
+// PaymentResultCodePaymentNoTrust as the disciminant and the provided val
+func NewPaymentResultPaymentNoTrust() PaymentResult {
+	return PaymentResult{
+		Code: PaymentResultCodePaymentNoTrust,
+	}
+}
+
+// NewPaymentResultPaymentNotAuthorized creates a new  PaymentResult, initialized with
+// PaymentResultCodePaymentNotAuthorized as the disciminant and the provided val
+func NewPaymentResultPaymentNotAuthorized() PaymentResult {
+	return PaymentResult{
+		Code: PaymentResultCodePaymentNotAuthorized,
+	}
+}
+
+// NewPaymentResultPaymentLineFull creates a new  PaymentResult, initialized with
+// PaymentResultCodePaymentLineFull as the disciminant and the provided val
+func NewPaymentResultPaymentLineFull() PaymentResult {
+	return PaymentResult{
+		Code: PaymentResultCodePaymentLineFull,
+	}
+}
+
+// PathPaymentResultCode is an XDR Enum defines as:
 //
 //   enum PathPaymentResultCode
 //    {
@@ -2605,7 +3064,7 @@ func (e PathPaymentResultCode) ValidEnum(v int32) bool {
 	return ok
 }
 
-// SimplePaymentResult is an XDR xdrgen::ast::definitions::struct defines as:
+// SimplePaymentResult is an XDR Struct defines as:
 //
 //   struct SimplePaymentResult
 //    {
@@ -2620,7 +3079,7 @@ type SimplePaymentResult struct {
 	Amount      Int64
 }
 
-// PathPaymentResultSuccess is an XDR xdrgen::ast::definitions::nestedstruct defines as:
+// PathPaymentResultSuccess is an XDR NestedStruct defines as:
 //
 //   struct
 //        {
@@ -2633,7 +3092,7 @@ type PathPaymentResultSuccess struct {
 	Last   SimplePaymentResult
 }
 
-// PathPaymentResult is an XDR xdrgen::ast::definitions::union defines as:
+// PathPaymentResult is an XDR Union defines as:
 //
 //   union PathPaymentResult switch (PathPaymentResultCode code)
 //    {
@@ -2669,6 +3128,79 @@ func (u PathPaymentResult) ArmForSwitch(sw int32) (string, bool) {
 	}
 }
 
+// NewPathPaymentResultPathPaymentSuccess creates a new  PathPaymentResult, initialized with
+// PathPaymentResultCodePathPaymentSuccess as the disciminant and the provided val
+func NewPathPaymentResultPathPaymentSuccess(val PathPaymentResultSuccess) PathPaymentResult {
+	return PathPaymentResult{
+		Code:    PathPaymentResultCodePathPaymentSuccess,
+		Success: &val,
+	}
+}
+
+// NewPathPaymentResultPathPaymentMalformed creates a new  PathPaymentResult, initialized with
+// PathPaymentResultCodePathPaymentMalformed as the disciminant and the provided val
+func NewPathPaymentResultPathPaymentMalformed() PathPaymentResult {
+	return PathPaymentResult{
+		Code: PathPaymentResultCodePathPaymentMalformed,
+	}
+}
+
+// NewPathPaymentResultPathPaymentUnderfunded creates a new  PathPaymentResult, initialized with
+// PathPaymentResultCodePathPaymentUnderfunded as the disciminant and the provided val
+func NewPathPaymentResultPathPaymentUnderfunded() PathPaymentResult {
+	return PathPaymentResult{
+		Code: PathPaymentResultCodePathPaymentUnderfunded,
+	}
+}
+
+// NewPathPaymentResultPathPaymentNoDestination creates a new  PathPaymentResult, initialized with
+// PathPaymentResultCodePathPaymentNoDestination as the disciminant and the provided val
+func NewPathPaymentResultPathPaymentNoDestination() PathPaymentResult {
+	return PathPaymentResult{
+		Code: PathPaymentResultCodePathPaymentNoDestination,
+	}
+}
+
+// NewPathPaymentResultPathPaymentNoTrust creates a new  PathPaymentResult, initialized with
+// PathPaymentResultCodePathPaymentNoTrust as the disciminant and the provided val
+func NewPathPaymentResultPathPaymentNoTrust() PathPaymentResult {
+	return PathPaymentResult{
+		Code: PathPaymentResultCodePathPaymentNoTrust,
+	}
+}
+
+// NewPathPaymentResultPathPaymentNotAuthorized creates a new  PathPaymentResult, initialized with
+// PathPaymentResultCodePathPaymentNotAuthorized as the disciminant and the provided val
+func NewPathPaymentResultPathPaymentNotAuthorized() PathPaymentResult {
+	return PathPaymentResult{
+		Code: PathPaymentResultCodePathPaymentNotAuthorized,
+	}
+}
+
+// NewPathPaymentResultPathPaymentLineFull creates a new  PathPaymentResult, initialized with
+// PathPaymentResultCodePathPaymentLineFull as the disciminant and the provided val
+func NewPathPaymentResultPathPaymentLineFull() PathPaymentResult {
+	return PathPaymentResult{
+		Code: PathPaymentResultCodePathPaymentLineFull,
+	}
+}
+
+// NewPathPaymentResultPathPaymentTooFewOffer creates a new  PathPaymentResult, initialized with
+// PathPaymentResultCodePathPaymentTooFewOffer as the disciminant and the provided val
+func NewPathPaymentResultPathPaymentTooFewOffer() PathPaymentResult {
+	return PathPaymentResult{
+		Code: PathPaymentResultCodePathPaymentTooFewOffer,
+	}
+}
+
+// NewPathPaymentResultPathPaymentOverSendmax creates a new  PathPaymentResult, initialized with
+// PathPaymentResultCodePathPaymentOverSendmax as the disciminant and the provided val
+func NewPathPaymentResultPathPaymentOverSendmax() PathPaymentResult {
+	return PathPaymentResult{
+		Code: PathPaymentResultCodePathPaymentOverSendmax,
+	}
+}
+
 // MustSuccess retrieves the Success value from the union,
 // panicing if the value is not set.
 func (u PathPaymentResult) MustSuccess() PathPaymentResultSuccess {
@@ -2694,7 +3226,7 @@ func (u PathPaymentResult) GetSuccess() (result PathPaymentResultSuccess, ok boo
 	return
 }
 
-// CreateOfferResultCode is an XDR xdrgen::ast::definitions::enum defines as:
+// CreateOfferResultCode is an XDR Enum defines as:
 //
 //   enum CreateOfferResultCode
 //    {
@@ -2751,7 +3283,7 @@ func (e CreateOfferResultCode) ValidEnum(v int32) bool {
 	return ok
 }
 
-// CreateOfferEffect is an XDR xdrgen::ast::definitions::enum defines as:
+// CreateOfferEffect is an XDR Enum defines as:
 //
 //   enum CreateOfferEffect
 //    {
@@ -2781,7 +3313,7 @@ func (e CreateOfferEffect) ValidEnum(v int32) bool {
 	return ok
 }
 
-// CreateOfferSuccessResultOffer is an XDR xdrgen::ast::definitions::nestedunion defines as:
+// CreateOfferSuccessResultOffer is an XDR NestedUnion defines as:
 //
 //   union switch (CreateOfferEffect effect)
 //        {
@@ -2816,6 +3348,32 @@ func (u CreateOfferSuccessResultOffer) ArmForSwitch(sw int32) (string, bool) {
 	}
 }
 
+// NewCreateOfferSuccessResultOfferCreateOfferCreated creates a new  CreateOfferSuccessResultOffer, initialized with
+// CreateOfferEffectCreateOfferCreated as the disciminant and the provided val
+func NewCreateOfferSuccessResultOfferCreateOfferCreated(val OfferEntry) CreateOfferSuccessResultOffer {
+	return CreateOfferSuccessResultOffer{
+		Effect: CreateOfferEffectCreateOfferCreated,
+		Offer:  &val,
+	}
+}
+
+// NewCreateOfferSuccessResultOfferCreateOfferUpdated creates a new  CreateOfferSuccessResultOffer, initialized with
+// CreateOfferEffectCreateOfferUpdated as the disciminant and the provided val
+func NewCreateOfferSuccessResultOfferCreateOfferUpdated(val OfferEntry) CreateOfferSuccessResultOffer {
+	return CreateOfferSuccessResultOffer{
+		Effect: CreateOfferEffectCreateOfferUpdated,
+		Offer:  &val,
+	}
+}
+
+// NewCreateOfferSuccessResultOfferCreateOfferDeleted creates a new  CreateOfferSuccessResultOffer, initialized with
+// CreateOfferEffectCreateOfferDeleted as the disciminant and the provided val
+func NewCreateOfferSuccessResultOfferCreateOfferDeleted() CreateOfferSuccessResultOffer {
+	return CreateOfferSuccessResultOffer{
+		Effect: CreateOfferEffectCreateOfferDeleted,
+	}
+}
+
 // MustOffer retrieves the Offer value from the union,
 // panicing if the value is not set.
 func (u CreateOfferSuccessResultOffer) MustOffer() OfferEntry {
@@ -2841,7 +3399,7 @@ func (u CreateOfferSuccessResultOffer) GetOffer() (result OfferEntry, ok bool) {
 	return
 }
 
-// CreateOfferSuccessResult is an XDR xdrgen::ast::definitions::struct defines as:
+// CreateOfferSuccessResult is an XDR Struct defines as:
 //
 //   struct CreateOfferSuccessResult
 //    {
@@ -2864,7 +3422,7 @@ type CreateOfferSuccessResult struct {
 	Offer         CreateOfferSuccessResultOffer
 }
 
-// CreateOfferResult is an XDR xdrgen::ast::definitions::union defines as:
+// CreateOfferResult is an XDR Union defines as:
 //
 //   union CreateOfferResult switch (CreateOfferResultCode code)
 //    {
@@ -2896,6 +3454,87 @@ func (u CreateOfferResult) ArmForSwitch(sw int32) (string, bool) {
 	}
 }
 
+// NewCreateOfferResultCreateOfferSuccess creates a new  CreateOfferResult, initialized with
+// CreateOfferResultCodeCreateOfferSuccess as the disciminant and the provided val
+func NewCreateOfferResultCreateOfferSuccess(val CreateOfferSuccessResult) CreateOfferResult {
+	return CreateOfferResult{
+		Code:    CreateOfferResultCodeCreateOfferSuccess,
+		Success: &val,
+	}
+}
+
+// NewCreateOfferResultCreateOfferMalformed creates a new  CreateOfferResult, initialized with
+// CreateOfferResultCodeCreateOfferMalformed as the disciminant and the provided val
+func NewCreateOfferResultCreateOfferMalformed() CreateOfferResult {
+	return CreateOfferResult{
+		Code: CreateOfferResultCodeCreateOfferMalformed,
+	}
+}
+
+// NewCreateOfferResultCreateOfferNoTrust creates a new  CreateOfferResult, initialized with
+// CreateOfferResultCodeCreateOfferNoTrust as the disciminant and the provided val
+func NewCreateOfferResultCreateOfferNoTrust() CreateOfferResult {
+	return CreateOfferResult{
+		Code: CreateOfferResultCodeCreateOfferNoTrust,
+	}
+}
+
+// NewCreateOfferResultCreateOfferNotAuthorized creates a new  CreateOfferResult, initialized with
+// CreateOfferResultCodeCreateOfferNotAuthorized as the disciminant and the provided val
+func NewCreateOfferResultCreateOfferNotAuthorized() CreateOfferResult {
+	return CreateOfferResult{
+		Code: CreateOfferResultCodeCreateOfferNotAuthorized,
+	}
+}
+
+// NewCreateOfferResultCreateOfferLineFull creates a new  CreateOfferResult, initialized with
+// CreateOfferResultCodeCreateOfferLineFull as the disciminant and the provided val
+func NewCreateOfferResultCreateOfferLineFull() CreateOfferResult {
+	return CreateOfferResult{
+		Code: CreateOfferResultCodeCreateOfferLineFull,
+	}
+}
+
+// NewCreateOfferResultCreateOfferUnderfunded creates a new  CreateOfferResult, initialized with
+// CreateOfferResultCodeCreateOfferUnderfunded as the disciminant and the provided val
+func NewCreateOfferResultCreateOfferUnderfunded() CreateOfferResult {
+	return CreateOfferResult{
+		Code: CreateOfferResultCodeCreateOfferUnderfunded,
+	}
+}
+
+// NewCreateOfferResultCreateOfferCrossSelf creates a new  CreateOfferResult, initialized with
+// CreateOfferResultCodeCreateOfferCrossSelf as the disciminant and the provided val
+func NewCreateOfferResultCreateOfferCrossSelf() CreateOfferResult {
+	return CreateOfferResult{
+		Code: CreateOfferResultCodeCreateOfferCrossSelf,
+	}
+}
+
+// NewCreateOfferResultCreateOfferNotFound creates a new  CreateOfferResult, initialized with
+// CreateOfferResultCodeCreateOfferNotFound as the disciminant and the provided val
+func NewCreateOfferResultCreateOfferNotFound() CreateOfferResult {
+	return CreateOfferResult{
+		Code: CreateOfferResultCodeCreateOfferNotFound,
+	}
+}
+
+// NewCreateOfferResultCreateOfferMismatch creates a new  CreateOfferResult, initialized with
+// CreateOfferResultCodeCreateOfferMismatch as the disciminant and the provided val
+func NewCreateOfferResultCreateOfferMismatch() CreateOfferResult {
+	return CreateOfferResult{
+		Code: CreateOfferResultCodeCreateOfferMismatch,
+	}
+}
+
+// NewCreateOfferResultCreateOfferLowReserve creates a new  CreateOfferResult, initialized with
+// CreateOfferResultCodeCreateOfferLowReserve as the disciminant and the provided val
+func NewCreateOfferResultCreateOfferLowReserve() CreateOfferResult {
+	return CreateOfferResult{
+		Code: CreateOfferResultCodeCreateOfferLowReserve,
+	}
+}
+
 // MustSuccess retrieves the Success value from the union,
 // panicing if the value is not set.
 func (u CreateOfferResult) MustSuccess() CreateOfferSuccessResult {
@@ -2921,7 +3560,7 @@ func (u CreateOfferResult) GetSuccess() (result CreateOfferSuccessResult, ok boo
 	return
 }
 
-// SetOptionsResultCode is an XDR xdrgen::ast::definitions::enum defines as:
+// SetOptionsResultCode is an XDR Enum defines as:
 //
 //   enum SetOptionsResultCode
 //    {
@@ -2962,7 +3601,7 @@ func (e SetOptionsResultCode) ValidEnum(v int32) bool {
 	return ok
 }
 
-// SetOptionsResult is an XDR xdrgen::ast::definitions::union defines as:
+// SetOptionsResult is an XDR Union defines as:
 //
 //   union SetOptionsResult switch (SetOptionsResultCode code)
 //    {
@@ -2993,7 +3632,55 @@ func (u SetOptionsResult) ArmForSwitch(sw int32) (string, bool) {
 	}
 }
 
-// ChangeTrustResultCode is an XDR xdrgen::ast::definitions::enum defines as:
+// NewSetOptionsResultSetOptionsSuccess creates a new  SetOptionsResult, initialized with
+// SetOptionsResultCodeSetOptionsSuccess as the disciminant and the provided val
+func NewSetOptionsResultSetOptionsSuccess() SetOptionsResult {
+	return SetOptionsResult{
+		Code: SetOptionsResultCodeSetOptionsSuccess,
+	}
+}
+
+// NewSetOptionsResultSetOptionsLowReserve creates a new  SetOptionsResult, initialized with
+// SetOptionsResultCodeSetOptionsLowReserve as the disciminant and the provided val
+func NewSetOptionsResultSetOptionsLowReserve() SetOptionsResult {
+	return SetOptionsResult{
+		Code: SetOptionsResultCodeSetOptionsLowReserve,
+	}
+}
+
+// NewSetOptionsResultSetOptionsTooManySigner creates a new  SetOptionsResult, initialized with
+// SetOptionsResultCodeSetOptionsTooManySigner as the disciminant and the provided val
+func NewSetOptionsResultSetOptionsTooManySigner() SetOptionsResult {
+	return SetOptionsResult{
+		Code: SetOptionsResultCodeSetOptionsTooManySigner,
+	}
+}
+
+// NewSetOptionsResultSetOptionsBadFlag creates a new  SetOptionsResult, initialized with
+// SetOptionsResultCodeSetOptionsBadFlag as the disciminant and the provided val
+func NewSetOptionsResultSetOptionsBadFlag() SetOptionsResult {
+	return SetOptionsResult{
+		Code: SetOptionsResultCodeSetOptionsBadFlag,
+	}
+}
+
+// NewSetOptionsResultSetOptionsInvalidInflation creates a new  SetOptionsResult, initialized with
+// SetOptionsResultCodeSetOptionsInvalidInflation as the disciminant and the provided val
+func NewSetOptionsResultSetOptionsInvalidInflation() SetOptionsResult {
+	return SetOptionsResult{
+		Code: SetOptionsResultCodeSetOptionsInvalidInflation,
+	}
+}
+
+// NewSetOptionsResultSetOptionsCantChange creates a new  SetOptionsResult, initialized with
+// SetOptionsResultCodeSetOptionsCantChange as the disciminant and the provided val
+func NewSetOptionsResultSetOptionsCantChange() SetOptionsResult {
+	return SetOptionsResult{
+		Code: SetOptionsResultCodeSetOptionsCantChange,
+	}
+}
+
+// ChangeTrustResultCode is an XDR Enum defines as:
 //
 //   enum ChangeTrustResultCode
 //    {
@@ -3031,7 +3718,7 @@ func (e ChangeTrustResultCode) ValidEnum(v int32) bool {
 	return ok
 }
 
-// ChangeTrustResult is an XDR xdrgen::ast::definitions::union defines as:
+// ChangeTrustResult is an XDR Union defines as:
 //
 //   union ChangeTrustResult switch (ChangeTrustResultCode code)
 //    {
@@ -3062,7 +3749,47 @@ func (u ChangeTrustResult) ArmForSwitch(sw int32) (string, bool) {
 	}
 }
 
-// AllowTrustResultCode is an XDR xdrgen::ast::definitions::enum defines as:
+// NewChangeTrustResultChangeTrustSuccess creates a new  ChangeTrustResult, initialized with
+// ChangeTrustResultCodeChangeTrustSuccess as the disciminant and the provided val
+func NewChangeTrustResultChangeTrustSuccess() ChangeTrustResult {
+	return ChangeTrustResult{
+		Code: ChangeTrustResultCodeChangeTrustSuccess,
+	}
+}
+
+// NewChangeTrustResultChangeTrustMalformed creates a new  ChangeTrustResult, initialized with
+// ChangeTrustResultCodeChangeTrustMalformed as the disciminant and the provided val
+func NewChangeTrustResultChangeTrustMalformed() ChangeTrustResult {
+	return ChangeTrustResult{
+		Code: ChangeTrustResultCodeChangeTrustMalformed,
+	}
+}
+
+// NewChangeTrustResultChangeTrustNoIssuer creates a new  ChangeTrustResult, initialized with
+// ChangeTrustResultCodeChangeTrustNoIssuer as the disciminant and the provided val
+func NewChangeTrustResultChangeTrustNoIssuer() ChangeTrustResult {
+	return ChangeTrustResult{
+		Code: ChangeTrustResultCodeChangeTrustNoIssuer,
+	}
+}
+
+// NewChangeTrustResultChangeTrustInvalidLimit creates a new  ChangeTrustResult, initialized with
+// ChangeTrustResultCodeChangeTrustInvalidLimit as the disciminant and the provided val
+func NewChangeTrustResultChangeTrustInvalidLimit() ChangeTrustResult {
+	return ChangeTrustResult{
+		Code: ChangeTrustResultCodeChangeTrustInvalidLimit,
+	}
+}
+
+// NewChangeTrustResultChangeTrustLowReserve creates a new  ChangeTrustResult, initialized with
+// ChangeTrustResultCodeChangeTrustLowReserve as the disciminant and the provided val
+func NewChangeTrustResultChangeTrustLowReserve() ChangeTrustResult {
+	return ChangeTrustResult{
+		Code: ChangeTrustResultCodeChangeTrustLowReserve,
+	}
+}
+
+// AllowTrustResultCode is an XDR Enum defines as:
 //
 //   enum AllowTrustResultCode
 //    {
@@ -3101,7 +3828,7 @@ func (e AllowTrustResultCode) ValidEnum(v int32) bool {
 	return ok
 }
 
-// AllowTrustResult is an XDR xdrgen::ast::definitions::union defines as:
+// AllowTrustResult is an XDR Union defines as:
 //
 //   union AllowTrustResult switch (AllowTrustResultCode code)
 //    {
@@ -3132,7 +3859,47 @@ func (u AllowTrustResult) ArmForSwitch(sw int32) (string, bool) {
 	}
 }
 
-// AccountMergeResultCode is an XDR xdrgen::ast::definitions::enum defines as:
+// NewAllowTrustResultAllowTrustSuccess creates a new  AllowTrustResult, initialized with
+// AllowTrustResultCodeAllowTrustSuccess as the disciminant and the provided val
+func NewAllowTrustResultAllowTrustSuccess() AllowTrustResult {
+	return AllowTrustResult{
+		Code: AllowTrustResultCodeAllowTrustSuccess,
+	}
+}
+
+// NewAllowTrustResultAllowTrustMalformed creates a new  AllowTrustResult, initialized with
+// AllowTrustResultCodeAllowTrustMalformed as the disciminant and the provided val
+func NewAllowTrustResultAllowTrustMalformed() AllowTrustResult {
+	return AllowTrustResult{
+		Code: AllowTrustResultCodeAllowTrustMalformed,
+	}
+}
+
+// NewAllowTrustResultAllowTrustNoTrustLine creates a new  AllowTrustResult, initialized with
+// AllowTrustResultCodeAllowTrustNoTrustLine as the disciminant and the provided val
+func NewAllowTrustResultAllowTrustNoTrustLine() AllowTrustResult {
+	return AllowTrustResult{
+		Code: AllowTrustResultCodeAllowTrustNoTrustLine,
+	}
+}
+
+// NewAllowTrustResultAllowTrustTrustNotRequired creates a new  AllowTrustResult, initialized with
+// AllowTrustResultCodeAllowTrustTrustNotRequired as the disciminant and the provided val
+func NewAllowTrustResultAllowTrustTrustNotRequired() AllowTrustResult {
+	return AllowTrustResult{
+		Code: AllowTrustResultCodeAllowTrustTrustNotRequired,
+	}
+}
+
+// NewAllowTrustResultAllowTrustCantRevoke creates a new  AllowTrustResult, initialized with
+// AllowTrustResultCodeAllowTrustCantRevoke as the disciminant and the provided val
+func NewAllowTrustResultAllowTrustCantRevoke() AllowTrustResult {
+	return AllowTrustResult{
+		Code: AllowTrustResultCodeAllowTrustCantRevoke,
+	}
+}
+
+// AccountMergeResultCode is an XDR Enum defines as:
 //
 //   enum AccountMergeResultCode
 //    {
@@ -3170,7 +3937,7 @@ func (e AccountMergeResultCode) ValidEnum(v int32) bool {
 	return ok
 }
 
-// AccountMergeResult is an XDR xdrgen::ast::definitions::union defines as:
+// AccountMergeResult is an XDR Union defines as:
 //
 //   union AccountMergeResult switch (AccountMergeResultCode code)
 //    {
@@ -3201,7 +3968,47 @@ func (u AccountMergeResult) ArmForSwitch(sw int32) (string, bool) {
 	}
 }
 
-// InflationResultCode is an XDR xdrgen::ast::definitions::enum defines as:
+// NewAccountMergeResultAccountMergeSuccess creates a new  AccountMergeResult, initialized with
+// AccountMergeResultCodeAccountMergeSuccess as the disciminant and the provided val
+func NewAccountMergeResultAccountMergeSuccess() AccountMergeResult {
+	return AccountMergeResult{
+		Code: AccountMergeResultCodeAccountMergeSuccess,
+	}
+}
+
+// NewAccountMergeResultAccountMergeMalformed creates a new  AccountMergeResult, initialized with
+// AccountMergeResultCodeAccountMergeMalformed as the disciminant and the provided val
+func NewAccountMergeResultAccountMergeMalformed() AccountMergeResult {
+	return AccountMergeResult{
+		Code: AccountMergeResultCodeAccountMergeMalformed,
+	}
+}
+
+// NewAccountMergeResultAccountMergeNoAccount creates a new  AccountMergeResult, initialized with
+// AccountMergeResultCodeAccountMergeNoAccount as the disciminant and the provided val
+func NewAccountMergeResultAccountMergeNoAccount() AccountMergeResult {
+	return AccountMergeResult{
+		Code: AccountMergeResultCodeAccountMergeNoAccount,
+	}
+}
+
+// NewAccountMergeResultAccountMergeHasCredit creates a new  AccountMergeResult, initialized with
+// AccountMergeResultCodeAccountMergeHasCredit as the disciminant and the provided val
+func NewAccountMergeResultAccountMergeHasCredit() AccountMergeResult {
+	return AccountMergeResult{
+		Code: AccountMergeResultCodeAccountMergeHasCredit,
+	}
+}
+
+// NewAccountMergeResultAccountMergeCreditHeld creates a new  AccountMergeResult, initialized with
+// AccountMergeResultCodeAccountMergeCreditHeld as the disciminant and the provided val
+func NewAccountMergeResultAccountMergeCreditHeld() AccountMergeResult {
+	return AccountMergeResult{
+		Code: AccountMergeResultCodeAccountMergeCreditHeld,
+	}
+}
+
+// InflationResultCode is an XDR Enum defines as:
 //
 //   enum InflationResultCode
 //    {
@@ -3230,7 +4037,7 @@ func (e InflationResultCode) ValidEnum(v int32) bool {
 	return ok
 }
 
-// InflationPayout is an XDR xdrgen::ast::definitions::struct defines as:
+// InflationPayout is an XDR Struct defines as:
 //
 //   struct inflationPayout // or use PaymentResultAtom to limit types?
 //    {
@@ -3243,7 +4050,7 @@ type InflationPayout struct {
 	Amount      Int64
 }
 
-// InflationResult is an XDR xdrgen::ast::definitions::union defines as:
+// InflationResult is an XDR Union defines as:
 //
 //   union InflationResult switch (InflationResultCode code)
 //    {
@@ -3275,6 +4082,23 @@ func (u InflationResult) ArmForSwitch(sw int32) (string, bool) {
 	}
 }
 
+// NewInflationResultInflationSuccess creates a new  InflationResult, initialized with
+// InflationResultCodeInflationSuccess as the disciminant and the provided val
+func NewInflationResultInflationSuccess(val []InflationPayout) InflationResult {
+	return InflationResult{
+		Code:    InflationResultCodeInflationSuccess,
+		Payouts: &val,
+	}
+}
+
+// NewInflationResultInflationNotTime creates a new  InflationResult, initialized with
+// InflationResultCodeInflationNotTime as the disciminant and the provided val
+func NewInflationResultInflationNotTime() InflationResult {
+	return InflationResult{
+		Code: InflationResultCodeInflationNotTime,
+	}
+}
+
 // MustPayouts retrieves the Payouts value from the union,
 // panicing if the value is not set.
 func (u InflationResult) MustPayouts() []InflationPayout {
@@ -3300,7 +4124,7 @@ func (u InflationResult) GetPayouts() (result []InflationPayout, ok bool) {
 	return
 }
 
-// OperationResultCode is an XDR xdrgen::ast::definitions::enum defines as:
+// OperationResultCode is an XDR Enum defines as:
 //
 //   enum OperationResultCode
 //    {
@@ -3331,7 +4155,7 @@ func (e OperationResultCode) ValidEnum(v int32) bool {
 	return ok
 }
 
-// OperationResultTr is an XDR xdrgen::ast::definitions::nestedunion defines as:
+// OperationResultTr is an XDR NestedUnion defines as:
 //
 //   union switch (OperationType type)
 //        {
@@ -3399,6 +4223,87 @@ func (u OperationResultTr) ArmForSwitch(sw int32) (string, bool) {
 	}
 
 	return "-", false
+}
+
+// NewOperationResultTrCreateAccount creates a new  OperationResultTr, initialized with
+// OperationTypeCreateAccount as the disciminant and the provided val
+func NewOperationResultTrCreateAccount(val CreateAccountResult) OperationResultTr {
+	return OperationResultTr{
+		Type:                OperationTypeCreateAccount,
+		CreateAccountResult: &val,
+	}
+}
+
+// NewOperationResultTrPayment creates a new  OperationResultTr, initialized with
+// OperationTypePayment as the disciminant and the provided val
+func NewOperationResultTrPayment(val PaymentResult) OperationResultTr {
+	return OperationResultTr{
+		Type:          OperationTypePayment,
+		PaymentResult: &val,
+	}
+}
+
+// NewOperationResultTrPathPayment creates a new  OperationResultTr, initialized with
+// OperationTypePathPayment as the disciminant and the provided val
+func NewOperationResultTrPathPayment(val PathPaymentResult) OperationResultTr {
+	return OperationResultTr{
+		Type:              OperationTypePathPayment,
+		PathPaymentResult: &val,
+	}
+}
+
+// NewOperationResultTrCreateOffer creates a new  OperationResultTr, initialized with
+// OperationTypeCreateOffer as the disciminant and the provided val
+func NewOperationResultTrCreateOffer(val CreateOfferResult) OperationResultTr {
+	return OperationResultTr{
+		Type:              OperationTypeCreateOffer,
+		CreateOfferResult: &val,
+	}
+}
+
+// NewOperationResultTrSetOption creates a new  OperationResultTr, initialized with
+// OperationTypeSetOption as the disciminant and the provided val
+func NewOperationResultTrSetOption(val SetOptionsResult) OperationResultTr {
+	return OperationResultTr{
+		Type:             OperationTypeSetOption,
+		SetOptionsResult: &val,
+	}
+}
+
+// NewOperationResultTrChangeTrust creates a new  OperationResultTr, initialized with
+// OperationTypeChangeTrust as the disciminant and the provided val
+func NewOperationResultTrChangeTrust(val ChangeTrustResult) OperationResultTr {
+	return OperationResultTr{
+		Type:              OperationTypeChangeTrust,
+		ChangeTrustResult: &val,
+	}
+}
+
+// NewOperationResultTrAllowTrust creates a new  OperationResultTr, initialized with
+// OperationTypeAllowTrust as the disciminant and the provided val
+func NewOperationResultTrAllowTrust(val AllowTrustResult) OperationResultTr {
+	return OperationResultTr{
+		Type:             OperationTypeAllowTrust,
+		AllowTrustResult: &val,
+	}
+}
+
+// NewOperationResultTrAccountMerge creates a new  OperationResultTr, initialized with
+// OperationTypeAccountMerge as the disciminant and the provided val
+func NewOperationResultTrAccountMerge(val AccountMergeResult) OperationResultTr {
+	return OperationResultTr{
+		Type:               OperationTypeAccountMerge,
+		AccountMergeResult: &val,
+	}
+}
+
+// NewOperationResultTrInflation creates a new  OperationResultTr, initialized with
+// OperationTypeInflation as the disciminant and the provided val
+func NewOperationResultTrInflation(val InflationResult) OperationResultTr {
+	return OperationResultTr{
+		Type:            OperationTypeInflation,
+		InflationResult: &val,
+	}
 }
 
 // MustCreateAccountResult retrieves the CreateAccountResult value from the union,
@@ -3626,7 +4531,7 @@ func (u OperationResultTr) GetInflationResult() (result InflationResult, ok bool
 	return
 }
 
-// OperationResult is an XDR xdrgen::ast::definitions::union defines as:
+// OperationResult is an XDR Union defines as:
 //
 //   union OperationResult switch (OperationResultCode code)
 //    {
@@ -3679,6 +4584,31 @@ func (u OperationResult) ArmForSwitch(sw int32) (string, bool) {
 	}
 }
 
+// NewOperationResultOpInner creates a new  OperationResult, initialized with
+// OperationResultCodeOpInner as the disciminant and the provided val
+func NewOperationResultOpInner(val OperationResultTr) OperationResult {
+	return OperationResult{
+		Code: OperationResultCodeOpInner,
+		Tr:   &val,
+	}
+}
+
+// NewOperationResultOpBadAuth creates a new  OperationResult, initialized with
+// OperationResultCodeOpBadAuth as the disciminant and the provided val
+func NewOperationResultOpBadAuth() OperationResult {
+	return OperationResult{
+		Code: OperationResultCodeOpBadAuth,
+	}
+}
+
+// NewOperationResultOpNoAccount creates a new  OperationResult, initialized with
+// OperationResultCodeOpNoAccount as the disciminant and the provided val
+func NewOperationResultOpNoAccount() OperationResult {
+	return OperationResult{
+		Code: OperationResultCodeOpNoAccount,
+	}
+}
+
 // MustTr retrieves the Tr value from the union,
 // panicing if the value is not set.
 func (u OperationResult) MustTr() OperationResultTr {
@@ -3704,7 +4634,7 @@ func (u OperationResult) GetTr() (result OperationResultTr, ok bool) {
 	return
 }
 
-// TransactionResultCode is an XDR xdrgen::ast::definitions::enum defines as:
+// TransactionResultCode is an XDR Enum defines as:
 //
 //   enum TransactionResultCode
 //    {
@@ -3764,7 +4694,7 @@ func (e TransactionResultCode) ValidEnum(v int32) bool {
 	return ok
 }
 
-// TransactionResultResult is an XDR xdrgen::ast::definitions::nestedunion defines as:
+// TransactionResultResult is an XDR NestedUnion defines as:
 //
 //   union switch (TransactionResultCode code)
 //        {
@@ -3799,6 +4729,104 @@ func (u TransactionResultResult) ArmForSwitch(sw int32) (string, bool) {
 	}
 }
 
+// NewTransactionResultResultTxSuccess creates a new  TransactionResultResult, initialized with
+// TransactionResultCodeTxSuccess as the disciminant and the provided val
+func NewTransactionResultResultTxSuccess(val []OperationResult) TransactionResultResult {
+	return TransactionResultResult{
+		Code:    TransactionResultCodeTxSuccess,
+		Results: &val,
+	}
+}
+
+// NewTransactionResultResultTxFailed creates a new  TransactionResultResult, initialized with
+// TransactionResultCodeTxFailed as the disciminant and the provided val
+func NewTransactionResultResultTxFailed(val []OperationResult) TransactionResultResult {
+	return TransactionResultResult{
+		Code:    TransactionResultCodeTxFailed,
+		Results: &val,
+	}
+}
+
+// NewTransactionResultResultTxTooEarly creates a new  TransactionResultResult, initialized with
+// TransactionResultCodeTxTooEarly as the disciminant and the provided val
+func NewTransactionResultResultTxTooEarly() TransactionResultResult {
+	return TransactionResultResult{
+		Code: TransactionResultCodeTxTooEarly,
+	}
+}
+
+// NewTransactionResultResultTxTooLate creates a new  TransactionResultResult, initialized with
+// TransactionResultCodeTxTooLate as the disciminant and the provided val
+func NewTransactionResultResultTxTooLate() TransactionResultResult {
+	return TransactionResultResult{
+		Code: TransactionResultCodeTxTooLate,
+	}
+}
+
+// NewTransactionResultResultTxMissingOperation creates a new  TransactionResultResult, initialized with
+// TransactionResultCodeTxMissingOperation as the disciminant and the provided val
+func NewTransactionResultResultTxMissingOperation() TransactionResultResult {
+	return TransactionResultResult{
+		Code: TransactionResultCodeTxMissingOperation,
+	}
+}
+
+// NewTransactionResultResultTxBadSeq creates a new  TransactionResultResult, initialized with
+// TransactionResultCodeTxBadSeq as the disciminant and the provided val
+func NewTransactionResultResultTxBadSeq() TransactionResultResult {
+	return TransactionResultResult{
+		Code: TransactionResultCodeTxBadSeq,
+	}
+}
+
+// NewTransactionResultResultTxBadAuth creates a new  TransactionResultResult, initialized with
+// TransactionResultCodeTxBadAuth as the disciminant and the provided val
+func NewTransactionResultResultTxBadAuth() TransactionResultResult {
+	return TransactionResultResult{
+		Code: TransactionResultCodeTxBadAuth,
+	}
+}
+
+// NewTransactionResultResultTxInsufficientBalance creates a new  TransactionResultResult, initialized with
+// TransactionResultCodeTxInsufficientBalance as the disciminant and the provided val
+func NewTransactionResultResultTxInsufficientBalance() TransactionResultResult {
+	return TransactionResultResult{
+		Code: TransactionResultCodeTxInsufficientBalance,
+	}
+}
+
+// NewTransactionResultResultTxNoAccount creates a new  TransactionResultResult, initialized with
+// TransactionResultCodeTxNoAccount as the disciminant and the provided val
+func NewTransactionResultResultTxNoAccount() TransactionResultResult {
+	return TransactionResultResult{
+		Code: TransactionResultCodeTxNoAccount,
+	}
+}
+
+// NewTransactionResultResultTxInsufficientFee creates a new  TransactionResultResult, initialized with
+// TransactionResultCodeTxInsufficientFee as the disciminant and the provided val
+func NewTransactionResultResultTxInsufficientFee() TransactionResultResult {
+	return TransactionResultResult{
+		Code: TransactionResultCodeTxInsufficientFee,
+	}
+}
+
+// NewTransactionResultResultTxBadAuthExtra creates a new  TransactionResultResult, initialized with
+// TransactionResultCodeTxBadAuthExtra as the disciminant and the provided val
+func NewTransactionResultResultTxBadAuthExtra() TransactionResultResult {
+	return TransactionResultResult{
+		Code: TransactionResultCodeTxBadAuthExtra,
+	}
+}
+
+// NewTransactionResultResultTxInternalError creates a new  TransactionResultResult, initialized with
+// TransactionResultCodeTxInternalError as the disciminant and the provided val
+func NewTransactionResultResultTxInternalError() TransactionResultResult {
+	return TransactionResultResult{
+		Code: TransactionResultCodeTxInternalError,
+	}
+}
+
 // MustResults retrieves the Results value from the union,
 // panicing if the value is not set.
 func (u TransactionResultResult) MustResults() []OperationResult {
@@ -3824,7 +4852,7 @@ func (u TransactionResultResult) GetResults() (result []OperationResult, ok bool
 	return
 }
 
-// TransactionResult is an XDR xdrgen::ast::definitions::struct defines as:
+// TransactionResult is an XDR Struct defines as:
 //
 //   struct TransactionResult
 //    {
@@ -3846,49 +4874,49 @@ type TransactionResult struct {
 	Result     TransactionResultResult
 }
 
-// Uint512 is an XDR xdrgen::ast::definitions::typedef defines as:
+// Uint512 is an XDR Typedef defines as:
 //
 //   typedef opaque uint512[64];
 //
 type Uint512 [64]byte
 
-// Int64 is an XDR xdrgen::ast::definitions::typedef defines as:
+// Int64 is an XDR Typedef defines as:
 //
 //   typedef hyper int64;
 //
 type Int64 int64
 
-// Int32 is an XDR xdrgen::ast::definitions::typedef defines as:
+// Int32 is an XDR Typedef defines as:
 //
 //   typedef int int32;
 //
 type Int32 int32
 
-// AccountId is an XDR xdrgen::ast::definitions::typedef defines as:
+// AccountId is an XDR Typedef defines as:
 //
 //   typedef opaque AccountID[32];
 //
 type AccountId [32]byte
 
-// Thresholds is an XDR xdrgen::ast::definitions::typedef defines as:
+// Thresholds is an XDR Typedef defines as:
 //
 //   typedef opaque Thresholds[4];
 //
 type Thresholds [4]byte
 
-// String32 is an XDR xdrgen::ast::definitions::typedef defines as:
+// String32 is an XDR Typedef defines as:
 //
 //   typedef string string32<32>;
 //
 type String32 string
 
-// SequenceNumber is an XDR xdrgen::ast::definitions::typedef defines as:
+// SequenceNumber is an XDR Typedef defines as:
 //
 //   typedef uint64 SequenceNumber;
 //
 type SequenceNumber Uint64
 
-// CurrencyType is an XDR xdrgen::ast::definitions::enum defines as:
+// CurrencyType is an XDR Enum defines as:
 //
 //   enum CurrencyType
 //    {
@@ -3915,7 +4943,7 @@ func (e CurrencyType) ValidEnum(v int32) bool {
 	return ok
 }
 
-// CurrencyAlphaNum is an XDR xdrgen::ast::definitions::nestedstruct defines as:
+// CurrencyAlphaNum is an XDR NestedStruct defines as:
 //
 //   struct
 //        {
@@ -3928,7 +4956,7 @@ type CurrencyAlphaNum struct {
 	Issuer       AccountId
 }
 
-// Currency is an XDR xdrgen::ast::definitions::union defines as:
+// Currency is an XDR Union defines as:
 //
 //   union Currency switch (CurrencyType type)
 //    {
@@ -3969,6 +4997,23 @@ func (u Currency) ArmForSwitch(sw int32) (string, bool) {
 	return "-", false
 }
 
+// NewCurrencyCurrencyTypeNative creates a new  Currency, initialized with
+// CurrencyTypeCurrencyTypeNative as the disciminant and the provided val
+func NewCurrencyCurrencyTypeNative() Currency {
+	return Currency{
+		Type: CurrencyTypeCurrencyTypeNative,
+	}
+}
+
+// NewCurrencyCurrencyTypeAlphanum creates a new  Currency, initialized with
+// CurrencyTypeCurrencyTypeAlphanum as the disciminant and the provided val
+func NewCurrencyCurrencyTypeAlphanum(val CurrencyAlphaNum) Currency {
+	return Currency{
+		Type:     CurrencyTypeCurrencyTypeAlphanum,
+		AlphaNum: &val,
+	}
+}
+
 // MustAlphaNum retrieves the AlphaNum value from the union,
 // panicing if the value is not set.
 func (u Currency) MustAlphaNum() CurrencyAlphaNum {
@@ -3994,7 +5039,7 @@ func (u Currency) GetAlphaNum() (result CurrencyAlphaNum, ok bool) {
 	return
 }
 
-// Price is an XDR xdrgen::ast::definitions::struct defines as:
+// Price is an XDR Struct defines as:
 //
 //   struct Price
 //    {
