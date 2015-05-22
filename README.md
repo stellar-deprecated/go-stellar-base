@@ -1,7 +1,7 @@
 # Go Stellar Base
 [![Build Status](https://travis-ci.org/stellar/go-stellar-base.svg?branch=master)](https://travis-ci.org/stellar/go-stellar-base)
 
-*STATUS:  This library is currently pre-alpha.  It has no support for reading/writing xdr, but can sign and hash byte slices in accordance with the stellar protocol*
+*STATUS:  This library is currently in alpha testing.  It has support reading/writing xdr, and can sign and hash byte slices in accordance with the stellar protocol, but does not yet have the necessary helpers to make constructing valid transactions easy.*
 
 The stellar-base library is the lowest-level stellar helper library.  It consists of classes
 to read, write, hash, and sign the xdr structures that are used in stellar-core.
