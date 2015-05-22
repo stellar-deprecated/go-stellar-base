@@ -15,19 +15,35 @@ struct DecoratedSignature
 
 enum OperationType
 {
-    PAYMENT = 0,
-    CREATE_OFFER = 1,
-    SET_OPTIONS = 2,
-    CHANGE_TRUST = 3,
-    ALLOW_TRUST = 4,
-    ACCOUNT_MERGE = 5,
-    INFLATION = 6
+    CREATE_ACCOUNT = 0,
+    PAYMENT = 1,
+    PATH_PAYMENT = 2,
+    CREATE_OFFER = 3,
+    SET_OPTIONS = 4,
+    CHANGE_TRUST = 5,
+    ALLOW_TRUST = 6,
+    ACCOUNT_MERGE = 7,
+    INFLATION = 8
+};
+
+/* CreateAccount
+Funds a new account with the specified starting balance
+
+Threshold: med
+
+Result: CreateAccountResult
+
+*/
+
+struct CreateAccountOp
+{
+    AccountID destination; // account to create
+    int64 startingBalance; // amount they end up with
 };
 
 /* Payment
 
-    send an amount to a destination account, optionally through a path.
-    XLM payments create the destination account if it does not exist
+    send an amount to a destination account.
 
     Threshold: med
 
@@ -38,15 +54,31 @@ struct PaymentOp
     AccountID destination; // recipient of the payment
     Currency currency;     // what they end up with
     int64 amount;          // amount they end up with
+};
 
-    opaque memo<32>;
-    opaque sourceMemo<32>; // used to return a payment
+/* PathPayment
 
-    // payment over path
-    Currency path<5>; // what hops it must go through to get there
-    int64 sendMax; // the maximum amount of the source currency (==path[0]) to
-                   // send (excluding fees).
-                   // The operation will fail if can't be met
+send an amount to a destination account through a path.
+(up to sendMax, sendCurrency)
+(X0, Path[0]) .. (Xn, Path[n])
+(destAmount, destCurrency)
+
+Threshold: med
+
+Result: PathPaymentResult
+*/
+struct PathPaymentOp
+{
+    Currency sendCurrency; // currency we pay with
+    int64 sendMax;         // the maximum amount of sendCurrency to
+                           // send (excluding fees).
+                           // The operation will fail if can't be met
+
+    AccountID destination; // recipient of the payment
+    Currency destCurrency; // what they end up with
+    int64 destAmount;      // amount they end up with
+
+    Currency path<5>; // additional hops it must go through to get there
 };
 
 /* Creates, updates or deletes an offer
@@ -86,6 +118,8 @@ struct SetOptionsOp
 
     Thresholds* thresholds; // update the thresholds for the account
 
+    string32* homeDomain; // sets the home domain
+
     // Add, update or remove a signer for the account
     // signer is deleted if the weight is 0
     Signer* signer;
@@ -118,8 +152,8 @@ struct AllowTrustOp
     AccountID trustor;
     union switch (CurrencyType type)
     {
-    // NATIVE is not allowed
-    case ISO4217:
+    // CURRENCY_TYPE_NATIVE is not allowed
+    case CURRENCY_TYPE_ALPHANUM:
         opaque currencyCode[4];
 
         // add other currency types here in the future
@@ -156,8 +190,12 @@ struct Operation
 
     union switch (OperationType type)
     {
+    case CREATE_ACCOUNT:
+        CreateAccountOp createAccountOp;
     case PAYMENT:
         PaymentOp paymentOp;
+    case PATH_PAYMENT:
+        PathPaymentOp pathPaymentOp;
     case CREATE_OFFER:
         CreateOfferOp createOfferOp;
     case SET_OPTIONS:
@@ -169,9 +207,38 @@ struct Operation
     case ACCOUNT_MERGE:
         uint256 destination;
     case INFLATION:
-        uint32 inflationSeq;
+        void;
     }
     body;
+};
+
+enum MemoType
+{
+    MEMO_NONE = 0,
+    MEMO_TEXT = 1,
+    MEMO_ID = 2,
+    MEMO_HASH = 3,
+    MEMO_RETURN = 4
+};
+
+union Memo switch (MemoType type)
+{
+case MEMO_NONE:
+    void;
+case MEMO_TEXT:
+    string text<28>;
+case MEMO_ID:
+    uint64 id;
+case MEMO_HASH:
+    Hash hash; // the hash of what to pull from the content server
+case MEMO_RETURN:
+    Hash retHash; // the hash of the tx you are rejecting
+};
+
+struct TimeBounds
+{
+    uint64 minTime;
+    uint64 maxTime;
 };
 
 /* a transaction is a container for a set of operations
@@ -187,16 +254,16 @@ struct Transaction
     // account used to run the transaction
     AccountID sourceAccount;
 
-    // maximum fee this transaction can collect
-    // the transaction is aborted if the fee is higher
-    int32 maxFee;
+    // the fee the sourceAccount will pay
+    int32 fee;
 
     // sequence number to consume in the account
     SequenceNumber seqNum;
 
-    // validity range (inclusive) for the ledger sequence number
-    uint32 minLedger;
-    uint32 maxLedger;
+    // validity range (inclusive) for the last ledger close time
+    TimeBounds* timeBounds;
+
+    Memo memo;
 
     Operation operations<100>;
 };
@@ -224,13 +291,35 @@ struct ClaimOfferAtom
     // should we also include the amount that the owner gets in return?
 };
 
+/******* CreateAccount Result ********/
+
+enum CreateAccountResultCode
+{
+    // codes considered as "success" for the operation
+    CREATE_ACCOUNT_SUCCESS = 0, // account was created
+
+    // codes considered as "failure" for the operation
+    CREATE_ACCOUNT_MALFORMED = 1,   // invalid destination
+    CREATE_ACCOUNT_UNDERFUNDED = 2, // not enough funds in source account
+    CREATE_ACCOUNT_LOW_RESERVE =
+        3, // would create an account below the min reserve
+    CREATE_ACCOUNT_ALREADY_EXIST = 4 // account already exists
+};
+
+union CreateAccountResult switch (CreateAccountResultCode code)
+{
+case CREATE_ACCOUNT_SUCCESS:
+    void;
+default:
+    void;
+};
+
 /******* Payment Result ********/
 
 enum PaymentResultCode
 {
     // codes considered as "success" for the operation
-    PAYMENT_SUCCESS = 0,       // simple payment success
-    PAYMENT_SUCCESS_MULTI = 1, // multi-path payment success
+    PAYMENT_SUCCESS = 0, // payment successfuly completed
 
     // codes considered as "failure" for the operation
     PAYMENT_MALFORMED = -1,      // bad input
@@ -238,10 +327,34 @@ enum PaymentResultCode
     PAYMENT_NO_DESTINATION = -3, // destination account does not exist
     PAYMENT_NO_TRUST = -4, // destination missing a trust line for currency
     PAYMENT_NOT_AUTHORIZED = -5, // destination not authorized to hold currency
-    PAYMENT_LINE_FULL = -6,      // destination would go above their limit
-    PAYMENT_TOO_FEW_OFFERS = -7, // not enough offers to satisfy path payment
-    PAYMENT_OVER_SENDMAX = -8,   // multi-path payment could not satisfy sendmax
-    PAYMENT_LOW_RESERVE = -9 // would create an account below the min reserve
+    PAYMENT_LINE_FULL = -6       // destination would go above their limit
+};
+
+union PaymentResult switch (PaymentResultCode code)
+{
+case PAYMENT_SUCCESS:
+    void;
+default:
+    void;
+};
+
+/******* Payment Result ********/
+
+enum PathPaymentResultCode
+{
+    // codes considered as "success" for the operation
+    PATH_PAYMENT_SUCCESS = 0, // success
+
+    // codes considered as "failure" for the operation
+    PATH_PAYMENT_MALFORMED = -1,      // bad input
+    PATH_PAYMENT_UNDERFUNDED = -2,    // not enough funds in source account
+    PATH_PAYMENT_NO_DESTINATION = -3, // destination account does not exist
+    PATH_PAYMENT_NO_TRUST = -4, // destination missing a trust line for currency
+    PATH_PAYMENT_NOT_AUTHORIZED =
+        -5,                      // destination not authorized to hold currency
+    PATH_PAYMENT_LINE_FULL = -6, // destination would go above their limit
+    PATH_PAYMENT_TOO_FEW_OFFERS = -7, // not enough offers to satisfy path
+    PATH_PAYMENT_OVER_SENDMAX = -8    // could not satisfy sendmax
 };
 
 struct SimplePaymentResult
@@ -251,18 +364,14 @@ struct SimplePaymentResult
     int64 amount;
 };
 
-struct PaymentSuccessMultiResult
+union PathPaymentResult switch (PathPaymentResultCode code)
 {
-    ClaimOfferAtom offers<>;
-    SimplePaymentResult last;
-};
-
-union PaymentResult switch (PaymentResultCode code)
-{
-case PAYMENT_SUCCESS:
-    void;
-case PAYMENT_SUCCESS_MULTI:
-    PaymentSuccessMultiResult multi;
+case PATH_PAYMENT_SUCCESS:
+    struct
+    {
+        ClaimOfferAtom offers<>;
+        SimplePaymentResult last;
+    } success;
 default:
     void;
 };
@@ -277,7 +386,7 @@ enum CreateOfferResultCode
     // codes considered as "failure" for the operation
     CREATE_OFFER_MALFORMED = -1,      // generated offer would be invalid
     CREATE_OFFER_NO_TRUST = -2,       // can't hold what it's buying
-    CREATE_OFFER_NOT_AUTHORIZED = -3, // not authorized to hold what it's buying
+    CREATE_OFFER_NOT_AUTHORIZED = -3, // not authorized to sell or buy
     CREATE_OFFER_LINE_FULL = -4,      // can't receive more of what it's buying
     CREATE_OFFER_UNDERFUNDED = -5,    // doesn't hold what it's trying to sell
     CREATE_OFFER_CROSS_SELF = -6,     // would cross an offer from the same user
@@ -330,7 +439,8 @@ enum SetOptionsResultCode
     SET_OPTIONS_LOW_RESERVE = -1,      // not enough funds to add a signer
     SET_OPTIONS_TOO_MANY_SIGNERS = -2, // max number of signers already reached
     SET_OPTIONS_BAD_FLAGS = -3,        // invalid combination of clear/set flags
-    SET_OPTIONS_INVALID_INFLATION = -4 // inflation account does not exist
+    SET_OPTIONS_INVALID_INFLATION = -4, // inflation account does not exist
+    SET_OPTIONS_CANT_CHANGE = -5        // can no longer change this option
 };
 
 union SetOptionsResult switch (SetOptionsResultCode code)
@@ -369,9 +479,11 @@ enum AllowTrustResultCode
     // codes considered as "success" for the operation
     ALLOW_TRUST_SUCCESS = 0,
     // codes considered as "failure" for the operation
-    ALLOW_TRUST_MALFORMED = -1,         // currency is not ISO4217
-    ALLOW_TRUST_NO_TRUST_LINE = -2,     // trustor does not have a trustline
-    ALLOW_TRUST_TRUST_NOT_REQUIRED = -3 // source account does not require trust
+    ALLOW_TRUST_MALFORMED = -1,     // currency is not CURRENCY_TYPE_ALPHANUM
+    ALLOW_TRUST_NO_TRUST_LINE = -2, // trustor does not have a trustline
+    ALLOW_TRUST_TRUST_NOT_REQUIRED =
+        -3,                      // source account does not require trust
+    ALLOW_TRUST_CANT_REVOKE = -4 // source account can't revoke trust
 };
 
 union AllowTrustResult switch (AllowTrustResultCode code)
@@ -442,8 +554,12 @@ union OperationResult switch (OperationResultCode code)
 case opINNER:
     union switch (OperationType type)
     {
+    case CREATE_ACCOUNT:
+        CreateAccountResult createAccountResult;
     case PAYMENT:
         PaymentResult paymentResult;
+    case PATH_PAYMENT:
+        PathPaymentResult pathPaymentResult;
     case CREATE_OFFER:
         CreateOfferResult createOfferResult;
     case SET_OPTIONS:
@@ -466,18 +582,17 @@ enum TransactionResultCode
 {
     txSUCCESS = 0, // all operations succeeded
 
-    txDUPLICATE = -1, // transaction was already submited
+    txFAILED = -1, // one of the operations failed (but none were applied)
 
-    txFAILED = -2, // one of the operations failed (but none were applied)
-
-    txBAD_LEDGER = -3,        // ledger is not in range [minLeder; maxLedger]
+    txTOO_EARLY = -2,         // ledger closeTime before minTime
+    txTOO_LATE = -3,          // ledger closeTime after maxTime
     txMISSING_OPERATION = -4, // no operation was specified
     txBAD_SEQ = -5,           // sequence number does not match source account
 
     txBAD_AUTH = -6,             // not enough signatures to perform transaction
     txINSUFFICIENT_BALANCE = -7, // fee would bring account below reserve
     txNO_ACCOUNT = -8,           // source account not found
-    txINSUFFICIENT_FEE = -9,     // max fee is too small
+    txINSUFFICIENT_FEE = -9,     // fee is too small
     txBAD_AUTH_EXTRA = -10,      // too many signatures on transaction
     txINTERNAL_ERROR = -11       // an unknown error occured
 };
