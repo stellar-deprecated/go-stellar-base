@@ -3,6 +3,8 @@ package stellarbase
 import (
 	"bytes"
 	"encoding/base64"
+	"fmt"
+	"log"
 	"strings"
 	"testing"
 
@@ -125,4 +127,27 @@ func TestDecode(t *testing.T) {
 		So(n2, ShouldEqual, n)
 		So(output.String(), ShouldEqual, data)
 	})
+}
+
+func ExampleDecodeTransaction() {
+	data := "rqN6LeOagjxMaUP96Bzfs9e0corNZXzBWJkFoK7kvkwAAAAKAAAAAwAAAAEAAAAAAAA" +
+		"AAAAAAAEAAAAAAAAAAW5oJtVdnYOVdZqtXpTHBtbcY0mCmfcBIKEgWnlvFIhaAAAAAA" +
+		"AAAAAC+vCAAAAAAa6jei0gQGmrUfm+o2CMv/w32YzJgGYlmgG6CUW3FwyD6AZ/5TtPZ" +
+		"qEt9kyC3GJeXfzoS667ZPhPUSNjSWgAeDPHFLcM"
+
+	rawr := strings.NewReader(data)
+	b64r := base64.NewDecoder(base64.StdEncoding, rawr)
+
+	var tx xdr.TransactionEnvelope
+	bytesRead, err := xdr.Unmarshal(b64r, &tx)
+
+	fmt.Printf("read %d bytes\n", bytesRead)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("This tx has %d operations\n", len(tx.Tx.Operations))
+	// Output: read 180 bytes
+	// This tx has 1 operations
 }
