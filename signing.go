@@ -3,6 +3,7 @@ package stellarbase
 import (
 	"bytes"
 	"errors"
+
 	"github.com/agl/ed25519"
 )
 
@@ -13,6 +14,7 @@ type RawSeed [RawSeedSize]byte
 type Verifier interface {
 	Address() string
 	Verify(message []byte, signature Signature) bool
+	Hint() [4]byte
 }
 
 type Signer interface {
@@ -106,4 +108,14 @@ func (publicKey *PublicKey) KeyData() [ed25519.PublicKeySize]byte {
 
 func (privateKey *PrivateKey) KeyData() [ed25519.PrivateKeySize]byte {
 	return privateKey.keyData
+}
+
+func (publicKey *PublicKey) Hint() (r [4]byte) {
+	copy(r[:], publicKey.keyData[0:4])
+	return
+}
+
+func (privateKey *PrivateKey) Hint() (r [4]byte) {
+	copy(r[:], privateKey.keyData[0:4])
+	return
 }
