@@ -1,8 +1,9 @@
 package stellarbase
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestBase58(t *testing.T) {
@@ -68,7 +69,7 @@ func TestBase58(t *testing.T) {
 
 			Convey("The returned error is correct", func() {
 				So(err, ShouldNotBeNil)
-				ivbErr, ok := err.(InvalidVersionByteError)
+				ivbErr, ok := err.(ErrInvalidVersionByte)
 				So(ok, ShouldBeTrue)
 				So(ivbErr.Actual, ShouldEqual, VersionByteSeed)
 				So(ivbErr.Expected, ShouldEqual, VersionByteAccountID)
@@ -79,7 +80,7 @@ func TestBase58(t *testing.T) {
 
 	Convey("Bad Input", t, func() {
 		_, err := DecodeBase58Check(VersionByteAccountID, "")
-		So(err, ShouldEqual, NotCheckEncodedError)
+		So(err, ShouldEqual, ErrNotCheckEncoded)
 
 	})
 

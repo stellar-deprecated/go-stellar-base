@@ -22,38 +22,53 @@ func init() {
 }
 
 var (
-	NotCheckEncodedError = errors.New("base58: input is not check encoded")
+	// ErrNotCheckEncoded represents an error that occurs when you try to decode
+	// a string that expects to be base58-check encoded as is not.
+	ErrNotCheckEncoded = errors.New("base58: input is not check encoded")
 )
 
-type CorruptInputError int64
+// ErrCorruptInput is an error that occurs when decoding base58 encoded
+// data.
+type ErrCorruptInput int64
 
-func (e CorruptInputError) Error() string {
+func (e ErrCorruptInput) Error() string {
 	return "illegal base58 data at input byte " + strconv.FormatInt(int64(e), 10)
 }
 
-type InvalidVersionByteError struct {
+// ErrInvalidVersionByte is an error that occurs when decoding base58-check
+// encoded data using DecodeBase58Check.  It is returned when the actual
+// version byte of the encoded value does not match the expected value provided
+// to the call
+type ErrInvalidVersionByte struct {
 	Expected VersionByte
 	Actual   VersionByte
 }
 
-func (e InvalidVersionByteError) Error() string {
+func (e ErrInvalidVersionByte) Error() string {
 	return fmt.Sprintf("illegal base58 version byte expected:%d actual:%d", e.Expected, e.Actual)
 }
 
+// VersionByte represents one of the base58-check "version bytes" used by the
+// Stellar network
 type VersionByte byte
 
 const (
+	//VersionByteAccountID is the version byte used for encoded stellar addresses
 	VersionByteAccountID VersionByte = 0
-	VersionByteNone                  = 1
-	VersionByteSeed                  = 33
+	//VersionByteNone is the version byte used for nothing, snoogins.
+	VersionByteNone = 1
+	//VersionByteSeed is the version byte used for encoded stellar seed
+	VersionByteSeed = 33
 )
 
+// EncodeBase58 encodes the provided data to base58, using the stellar
+// alphabet
 func EncodeBase58(src []byte) string {
 	bigInt := new(big.Int)
 	bigInt.SetBytes(src)
 	leadingZeroes := strings.Repeat("g", leadingZeroCount(src))
 
-	var resultSlice []byte = make([]byte, 0, 256)
+	var resultSlice = make([]byte, 0, 256)
 	var results = []string{
 		leadingZeroes,
 		string(EncodeBigToBase58(resultSlice, bigInt)),
@@ -62,16 +77,19 @@ func EncodeBase58(src []byte) string {
 	return strings.Join(results, "")
 }
 
+// EncodeBase58Check encodes the provided data to base58, using the stellar
+// alphabet and the provided version byte.
 func EncodeBase58Check(version VersionByte, src []byte) string {
 	start := []byte{}
 	withVersion := append(start, byte(version))
 	withPayload := append(withVersion, src...)
 	withChecksum := append(withPayload, base58CheckSum(withPayload)...)
-	// _ = withChecksum
-	// return fmt.Sprintf("b: %s\n", withChecksum)
+
 	return string(EncodeBase58(withChecksum))
 }
 
+// DecodeBase58 decodes the provided data from base58, using the stellar
+// alphabet.
 func DecodeBase58(src string) ([]byte, error) {
 	leadingGs := make([]byte, leadingGCount(src))
 
@@ -84,6 +102,9 @@ func DecodeBase58(src string) ([]byte, error) {
 	return append(leadingGs, bigInt.Bytes()...), nil
 }
 
+// DecodeBase58Check decodes the provided data from base58, using the stellar
+// alphabet.  An error is returned if the provided version byte is not the
+// byte used in the encoded string.
 func DecodeBase58Check(version VersionByte, src string) ([]byte, error) {
 
 	decoded, err := DecodeBase58(src)
@@ -93,7 +114,7 @@ func DecodeBase58Check(version VersionByte, src string) ([]byte, error) {
 	}
 
 	if len(decoded) < 5 {
-		return []byte{}, NotCheckEncodedError
+		return []byte{}, ErrNotCheckEncoded
 	}
 
 	decodedVersion := VersionByte(decoded[0])
@@ -101,23 +122,23 @@ func DecodeBase58Check(version VersionByte, src string) ([]byte, error) {
 	checksum := decoded[len(decoded)-4:]
 
 	if decodedVersion != version {
-		return []byte{}, InvalidVersionByteError{version, decodedVersion}
+		return []byte{}, ErrInvalidVersionByte{version, decodedVersion}
 	}
 
-	_ = checksum //TODO
+	_ = checksum //TODO: validate the checksum
 
 	return payload, nil
 }
 
-// Decode a big integer from the bytes. Returns an error on corrupt
-// input.
+// DecodeBase58ToBig decodes a big integer from the bytes. Returns an error on
+// corrupt input.
 func DecodeBase58ToBig(src []byte) (*big.Int, error) {
 	n := new(big.Int)
 	radix := big.NewInt(58)
 	for i := 0; i < len(src); i++ {
 		b := decodeMap[src[i]]
 		if b == 0xFF {
-			return nil, CorruptInputError(i)
+			return nil, ErrCorruptInput(i)
 		}
 		n.Mul(n, radix)
 		n.Add(n, big.NewInt(int64(b)))
@@ -125,7 +146,7 @@ func DecodeBase58ToBig(src []byte) (*big.Int, error) {
 	return n, nil
 }
 
-// Encode encodes src, appending to dst. Be sure to use the returned
+// EncodeBigToBase58 encodes src, appending to dst. Be sure to use the returned
 // new value of dst.
 func EncodeBigToBase58(dst []byte, src *big.Int) []byte {
 	start := len(dst)
