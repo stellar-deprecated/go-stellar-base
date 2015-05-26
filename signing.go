@@ -14,12 +14,11 @@ type RawSeed [RawSeedSize]byte
 type Verifier interface {
 	Address() string
 	Verify(message []byte, signature Signature) bool
-	Hint() [4]byte
 }
 
 type Signer interface {
-	Verifier
 	Seed() string
+	Hint() [4]byte
 	Sign(message []byte) Signature
 }
 
