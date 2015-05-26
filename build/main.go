@@ -4,7 +4,7 @@
 // At the core of this package is the *Builder and *Mutator types.  A Builder
 // object (ex. PaymentBuilder, TransactionBuilder) contain an underlying xdr
 // struct that is being iteratively built by having zero or more Mutator structs
-// applied to it. See ExampleTransactionBuilder for an example.
+// applied to it. See ExampleTransactionBuilder in main_test.go for an example.
 package build
 
 import "github.com/stellar/go-stellar-base"
