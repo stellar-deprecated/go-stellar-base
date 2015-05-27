@@ -13,7 +13,7 @@ type OperationMutator interface {
 // MutateOperation for SourceAccount sets the operation's SourceAccount
 // to the pubilic key for the address provided
 func (m SourceAccount) MutateOperation(o *xdr.Operation) error {
-	aid, err := stellarbase.AddressToAccountId(m.address)
+	aid, err := stellarbase.AddressToAccountId(m.Address)
 	o.SourceAccount = &aid
 	return err
 }

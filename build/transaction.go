@@ -76,7 +76,7 @@ func (m Defaults) MutateTransaction(o *xdr.Transaction) error {
 // MutateTransaction for SourceAccount sets the transaction's SourceAccount
 // to the pubilic key for the address provided
 func (m SourceAccount) MutateTransaction(o *xdr.Transaction) error {
-	aid, err := stellarbase.AddressToAccountId(m.address)
+	aid, err := stellarbase.AddressToAccountId(m.Address)
 	o.SourceAccount = aid
 	return err
 }
@@ -95,6 +95,6 @@ func (m PaymentBuilder) MutateTransaction(o *xdr.Transaction) error {
 
 // MutateTransaction for Sequence sets the SeqNum on the transaction.
 func (m Sequence) MutateTransaction(o *xdr.Transaction) error {
-	o.SeqNum = xdr.SequenceNumber(m.sequence)
+	o.SeqNum = xdr.SequenceNumber(m.Sequence)
 	return nil
 }

@@ -47,7 +47,7 @@ func (b *CreateAccountBuilder) Mutate(muts ...interface{}) {
 // MutateCreateAccount for Destination sets the CreateAccountOp's Destination
 // field
 func (m Destination) MutateCreateAccount(o *xdr.CreateAccountOp) error {
-	aid, err := stellarbase.AddressToAccountId(m.address)
+	aid, err := stellarbase.AddressToAccountId(m.Address)
 	o.Destination = aid
 	return err
 }
@@ -55,6 +55,6 @@ func (m Destination) MutateCreateAccount(o *xdr.CreateAccountOp) error {
 // MutateCreateAccount for NativeAmount sets the CreateAccountOp's
 // StartingBalance field
 func (m NativeAmount) MutateCreateAccount(o *xdr.CreateAccountOp) error {
-	o.StartingBalance = xdr.Int64(m.amount)
+	o.StartingBalance = xdr.Int64(m.Amount)
 	return nil
 }

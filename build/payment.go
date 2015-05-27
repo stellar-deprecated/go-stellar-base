@@ -45,7 +45,7 @@ func (b *PaymentBuilder) Mutate(muts ...interface{}) {
 
 // MutatePayment for Destination sets the PaymentOp's Destination field
 func (m Destination) MutatePayment(o *xdr.PaymentOp) error {
-	aid, err := stellarbase.AddressToAccountId(m.address)
+	aid, err := stellarbase.AddressToAccountId(m.Address)
 	o.Destination = aid
 	return err
 }
@@ -54,6 +54,6 @@ func (m Destination) MutatePayment(o *xdr.PaymentOp) error {
 // native and sets its amount to the provided integer
 func (m NativeAmount) MutatePayment(o *xdr.PaymentOp) error {
 	o.Currency = xdr.NewCurrencyCurrencyTypeNative()
-	o.Amount = xdr.Int64(m.amount)
+	o.Amount = xdr.Int64(m.Amount)
 	return nil
 }

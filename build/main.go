@@ -15,24 +15,24 @@ type Defaults struct{}
 // Destination is a mutator capable of setting the destination on
 // an xdr.PaymentOp
 type Destination struct {
-	address string
+	Address string
 }
 
 // SourceAccount is a mutator capable of setting the source account on
 // an xdr.Operation and an xdr.Transaction
 type SourceAccount struct {
-	address string
+	Address string
 }
 
 // NativeAmount is a mutator that configures a payment to be using native
 // currency and have the amount provided.
 type NativeAmount struct {
-	amount int64
+	Amount int64
 }
 
 // Sequence is a mutator that sets the sequence number on a transaction
 type Sequence struct {
-	sequence int64
+	Sequence int64
 }
 
 // Sign is a mutator that contributes a signature of the provided envelope's
