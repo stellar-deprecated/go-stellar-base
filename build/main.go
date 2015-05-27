@@ -7,7 +7,10 @@
 // applied to it. See ExampleTransactionBuilder in main_test.go for an example.
 package build
 
-import "github.com/stellar/go-stellar-base"
+import (
+	"github.com/stellar/go-stellar-base"
+	"github.com/stellar/go-stellar-base/xdr"
+)
 
 // Defaults is a mutator that sets defaults
 type Defaults struct{}
@@ -32,7 +35,7 @@ type NativeAmount struct {
 
 // Sequence is a mutator that sets the sequence number on a transaction
 type Sequence struct {
-	Sequence int64
+	Sequence xdr.SequenceNumber
 }
 
 // Sign is a mutator that contributes a signature of the provided envelope's
