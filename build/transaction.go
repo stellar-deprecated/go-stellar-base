@@ -2,6 +2,7 @@ package build
 
 import (
 	"bytes"
+	"encoding/hex"
 
 	"github.com/stellar/go-stellar-base"
 	"github.com/stellar/go-stellar-base/xdr"
@@ -50,6 +51,16 @@ func (b *TransactionBuilder) Hash() ([32]byte, error) {
 	}
 
 	return stellarbase.Hash(txBytes.Bytes()), nil
+}
+
+// HashHex returns the hex-encoded hash of this builder's transaction
+func (b *TransactionBuilder) HashHex() (string, error) {
+	hash, err := b.Hash()
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(hash[:]), nil
 }
 
 // Sign returns an new TransactionEnvelopeBuilder using this builder's
