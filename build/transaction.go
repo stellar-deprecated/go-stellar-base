@@ -93,6 +93,19 @@ func (m PaymentBuilder) MutateTransaction(o *xdr.Transaction) error {
 	return nil
 }
 
+// MutateTransaction for CreateAccountBuilder causes the underylying
+// CreateAccountOp to be added to the operation list for the provided
+// transaction
+func (m CreateAccountBuilder) MutateTransaction(o *xdr.Transaction) error {
+	if m.Err != nil {
+		return m.Err
+	}
+
+	m.O.Body = xdr.NewOperationBodyCreateAccount(m.CA)
+	o.Operations = append(o.Operations, m.O)
+	return nil
+}
+
 // MutateTransaction for Sequence sets the SeqNum on the transaction.
 func (m Sequence) MutateTransaction(o *xdr.Transaction) error {
 	o.SeqNum = xdr.SequenceNumber(m.Sequence)
