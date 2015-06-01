@@ -102,11 +102,11 @@ const (
 	ScpStatementTypeCommitted                   = 3
 )
 
-var scpStatementTypeMap = map[int32]bool{
-	0: true,
-	1: true,
-	2: true,
-	3: true,
+var scpStatementTypeMap = map[int32]string{
+	0: "ScpStatementTypePreparing",
+	1: "ScpStatementTypePrepared",
+	2: "ScpStatementTypeCommitting",
+	3: "ScpStatementTypeCommitted",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -114,6 +114,12 @@ var scpStatementTypeMap = map[int32]bool{
 func (e ScpStatementType) ValidEnum(v int32) bool {
 	_, ok := scpStatementTypeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e ScpStatementType) String() string {
+	name, _ := scpStatementTypeMap[int32(e)]
+	return name
 }
 
 // ScpStatementPrepare is an XDR NestedStruct defines as:
@@ -282,12 +288,14 @@ type ScpEnvelope struct {
 //   struct SCPQuorumSet
 //    {
 //        uint32 threshold;
-//        Hash validators<>;
+//    	Hash validators<>;
+//        SCPQuorumSet innerSets<>;
 //    };
 //
 type ScpQuorumSet struct {
 	Threshold  Uint32
 	Validators []Hash
+	InnerSets  []ScpQuorumSet
 }
 
 // LedgerEntryType is an XDR Enum defines as:
@@ -307,10 +315,10 @@ const (
 	LedgerEntryTypeOffer                     = 2
 )
 
-var ledgerEntryTypeMap = map[int32]bool{
-	0: true,
-	1: true,
-	2: true,
+var ledgerEntryTypeMap = map[int32]string{
+	0: "LedgerEntryTypeAccount",
+	1: "LedgerEntryTypeTrustline",
+	2: "LedgerEntryTypeOffer",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -318,6 +326,12 @@ var ledgerEntryTypeMap = map[int32]bool{
 func (e LedgerEntryType) ValidEnum(v int32) bool {
 	_, ok := ledgerEntryTypeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e LedgerEntryType) String() string {
+	name, _ := ledgerEntryTypeMap[int32(e)]
+	return name
 }
 
 // Signer is an XDR Struct defines as:
@@ -337,7 +351,12 @@ type Signer struct {
 //
 //   enum AccountFlags
 //    { // masks for each flag
+//
+//        // if set, TrustLines are created with authorized set to "false"
+//        // requiring the issuer to set it for each TrustLine
 //        AUTH_REQUIRED_FLAG = 0x1,
+//        // if set, the authorized flag in TrustTines can be cleared
+//        // otherwise, authorization cannot be revoked
 //        AUTH_REVOCABLE_FLAG = 0x2
 //    };
 //
@@ -348,9 +367,9 @@ const (
 	AccountFlagsAuthRevocableFlag              = 2
 )
 
-var accountFlagsMap = map[int32]bool{
-	1: true,
-	2: true,
+var accountFlagsMap = map[int32]string{
+	1: "AccountFlagsAuthRequiredFlag",
+	2: "AccountFlagsAuthRevocableFlag",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -358,6 +377,12 @@ var accountFlagsMap = map[int32]bool{
 func (e AccountFlags) ValidEnum(v int32) bool {
 	_, ok := accountFlagsMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e AccountFlags) String() string {
+	name, _ := accountFlagsMap[int32(e)]
+	return name
 }
 
 // AccountEntry is an XDR Struct defines as:
@@ -397,7 +422,8 @@ type AccountEntry struct {
 //
 //   enum TrustLineFlags
 //    {
-//        AUTHORIZED_FLAG = 1 // issuer has authorized account to hold its credit
+//        // issuer has authorized account to perform transactions with its credit
+//        AUTHORIZED_FLAG = 1
 //    };
 //
 type TrustLineFlags int32
@@ -406,8 +432,8 @@ const (
 	TrustLineFlagsAuthorizedFlag TrustLineFlags = 1
 )
 
-var trustLineFlagsMap = map[int32]bool{
-	1: true,
+var trustLineFlagsMap = map[int32]string{
+	1: "TrustLineFlagsAuthorizedFlag",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -415,6 +441,12 @@ var trustLineFlagsMap = map[int32]bool{
 func (e TrustLineFlags) ValidEnum(v int32) bool {
 	_, ok := trustLineFlagsMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e TrustLineFlags) String() string {
+	name, _ := trustLineFlagsMap[int32(e)]
+	return name
 }
 
 // TrustLineEntry is an XDR Struct defines as:
@@ -854,9 +886,9 @@ const (
 	BucketEntryTypeDeadentry                 = 1
 )
 
-var bucketEntryTypeMap = map[int32]bool{
-	0: true,
-	1: true,
+var bucketEntryTypeMap = map[int32]string{
+	0: "BucketEntryTypeLiveentry",
+	1: "BucketEntryTypeDeadentry",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -864,6 +896,12 @@ var bucketEntryTypeMap = map[int32]bool{
 func (e BucketEntryType) ValidEnum(v int32) bool {
 	_, ok := bucketEntryTypeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e BucketEntryType) String() string {
+	name, _ := bucketEntryTypeMap[int32(e)]
+	return name
 }
 
 // BucketEntry is an XDR Union defines as:
@@ -1063,10 +1101,10 @@ const (
 	LedgerEntryChangeTypeLedgerEntryRemoved                       = 2
 )
 
-var ledgerEntryChangeTypeMap = map[int32]bool{
-	0: true,
-	1: true,
-	2: true,
+var ledgerEntryChangeTypeMap = map[int32]string{
+	0: "LedgerEntryChangeTypeLedgerEntryCreated",
+	1: "LedgerEntryChangeTypeLedgerEntryUpdated",
+	2: "LedgerEntryChangeTypeLedgerEntryRemoved",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -1074,6 +1112,12 @@ var ledgerEntryChangeTypeMap = map[int32]bool{
 func (e LedgerEntryChangeType) ValidEnum(v int32) bool {
 	_, ok := ledgerEntryChangeTypeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e LedgerEntryChangeType) String() string {
+	name, _ := ledgerEntryChangeTypeMap[int32(e)]
+	return name
 }
 
 // LedgerEntryChange is an XDR Union defines as:
@@ -1342,18 +1386,18 @@ const (
 	MessageTypeScpMessage                  = 10
 )
 
-var messageTypeMap = map[int32]bool{
-	0:  true,
-	1:  true,
-	2:  true,
-	3:  true,
-	4:  true,
-	5:  true,
-	6:  true,
-	7:  true,
-	8:  true,
-	9:  true,
-	10: true,
+var messageTypeMap = map[int32]string{
+	0:  "MessageTypeErrorMsg",
+	1:  "MessageTypeHello",
+	2:  "MessageTypeDontHave",
+	3:  "MessageTypeGetPeer",
+	4:  "MessageTypePeer",
+	5:  "MessageTypeGetTxSet",
+	6:  "MessageTypeTxSet",
+	7:  "MessageTypeTransaction",
+	8:  "MessageTypeGetScpQuorumset",
+	9:  "MessageTypeScpQuorumset",
+	10: "MessageTypeScpMessage",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -1361,6 +1405,12 @@ var messageTypeMap = map[int32]bool{
 func (e MessageType) ValidEnum(v int32) bool {
 	_, ok := messageTypeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e MessageType) String() string {
+	name, _ := messageTypeMap[int32(e)]
+	return name
 }
 
 // DontHave is an XDR Struct defines as:
@@ -1849,16 +1899,16 @@ const (
 	OperationTypeInflation                   = 8
 )
 
-var operationTypeMap = map[int32]bool{
-	0: true,
-	1: true,
-	2: true,
-	3: true,
-	4: true,
-	5: true,
-	6: true,
-	7: true,
-	8: true,
+var operationTypeMap = map[int32]string{
+	0: "OperationTypeCreateAccount",
+	1: "OperationTypePayment",
+	2: "OperationTypePathPayment",
+	3: "OperationTypeCreateOffer",
+	4: "OperationTypeSetOption",
+	5: "OperationTypeChangeTrust",
+	6: "OperationTypeAllowTrust",
+	7: "OperationTypeAccountMerge",
+	8: "OperationTypeInflation",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -1866,6 +1916,12 @@ var operationTypeMap = map[int32]bool{
 func (e OperationType) ValidEnum(v int32) bool {
 	_, ok := operationTypeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e OperationType) String() string {
+	name, _ := operationTypeMap[int32(e)]
+	return name
 }
 
 // CreateAccountOp is an XDR Struct defines as:
@@ -2483,12 +2539,12 @@ const (
 	MemoTypeMemoReturn          = 4
 )
 
-var memoTypeMap = map[int32]bool{
-	0: true,
-	1: true,
-	2: true,
-	3: true,
-	4: true,
+var memoTypeMap = map[int32]string{
+	0: "MemoTypeMemoNone",
+	1: "MemoTypeMemoText",
+	2: "MemoTypeMemoId",
+	3: "MemoTypeMemoHash",
+	4: "MemoTypeMemoReturn",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -2496,6 +2552,12 @@ var memoTypeMap = map[int32]bool{
 func (e MemoType) ValidEnum(v int32) bool {
 	_, ok := memoTypeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e MemoType) String() string {
+	name, _ := memoTypeMap[int32(e)]
+	return name
 }
 
 // Memo is an XDR Union defines as:
@@ -2794,12 +2856,12 @@ const (
 	CreateAccountResultCodeCreateAccountAlreadyExist                         = 4
 )
 
-var createAccountResultCodeMap = map[int32]bool{
-	0: true,
-	1: true,
-	2: true,
-	3: true,
-	4: true,
+var createAccountResultCodeMap = map[int32]string{
+	0: "CreateAccountResultCodeCreateAccountSuccess",
+	1: "CreateAccountResultCodeCreateAccountMalformed",
+	2: "CreateAccountResultCodeCreateAccountUnderfunded",
+	3: "CreateAccountResultCodeCreateAccountLowReserve",
+	4: "CreateAccountResultCodeCreateAccountAlreadyExist",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -2807,6 +2869,12 @@ var createAccountResultCodeMap = map[int32]bool{
 func (e CreateAccountResultCode) ValidEnum(v int32) bool {
 	_, ok := createAccountResultCodeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e CreateAccountResultCode) String() string {
+	name, _ := createAccountResultCodeMap[int32(e)]
+	return name
 }
 
 // CreateAccountResult is an XDR Union defines as:
@@ -2908,14 +2976,14 @@ const (
 	PaymentResultCodePaymentLineFull                        = -6
 )
 
-var paymentResultCodeMap = map[int32]bool{
-	0:  true,
-	-1: true,
-	-2: true,
-	-3: true,
-	-4: true,
-	-5: true,
-	-6: true,
+var paymentResultCodeMap = map[int32]string{
+	0:  "PaymentResultCodePaymentSuccess",
+	-1: "PaymentResultCodePaymentMalformed",
+	-2: "PaymentResultCodePaymentUnderfunded",
+	-3: "PaymentResultCodePaymentNoDestination",
+	-4: "PaymentResultCodePaymentNoTrust",
+	-5: "PaymentResultCodePaymentNotAuthorized",
+	-6: "PaymentResultCodePaymentLineFull",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -2923,6 +2991,12 @@ var paymentResultCodeMap = map[int32]bool{
 func (e PaymentResultCode) ValidEnum(v int32) bool {
 	_, ok := paymentResultCodeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e PaymentResultCode) String() string {
+	name, _ := paymentResultCodeMap[int32(e)]
+	return name
 }
 
 // PaymentResult is an XDR Union defines as:
@@ -3045,16 +3119,16 @@ const (
 	PathPaymentResultCodePathPaymentOverSendmax                         = -8
 )
 
-var pathPaymentResultCodeMap = map[int32]bool{
-	0:  true,
-	-1: true,
-	-2: true,
-	-3: true,
-	-4: true,
-	-5: true,
-	-6: true,
-	-7: true,
-	-8: true,
+var pathPaymentResultCodeMap = map[int32]string{
+	0:  "PathPaymentResultCodePathPaymentSuccess",
+	-1: "PathPaymentResultCodePathPaymentMalformed",
+	-2: "PathPaymentResultCodePathPaymentUnderfunded",
+	-3: "PathPaymentResultCodePathPaymentNoDestination",
+	-4: "PathPaymentResultCodePathPaymentNoTrust",
+	-5: "PathPaymentResultCodePathPaymentNotAuthorized",
+	-6: "PathPaymentResultCodePathPaymentLineFull",
+	-7: "PathPaymentResultCodePathPaymentTooFewOffer",
+	-8: "PathPaymentResultCodePathPaymentOverSendmax",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -3062,6 +3136,12 @@ var pathPaymentResultCodeMap = map[int32]bool{
 func (e PathPaymentResultCode) ValidEnum(v int32) bool {
 	_, ok := pathPaymentResultCodeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e PathPaymentResultCode) String() string {
+	name, _ := pathPaymentResultCodeMap[int32(e)]
+	return name
 }
 
 // SimplePaymentResult is an XDR Struct defines as:
@@ -3263,17 +3343,17 @@ const (
 	CreateOfferResultCodeCreateOfferLowReserve                          = -9
 )
 
-var createOfferResultCodeMap = map[int32]bool{
-	0:  true,
-	-1: true,
-	-2: true,
-	-3: true,
-	-4: true,
-	-5: true,
-	-6: true,
-	-7: true,
-	-8: true,
-	-9: true,
+var createOfferResultCodeMap = map[int32]string{
+	0:  "CreateOfferResultCodeCreateOfferSuccess",
+	-1: "CreateOfferResultCodeCreateOfferMalformed",
+	-2: "CreateOfferResultCodeCreateOfferNoTrust",
+	-3: "CreateOfferResultCodeCreateOfferNotAuthorized",
+	-4: "CreateOfferResultCodeCreateOfferLineFull",
+	-5: "CreateOfferResultCodeCreateOfferUnderfunded",
+	-6: "CreateOfferResultCodeCreateOfferCrossSelf",
+	-7: "CreateOfferResultCodeCreateOfferNotFound",
+	-8: "CreateOfferResultCodeCreateOfferMismatch",
+	-9: "CreateOfferResultCodeCreateOfferLowReserve",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -3281,6 +3361,12 @@ var createOfferResultCodeMap = map[int32]bool{
 func (e CreateOfferResultCode) ValidEnum(v int32) bool {
 	_, ok := createOfferResultCodeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e CreateOfferResultCode) String() string {
+	name, _ := createOfferResultCodeMap[int32(e)]
+	return name
 }
 
 // CreateOfferEffect is an XDR Enum defines as:
@@ -3300,10 +3386,10 @@ const (
 	CreateOfferEffectCreateOfferDeleted                   = 2
 )
 
-var createOfferEffectMap = map[int32]bool{
-	0: true,
-	1: true,
-	2: true,
+var createOfferEffectMap = map[int32]string{
+	0: "CreateOfferEffectCreateOfferCreated",
+	1: "CreateOfferEffectCreateOfferUpdated",
+	2: "CreateOfferEffectCreateOfferDeleted",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -3311,6 +3397,12 @@ var createOfferEffectMap = map[int32]bool{
 func (e CreateOfferEffect) ValidEnum(v int32) bool {
 	_, ok := createOfferEffectMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e CreateOfferEffect) String() string {
+	name, _ := createOfferEffectMap[int32(e)]
+	return name
 }
 
 // CreateOfferSuccessResultOffer is an XDR NestedUnion defines as:
@@ -3585,13 +3677,13 @@ const (
 	SetOptionsResultCodeSetOptionsCantChange                            = -5
 )
 
-var setOptionsResultCodeMap = map[int32]bool{
-	0:  true,
-	-1: true,
-	-2: true,
-	-3: true,
-	-4: true,
-	-5: true,
+var setOptionsResultCodeMap = map[int32]string{
+	0:  "SetOptionsResultCodeSetOptionsSuccess",
+	-1: "SetOptionsResultCodeSetOptionsLowReserve",
+	-2: "SetOptionsResultCodeSetOptionsTooManySigner",
+	-3: "SetOptionsResultCodeSetOptionsBadFlag",
+	-4: "SetOptionsResultCodeSetOptionsInvalidInflation",
+	-5: "SetOptionsResultCodeSetOptionsCantChange",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -3599,6 +3691,12 @@ var setOptionsResultCodeMap = map[int32]bool{
 func (e SetOptionsResultCode) ValidEnum(v int32) bool {
 	_, ok := setOptionsResultCodeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e SetOptionsResultCode) String() string {
+	name, _ := setOptionsResultCodeMap[int32(e)]
+	return name
 }
 
 // SetOptionsResult is an XDR Union defines as:
@@ -3703,12 +3801,12 @@ const (
 	ChangeTrustResultCodeChangeTrustLowReserve                         = -4
 )
 
-var changeTrustResultCodeMap = map[int32]bool{
-	0:  true,
-	-1: true,
-	-2: true,
-	-3: true,
-	-4: true,
+var changeTrustResultCodeMap = map[int32]string{
+	0:  "ChangeTrustResultCodeChangeTrustSuccess",
+	-1: "ChangeTrustResultCodeChangeTrustMalformed",
+	-2: "ChangeTrustResultCodeChangeTrustNoIssuer",
+	-3: "ChangeTrustResultCodeChangeTrustInvalidLimit",
+	-4: "ChangeTrustResultCodeChangeTrustLowReserve",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -3716,6 +3814,12 @@ var changeTrustResultCodeMap = map[int32]bool{
 func (e ChangeTrustResultCode) ValidEnum(v int32) bool {
 	_, ok := changeTrustResultCodeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e ChangeTrustResultCode) String() string {
+	name, _ := changeTrustResultCodeMap[int32(e)]
+	return name
 }
 
 // ChangeTrustResult is an XDR Union defines as:
@@ -3813,12 +3917,12 @@ const (
 	AllowTrustResultCodeAllowTrustCantRevoke                            = -4
 )
 
-var allowTrustResultCodeMap = map[int32]bool{
-	0:  true,
-	-1: true,
-	-2: true,
-	-3: true,
-	-4: true,
+var allowTrustResultCodeMap = map[int32]string{
+	0:  "AllowTrustResultCodeAllowTrustSuccess",
+	-1: "AllowTrustResultCodeAllowTrustMalformed",
+	-2: "AllowTrustResultCodeAllowTrustNoTrustLine",
+	-3: "AllowTrustResultCodeAllowTrustTrustNotRequired",
+	-4: "AllowTrustResultCodeAllowTrustCantRevoke",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -3826,6 +3930,12 @@ var allowTrustResultCodeMap = map[int32]bool{
 func (e AllowTrustResultCode) ValidEnum(v int32) bool {
 	_, ok := allowTrustResultCodeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e AllowTrustResultCode) String() string {
+	name, _ := allowTrustResultCodeMap[int32(e)]
+	return name
 }
 
 // AllowTrustResult is an XDR Union defines as:
@@ -3922,12 +4032,12 @@ const (
 	AccountMergeResultCodeAccountMergeCreditHeld                        = -4
 )
 
-var accountMergeResultCodeMap = map[int32]bool{
-	0:  true,
-	-1: true,
-	-2: true,
-	-3: true,
-	-4: true,
+var accountMergeResultCodeMap = map[int32]string{
+	0:  "AccountMergeResultCodeAccountMergeSuccess",
+	-1: "AccountMergeResultCodeAccountMergeMalformed",
+	-2: "AccountMergeResultCodeAccountMergeNoAccount",
+	-3: "AccountMergeResultCodeAccountMergeHasCredit",
+	-4: "AccountMergeResultCodeAccountMergeCreditHeld",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -3935,6 +4045,12 @@ var accountMergeResultCodeMap = map[int32]bool{
 func (e AccountMergeResultCode) ValidEnum(v int32) bool {
 	_, ok := accountMergeResultCodeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e AccountMergeResultCode) String() string {
+	name, _ := accountMergeResultCodeMap[int32(e)]
+	return name
 }
 
 // AccountMergeResult is an XDR Union defines as:
@@ -4025,9 +4141,9 @@ const (
 	InflationResultCodeInflationNotTime                     = -1
 )
 
-var inflationResultCodeMap = map[int32]bool{
-	0:  true,
-	-1: true,
+var inflationResultCodeMap = map[int32]string{
+	0:  "InflationResultCodeInflationSuccess",
+	-1: "InflationResultCodeInflationNotTime",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -4035,6 +4151,12 @@ var inflationResultCodeMap = map[int32]bool{
 func (e InflationResultCode) ValidEnum(v int32) bool {
 	_, ok := inflationResultCodeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e InflationResultCode) String() string {
+	name, _ := inflationResultCodeMap[int32(e)]
+	return name
 }
 
 // InflationPayout is an XDR Struct defines as:
@@ -4142,10 +4264,10 @@ const (
 	OperationResultCodeOpNoAccount                     = -2
 )
 
-var operationResultCodeMap = map[int32]bool{
-	0:  true,
-	-1: true,
-	-2: true,
+var operationResultCodeMap = map[int32]string{
+	0:  "OperationResultCodeOpInner",
+	-1: "OperationResultCodeOpBadAuth",
+	-2: "OperationResultCodeOpNoAccount",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -4153,6 +4275,12 @@ var operationResultCodeMap = map[int32]bool{
 func (e OperationResultCode) ValidEnum(v int32) bool {
 	_, ok := operationResultCodeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e OperationResultCode) String() string {
+	name, _ := operationResultCodeMap[int32(e)]
+	return name
 }
 
 // OperationResultTr is an XDR NestedUnion defines as:
@@ -4672,19 +4800,19 @@ const (
 	TransactionResultCodeTxInternalError                             = -11
 )
 
-var transactionResultCodeMap = map[int32]bool{
-	0:   true,
-	-1:  true,
-	-2:  true,
-	-3:  true,
-	-4:  true,
-	-5:  true,
-	-6:  true,
-	-7:  true,
-	-8:  true,
-	-9:  true,
-	-10: true,
-	-11: true,
+var transactionResultCodeMap = map[int32]string{
+	0:   "TransactionResultCodeTxSuccess",
+	-1:  "TransactionResultCodeTxFailed",
+	-2:  "TransactionResultCodeTxTooEarly",
+	-3:  "TransactionResultCodeTxTooLate",
+	-4:  "TransactionResultCodeTxMissingOperation",
+	-5:  "TransactionResultCodeTxBadSeq",
+	-6:  "TransactionResultCodeTxBadAuth",
+	-7:  "TransactionResultCodeTxInsufficientBalance",
+	-8:  "TransactionResultCodeTxNoAccount",
+	-9:  "TransactionResultCodeTxInsufficientFee",
+	-10: "TransactionResultCodeTxBadAuthExtra",
+	-11: "TransactionResultCodeTxInternalError",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -4692,6 +4820,12 @@ var transactionResultCodeMap = map[int32]bool{
 func (e TransactionResultCode) ValidEnum(v int32) bool {
 	_, ok := transactionResultCodeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e TransactionResultCode) String() string {
+	name, _ := transactionResultCodeMap[int32(e)]
+	return name
 }
 
 // TransactionResultResult is an XDR NestedUnion defines as:
@@ -4931,9 +5065,9 @@ const (
 	CurrencyTypeCurrencyTypeAlphanum              = 1
 )
 
-var currencyTypeMap = map[int32]bool{
-	0: true,
-	1: true,
+var currencyTypeMap = map[int32]string{
+	0: "CurrencyTypeCurrencyTypeNative",
+	1: "CurrencyTypeCurrencyTypeAlphanum",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -4941,6 +5075,12 @@ var currencyTypeMap = map[int32]bool{
 func (e CurrencyType) ValidEnum(v int32) bool {
 	_, ok := currencyTypeMap[v]
 	return ok
+}
+
+// String returns the name of `e`
+func (e CurrencyType) String() string {
+	name, _ := currencyTypeMap[int32(e)]
+	return name
 }
 
 // CurrencyAlphaNum is an XDR NestedStruct defines as:
