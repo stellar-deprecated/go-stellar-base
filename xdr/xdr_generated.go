@@ -470,6 +470,37 @@ type TrustLineEntry struct {
 	Flags     Uint32
 }
 
+// OfferEntryFlags is an XDR Enum defines as:
+//
+//   enum OfferEntryFlags
+//    {
+//        // issuer has authorized account to perform transactions with its credit
+//        PASSIVE_FLAG = 1
+//    };
+//
+type OfferEntryFlags int32
+
+const (
+	OfferEntryFlagsPassiveFlag OfferEntryFlags = 1
+)
+
+var offerEntryFlagsMap = map[int32]string{
+	1: "OfferEntryFlagsPassiveFlag",
+}
+
+// ValidEnum validates a proposed value for this enum.  Implements
+// the Enum interface for OfferEntryFlags
+func (e OfferEntryFlags) ValidEnum(v int32) bool {
+	_, ok := offerEntryFlagsMap[v]
+	return ok
+}
+
+// String returns the name of `e`
+func (e OfferEntryFlags) String() string {
+	name, _ := offerEntryFlagsMap[int32(e)]
+	return name
+}
+
 // OfferEntry is an XDR Struct defines as:
 //
 //   struct OfferEntry
@@ -486,6 +517,7 @@ type TrustLineEntry struct {
 //            price is after fees
 //        */
 //        Price price;
+//        uint32 flags; // see OfferEntryFlags
 //    };
 //
 type OfferEntry struct {
@@ -495,6 +527,7 @@ type OfferEntry struct {
 	TakerPays Currency
 	Amount    Int64
 	Price     Price
+	Flags     Uint32
 }
 
 // LedgerEntry is an XDR Union defines as:
@@ -662,6 +695,9 @@ func (u LedgerEntry) GetOffer() (result OfferEntry, ok bool) {
 //
 //        int32 baseFee;     // base fee per operation in stroops
 //        int32 baseReserve; // account base reserve in stroops
+//
+//        Hash skipList[4];  // hashes of ledgers in the past. allows you to jump back
+//                           // in time without walking the chain back ledger by ledger
 //    };
 //
 type LedgerHeader struct {
@@ -677,6 +713,7 @@ type LedgerHeader struct {
 	IdPool             Uint64
 	BaseFee            Int32
 	BaseReserve        Int32
+	SkipList           [4]Hash
 }
 
 // LedgerKeyAccount is an XDR NestedStruct defines as:
@@ -1877,38 +1914,41 @@ type DecoratedSignature struct {
 //        CREATE_ACCOUNT = 0,
 //        PAYMENT = 1,
 //        PATH_PAYMENT = 2,
-//        CREATE_OFFER = 3,
-//        SET_OPTIONS = 4,
-//        CHANGE_TRUST = 5,
-//        ALLOW_TRUST = 6,
-//        ACCOUNT_MERGE = 7,
-//        INFLATION = 8
+//        MANAGE_OFFER = 3,
+//    	CREATE_PASSIVE_OFFER = 4,
+//        SET_OPTIONS = 5,
+//        CHANGE_TRUST = 6,
+//        ALLOW_TRUST = 7,
+//        ACCOUNT_MERGE = 8,
+//        INFLATION = 9
 //    };
 //
 type OperationType int32
 
 const (
-	OperationTypeCreateAccount OperationType = 0
-	OperationTypePayment                     = 1
-	OperationTypePathPayment                 = 2
-	OperationTypeCreateOffer                 = 3
-	OperationTypeSetOption                   = 4
-	OperationTypeChangeTrust                 = 5
-	OperationTypeAllowTrust                  = 6
-	OperationTypeAccountMerge                = 7
-	OperationTypeInflation                   = 8
+	OperationTypeCreateAccount      OperationType = 0
+	OperationTypePayment                          = 1
+	OperationTypePathPayment                      = 2
+	OperationTypeManageOffer                      = 3
+	OperationTypeCreatePassiveOffer               = 4
+	OperationTypeSetOption                        = 5
+	OperationTypeChangeTrust                      = 6
+	OperationTypeAllowTrust                       = 7
+	OperationTypeAccountMerge                     = 8
+	OperationTypeInflation                        = 9
 )
 
 var operationTypeMap = map[int32]string{
 	0: "OperationTypeCreateAccount",
 	1: "OperationTypePayment",
 	2: "OperationTypePathPayment",
-	3: "OperationTypeCreateOffer",
-	4: "OperationTypeSetOption",
-	5: "OperationTypeChangeTrust",
-	6: "OperationTypeAllowTrust",
-	7: "OperationTypeAccountMerge",
-	8: "OperationTypeInflation",
+	3: "OperationTypeManageOffer",
+	4: "OperationTypeCreatePassiveOffer",
+	5: "OperationTypeSetOption",
+	6: "OperationTypeChangeTrust",
+	7: "OperationTypeAllowTrust",
+	8: "OperationTypeAccountMerge",
+	9: "OperationTypeInflation",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -1977,9 +2017,9 @@ type PathPaymentOp struct {
 	Path         []Currency
 }
 
-// CreateOfferOp is an XDR Struct defines as:
+// ManageOfferOp is an XDR Struct defines as:
 //
-//   struct CreateOfferOp
+//   struct ManageOfferOp
 //    {
 //        Currency takerGets;
 //        Currency takerPays;
@@ -1990,12 +2030,29 @@ type PathPaymentOp struct {
 //        uint64 offerID;
 //    };
 //
-type CreateOfferOp struct {
+type ManageOfferOp struct {
 	TakerGets Currency
 	TakerPays Currency
 	Amount    Int64
 	Price     Price
 	OfferId   Uint64
+}
+
+// CreatePassiveOfferOp is an XDR Struct defines as:
+//
+//   struct CreatePassiveOfferOp
+//    {
+//        Currency takerGets;
+//        Currency takerPays;
+//        int64 amount; // amount taker gets. if set to 0, delete the offer
+//        Price price;  // =takerPaysAmount/takerGetsAmount
+//    };
+//
+type CreatePassiveOfferOp struct {
+	TakerGets Currency
+	TakerPays Currency
+	Amount    Int64
+	Price     Price
 }
 
 // SetOptionsOp is an XDR Struct defines as:
@@ -2141,8 +2198,10 @@ type AllowTrustOp struct {
 //            PaymentOp paymentOp;
 //        case PATH_PAYMENT:
 //            PathPaymentOp pathPaymentOp;
-//        case CREATE_OFFER:
-//            CreateOfferOp createOfferOp;
+//        case MANAGE_OFFER:
+//            ManageOfferOp manageOfferOp;
+//    	case CREATE_PASSIVE_OFFER:
+//            CreatePassiveOfferOp createPassiveOfferOp;
 //        case SET_OPTIONS:
 //            SetOptionsOp setOptionsOp;
 //        case CHANGE_TRUST:
@@ -2156,15 +2215,16 @@ type AllowTrustOp struct {
 //        }
 //
 type OperationBody struct {
-	Type            OperationType
-	CreateAccountOp *CreateAccountOp
-	PaymentOp       *PaymentOp
-	PathPaymentOp   *PathPaymentOp
-	CreateOfferOp   *CreateOfferOp
-	SetOptionsOp    *SetOptionsOp
-	ChangeTrustOp   *ChangeTrustOp
-	AllowTrustOp    *AllowTrustOp
-	Destination     *Uint256
+	Type                 OperationType
+	CreateAccountOp      *CreateAccountOp
+	PaymentOp            *PaymentOp
+	PathPaymentOp        *PathPaymentOp
+	ManageOfferOp        *ManageOfferOp
+	CreatePassiveOfferOp *CreatePassiveOfferOp
+	SetOptionsOp         *SetOptionsOp
+	ChangeTrustOp        *ChangeTrustOp
+	AllowTrustOp         *AllowTrustOp
+	Destination          *Uint256
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -2183,8 +2243,10 @@ func (u OperationBody) ArmForSwitch(sw int32) (string, bool) {
 		return "PaymentOp", true
 	case OperationTypePathPayment:
 		return "PathPaymentOp", true
-	case OperationTypeCreateOffer:
-		return "CreateOfferOp", true
+	case OperationTypeManageOffer:
+		return "ManageOfferOp", true
+	case OperationTypeCreatePassiveOffer:
+		return "CreatePassiveOfferOp", true
 	case OperationTypeSetOption:
 		return "SetOptionsOp", true
 	case OperationTypeChangeTrust:
@@ -2227,12 +2289,21 @@ func NewOperationBodyPathPayment(val PathPaymentOp) OperationBody {
 	}
 }
 
-// NewOperationBodyCreateOffer creates a new  OperationBody, initialized with
-// OperationTypeCreateOffer as the disciminant and the provided val
-func NewOperationBodyCreateOffer(val CreateOfferOp) OperationBody {
+// NewOperationBodyManageOffer creates a new  OperationBody, initialized with
+// OperationTypeManageOffer as the disciminant and the provided val
+func NewOperationBodyManageOffer(val ManageOfferOp) OperationBody {
 	return OperationBody{
-		Type:          OperationTypeCreateOffer,
-		CreateOfferOp: &val,
+		Type:          OperationTypeManageOffer,
+		ManageOfferOp: &val,
+	}
+}
+
+// NewOperationBodyCreatePassiveOffer creates a new  OperationBody, initialized with
+// OperationTypeCreatePassiveOffer as the disciminant and the provided val
+func NewOperationBodyCreatePassiveOffer(val CreatePassiveOfferOp) OperationBody {
+	return OperationBody{
+		Type:                 OperationTypeCreatePassiveOffer,
+		CreatePassiveOfferOp: &val,
 	}
 }
 
@@ -2355,25 +2426,50 @@ func (u OperationBody) GetPathPaymentOp() (result PathPaymentOp, ok bool) {
 	return
 }
 
-// MustCreateOfferOp retrieves the CreateOfferOp value from the union,
+// MustManageOfferOp retrieves the ManageOfferOp value from the union,
 // panicing if the value is not set.
-func (u OperationBody) MustCreateOfferOp() CreateOfferOp {
-	val, ok := u.GetCreateOfferOp()
+func (u OperationBody) MustManageOfferOp() ManageOfferOp {
+	val, ok := u.GetManageOfferOp()
 
 	if !ok {
-		panic("arm CreateOfferOp is not set")
+		panic("arm ManageOfferOp is not set")
 	}
 
 	return val
 }
 
-// GetCreateOfferOp retrieves the CreateOfferOp value from the union,
+// GetManageOfferOp retrieves the ManageOfferOp value from the union,
 // returning ok if the union's switch indicated the value is valid.
-func (u OperationBody) GetCreateOfferOp() (result CreateOfferOp, ok bool) {
+func (u OperationBody) GetManageOfferOp() (result ManageOfferOp, ok bool) {
 	armName, _ := u.ArmForSwitch(int32(u.Type))
 
-	if armName == "CreateOfferOp" {
-		result = *u.CreateOfferOp
+	if armName == "ManageOfferOp" {
+		result = *u.ManageOfferOp
+		ok = true
+	}
+
+	return
+}
+
+// MustCreatePassiveOfferOp retrieves the CreatePassiveOfferOp value from the union,
+// panicing if the value is not set.
+func (u OperationBody) MustCreatePassiveOfferOp() CreatePassiveOfferOp {
+	val, ok := u.GetCreatePassiveOfferOp()
+
+	if !ok {
+		panic("arm CreatePassiveOfferOp is not set")
+	}
+
+	return val
+}
+
+// GetCreatePassiveOfferOp retrieves the CreatePassiveOfferOp value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u OperationBody) GetCreatePassiveOfferOp() (result CreatePassiveOfferOp, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "CreatePassiveOfferOp" {
+		result = *u.CreatePassiveOfferOp
 		ok = true
 	}
 
@@ -2497,8 +2593,10 @@ func (u OperationBody) GetDestination() (result Uint256, ok bool) {
 //            PaymentOp paymentOp;
 //        case PATH_PAYMENT:
 //            PathPaymentOp pathPaymentOp;
-//        case CREATE_OFFER:
-//            CreateOfferOp createOfferOp;
+//        case MANAGE_OFFER:
+//            ManageOfferOp manageOfferOp;
+//    	case CREATE_PASSIVE_OFFER:
+//            CreatePassiveOfferOp createPassiveOfferOp;
 //        case SET_OPTIONS:
 //            SetOptionsOp setOptionsOp;
 //        case CHANGE_TRUST:
@@ -3306,169 +3404,169 @@ func (u PathPaymentResult) GetSuccess() (result PathPaymentResultSuccess, ok boo
 	return
 }
 
-// CreateOfferResultCode is an XDR Enum defines as:
+// ManageOfferResultCode is an XDR Enum defines as:
 //
-//   enum CreateOfferResultCode
+//   enum ManageOfferResultCode
 //    {
 //        // codes considered as "success" for the operation
-//        CREATE_OFFER_SUCCESS = 0,
+//        MANAGE_OFFER_SUCCESS = 0,
 //
 //        // codes considered as "failure" for the operation
-//        CREATE_OFFER_MALFORMED = -1,      // generated offer would be invalid
-//        CREATE_OFFER_NO_TRUST = -2,       // can't hold what it's buying
-//        CREATE_OFFER_NOT_AUTHORIZED = -3, // not authorized to sell or buy
-//        CREATE_OFFER_LINE_FULL = -4,      // can't receive more of what it's buying
-//        CREATE_OFFER_UNDERFUNDED = -5,    // doesn't hold what it's trying to sell
-//        CREATE_OFFER_CROSS_SELF = -6,     // would cross an offer from the same user
+//        MANAGE_OFFER_MALFORMED = -1,      // generated offer would be invalid
+//        MANAGE_OFFER_NO_TRUST = -2,       // can't hold what it's buying
+//        MANAGE_OFFER_NOT_AUTHORIZED = -3, // not authorized to sell or buy
+//        MANAGE_OFFER_LINE_FULL = -4,      // can't receive more of what it's buying
+//        MANAGE_OFFER_UNDERFUNDED = -5,    // doesn't hold what it's trying to sell
+//        MANAGE_OFFER_CROSS_SELF = -6,     // would cross an offer from the same user
 //
 //        // update errors
-//        CREATE_OFFER_NOT_FOUND = -7, // offerID does not match an existing offer
-//        CREATE_OFFER_MISMATCH = -8,  // currencies don't match offer
+//        MANAGE_OFFER_NOT_FOUND = -7, // offerID does not match an existing offer
+//        MANAGE_OFFER_MISMATCH = -8,  // currencies don't match offer
 //
-//        CREATE_OFFER_LOW_RESERVE = -9 // not enough funds to create a new Offer
+//        MANAGE_OFFER_LOW_RESERVE = -9 // not enough funds to create a new Offer
 //    };
 //
-type CreateOfferResultCode int32
+type ManageOfferResultCode int32
 
 const (
-	CreateOfferResultCodeCreateOfferSuccess       CreateOfferResultCode = 0
-	CreateOfferResultCodeCreateOfferMalformed                           = -1
-	CreateOfferResultCodeCreateOfferNoTrust                             = -2
-	CreateOfferResultCodeCreateOfferNotAuthorized                       = -3
-	CreateOfferResultCodeCreateOfferLineFull                            = -4
-	CreateOfferResultCodeCreateOfferUnderfunded                         = -5
-	CreateOfferResultCodeCreateOfferCrossSelf                           = -6
-	CreateOfferResultCodeCreateOfferNotFound                            = -7
-	CreateOfferResultCodeCreateOfferMismatch                            = -8
-	CreateOfferResultCodeCreateOfferLowReserve                          = -9
+	ManageOfferResultCodeManageOfferSuccess       ManageOfferResultCode = 0
+	ManageOfferResultCodeManageOfferMalformed                           = -1
+	ManageOfferResultCodeManageOfferNoTrust                             = -2
+	ManageOfferResultCodeManageOfferNotAuthorized                       = -3
+	ManageOfferResultCodeManageOfferLineFull                            = -4
+	ManageOfferResultCodeManageOfferUnderfunded                         = -5
+	ManageOfferResultCodeManageOfferCrossSelf                           = -6
+	ManageOfferResultCodeManageOfferNotFound                            = -7
+	ManageOfferResultCodeManageOfferMismatch                            = -8
+	ManageOfferResultCodeManageOfferLowReserve                          = -9
 )
 
-var createOfferResultCodeMap = map[int32]string{
-	0:  "CreateOfferResultCodeCreateOfferSuccess",
-	-1: "CreateOfferResultCodeCreateOfferMalformed",
-	-2: "CreateOfferResultCodeCreateOfferNoTrust",
-	-3: "CreateOfferResultCodeCreateOfferNotAuthorized",
-	-4: "CreateOfferResultCodeCreateOfferLineFull",
-	-5: "CreateOfferResultCodeCreateOfferUnderfunded",
-	-6: "CreateOfferResultCodeCreateOfferCrossSelf",
-	-7: "CreateOfferResultCodeCreateOfferNotFound",
-	-8: "CreateOfferResultCodeCreateOfferMismatch",
-	-9: "CreateOfferResultCodeCreateOfferLowReserve",
+var manageOfferResultCodeMap = map[int32]string{
+	0:  "ManageOfferResultCodeManageOfferSuccess",
+	-1: "ManageOfferResultCodeManageOfferMalformed",
+	-2: "ManageOfferResultCodeManageOfferNoTrust",
+	-3: "ManageOfferResultCodeManageOfferNotAuthorized",
+	-4: "ManageOfferResultCodeManageOfferLineFull",
+	-5: "ManageOfferResultCodeManageOfferUnderfunded",
+	-6: "ManageOfferResultCodeManageOfferCrossSelf",
+	-7: "ManageOfferResultCodeManageOfferNotFound",
+	-8: "ManageOfferResultCodeManageOfferMismatch",
+	-9: "ManageOfferResultCodeManageOfferLowReserve",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
-// the Enum interface for CreateOfferResultCode
-func (e CreateOfferResultCode) ValidEnum(v int32) bool {
-	_, ok := createOfferResultCodeMap[v]
+// the Enum interface for ManageOfferResultCode
+func (e ManageOfferResultCode) ValidEnum(v int32) bool {
+	_, ok := manageOfferResultCodeMap[v]
 	return ok
 }
 
 // String returns the name of `e`
-func (e CreateOfferResultCode) String() string {
-	name, _ := createOfferResultCodeMap[int32(e)]
+func (e ManageOfferResultCode) String() string {
+	name, _ := manageOfferResultCodeMap[int32(e)]
 	return name
 }
 
-// CreateOfferEffect is an XDR Enum defines as:
+// ManageOfferEffect is an XDR Enum defines as:
 //
-//   enum CreateOfferEffect
+//   enum ManageOfferEffect
 //    {
-//        CREATE_OFFER_CREATED = 0,
-//        CREATE_OFFER_UPDATED = 1,
-//        CREATE_OFFER_DELETED = 2
+//        MANAGE_OFFER_CREATED = 0,
+//        MANAGE_OFFER_UPDATED = 1,
+//        MANAGE_OFFER_DELETED = 2
 //    };
 //
-type CreateOfferEffect int32
+type ManageOfferEffect int32
 
 const (
-	CreateOfferEffectCreateOfferCreated CreateOfferEffect = 0
-	CreateOfferEffectCreateOfferUpdated                   = 1
-	CreateOfferEffectCreateOfferDeleted                   = 2
+	ManageOfferEffectManageOfferCreated ManageOfferEffect = 0
+	ManageOfferEffectManageOfferUpdated                   = 1
+	ManageOfferEffectManageOfferDeleted                   = 2
 )
 
-var createOfferEffectMap = map[int32]string{
-	0: "CreateOfferEffectCreateOfferCreated",
-	1: "CreateOfferEffectCreateOfferUpdated",
-	2: "CreateOfferEffectCreateOfferDeleted",
+var manageOfferEffectMap = map[int32]string{
+	0: "ManageOfferEffectManageOfferCreated",
+	1: "ManageOfferEffectManageOfferUpdated",
+	2: "ManageOfferEffectManageOfferDeleted",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
-// the Enum interface for CreateOfferEffect
-func (e CreateOfferEffect) ValidEnum(v int32) bool {
-	_, ok := createOfferEffectMap[v]
+// the Enum interface for ManageOfferEffect
+func (e ManageOfferEffect) ValidEnum(v int32) bool {
+	_, ok := manageOfferEffectMap[v]
 	return ok
 }
 
 // String returns the name of `e`
-func (e CreateOfferEffect) String() string {
-	name, _ := createOfferEffectMap[int32(e)]
+func (e ManageOfferEffect) String() string {
+	name, _ := manageOfferEffectMap[int32(e)]
 	return name
 }
 
-// CreateOfferSuccessResultOffer is an XDR NestedUnion defines as:
+// ManageOfferSuccessResultOffer is an XDR NestedUnion defines as:
 //
-//   union switch (CreateOfferEffect effect)
+//   union switch (ManageOfferEffect effect)
 //        {
-//        case CREATE_OFFER_CREATED:
-//        case CREATE_OFFER_UPDATED:
+//        case MANAGE_OFFER_CREATED:
+//        case MANAGE_OFFER_UPDATED:
 //            OfferEntry offer;
 //        default:
 //            void;
 //        }
 //
-type CreateOfferSuccessResultOffer struct {
-	Effect CreateOfferEffect
+type ManageOfferSuccessResultOffer struct {
+	Effect ManageOfferEffect
 	Offer  *OfferEntry
 }
 
 // SwitchFieldName returns the field name in which this union's
 // discriminant is stored
-func (u CreateOfferSuccessResultOffer) SwitchFieldName() string {
+func (u ManageOfferSuccessResultOffer) SwitchFieldName() string {
 	return "Effect"
 }
 
 // ArmForSwitch returns which field name should be used for storing
-// the value for an instance of CreateOfferSuccessResultOffer
-func (u CreateOfferSuccessResultOffer) ArmForSwitch(sw int32) (string, bool) {
-	switch CreateOfferEffect(sw) {
-	case CreateOfferEffectCreateOfferCreated:
+// the value for an instance of ManageOfferSuccessResultOffer
+func (u ManageOfferSuccessResultOffer) ArmForSwitch(sw int32) (string, bool) {
+	switch ManageOfferEffect(sw) {
+	case ManageOfferEffectManageOfferCreated:
 		return "Offer", true
-	case CreateOfferEffectCreateOfferUpdated:
+	case ManageOfferEffectManageOfferUpdated:
 		return "Offer", true
 	default:
 		return "", true
 	}
 }
 
-// NewCreateOfferSuccessResultOfferCreateOfferCreated creates a new  CreateOfferSuccessResultOffer, initialized with
-// CreateOfferEffectCreateOfferCreated as the disciminant and the provided val
-func NewCreateOfferSuccessResultOfferCreateOfferCreated(val OfferEntry) CreateOfferSuccessResultOffer {
-	return CreateOfferSuccessResultOffer{
-		Effect: CreateOfferEffectCreateOfferCreated,
+// NewManageOfferSuccessResultOfferManageOfferCreated creates a new  ManageOfferSuccessResultOffer, initialized with
+// ManageOfferEffectManageOfferCreated as the disciminant and the provided val
+func NewManageOfferSuccessResultOfferManageOfferCreated(val OfferEntry) ManageOfferSuccessResultOffer {
+	return ManageOfferSuccessResultOffer{
+		Effect: ManageOfferEffectManageOfferCreated,
 		Offer:  &val,
 	}
 }
 
-// NewCreateOfferSuccessResultOfferCreateOfferUpdated creates a new  CreateOfferSuccessResultOffer, initialized with
-// CreateOfferEffectCreateOfferUpdated as the disciminant and the provided val
-func NewCreateOfferSuccessResultOfferCreateOfferUpdated(val OfferEntry) CreateOfferSuccessResultOffer {
-	return CreateOfferSuccessResultOffer{
-		Effect: CreateOfferEffectCreateOfferUpdated,
+// NewManageOfferSuccessResultOfferManageOfferUpdated creates a new  ManageOfferSuccessResultOffer, initialized with
+// ManageOfferEffectManageOfferUpdated as the disciminant and the provided val
+func NewManageOfferSuccessResultOfferManageOfferUpdated(val OfferEntry) ManageOfferSuccessResultOffer {
+	return ManageOfferSuccessResultOffer{
+		Effect: ManageOfferEffectManageOfferUpdated,
 		Offer:  &val,
 	}
 }
 
-// NewCreateOfferSuccessResultOfferCreateOfferDeleted creates a new  CreateOfferSuccessResultOffer, initialized with
-// CreateOfferEffectCreateOfferDeleted as the disciminant and the provided val
-func NewCreateOfferSuccessResultOfferCreateOfferDeleted() CreateOfferSuccessResultOffer {
-	return CreateOfferSuccessResultOffer{
-		Effect: CreateOfferEffectCreateOfferDeleted,
+// NewManageOfferSuccessResultOfferManageOfferDeleted creates a new  ManageOfferSuccessResultOffer, initialized with
+// ManageOfferEffectManageOfferDeleted as the disciminant and the provided val
+func NewManageOfferSuccessResultOfferManageOfferDeleted() ManageOfferSuccessResultOffer {
+	return ManageOfferSuccessResultOffer{
+		Effect: ManageOfferEffectManageOfferDeleted,
 	}
 }
 
 // MustOffer retrieves the Offer value from the union,
 // panicing if the value is not set.
-func (u CreateOfferSuccessResultOffer) MustOffer() OfferEntry {
+func (u ManageOfferSuccessResultOffer) MustOffer() OfferEntry {
 	val, ok := u.GetOffer()
 
 	if !ok {
@@ -3480,7 +3578,7 @@ func (u CreateOfferSuccessResultOffer) MustOffer() OfferEntry {
 
 // GetOffer retrieves the Offer value from the union,
 // returning ok if the union's switch indicated the value is valid.
-func (u CreateOfferSuccessResultOffer) GetOffer() (result OfferEntry, ok bool) {
+func (u ManageOfferSuccessResultOffer) GetOffer() (result OfferEntry, ok bool) {
 	armName, _ := u.ArmForSwitch(int32(u.Effect))
 
 	if armName == "Offer" {
@@ -3491,17 +3589,17 @@ func (u CreateOfferSuccessResultOffer) GetOffer() (result OfferEntry, ok bool) {
 	return
 }
 
-// CreateOfferSuccessResult is an XDR Struct defines as:
+// ManageOfferSuccessResult is an XDR Struct defines as:
 //
-//   struct CreateOfferSuccessResult
+//   struct ManageOfferSuccessResult
 //    {
 //        // offers that got claimed while creating this offer
 //        ClaimOfferAtom offersClaimed<>;
 //
-//        union switch (CreateOfferEffect effect)
+//        union switch (ManageOfferEffect effect)
 //        {
-//        case CREATE_OFFER_CREATED:
-//        case CREATE_OFFER_UPDATED:
+//        case MANAGE_OFFER_CREATED:
+//        case MANAGE_OFFER_UPDATED:
 //            OfferEntry offer;
 //        default:
 //            void;
@@ -3509,127 +3607,127 @@ func (u CreateOfferSuccessResultOffer) GetOffer() (result OfferEntry, ok bool) {
 //        offer;
 //    };
 //
-type CreateOfferSuccessResult struct {
+type ManageOfferSuccessResult struct {
 	OffersClaimed []ClaimOfferAtom
-	Offer         CreateOfferSuccessResultOffer
+	Offer         ManageOfferSuccessResultOffer
 }
 
-// CreateOfferResult is an XDR Union defines as:
+// ManageOfferResult is an XDR Union defines as:
 //
-//   union CreateOfferResult switch (CreateOfferResultCode code)
+//   union ManageOfferResult switch (ManageOfferResultCode code)
 //    {
-//    case CREATE_OFFER_SUCCESS:
-//        CreateOfferSuccessResult success;
+//    case MANAGE_OFFER_SUCCESS:
+//        ManageOfferSuccessResult success;
 //    default:
 //        void;
 //    };
 //
-type CreateOfferResult struct {
-	Code    CreateOfferResultCode
-	Success *CreateOfferSuccessResult
+type ManageOfferResult struct {
+	Code    ManageOfferResultCode
+	Success *ManageOfferSuccessResult
 }
 
 // SwitchFieldName returns the field name in which this union's
 // discriminant is stored
-func (u CreateOfferResult) SwitchFieldName() string {
+func (u ManageOfferResult) SwitchFieldName() string {
 	return "Code"
 }
 
 // ArmForSwitch returns which field name should be used for storing
-// the value for an instance of CreateOfferResult
-func (u CreateOfferResult) ArmForSwitch(sw int32) (string, bool) {
-	switch CreateOfferResultCode(sw) {
-	case CreateOfferResultCodeCreateOfferSuccess:
+// the value for an instance of ManageOfferResult
+func (u ManageOfferResult) ArmForSwitch(sw int32) (string, bool) {
+	switch ManageOfferResultCode(sw) {
+	case ManageOfferResultCodeManageOfferSuccess:
 		return "Success", true
 	default:
 		return "", true
 	}
 }
 
-// NewCreateOfferResultCreateOfferSuccess creates a new  CreateOfferResult, initialized with
-// CreateOfferResultCodeCreateOfferSuccess as the disciminant and the provided val
-func NewCreateOfferResultCreateOfferSuccess(val CreateOfferSuccessResult) CreateOfferResult {
-	return CreateOfferResult{
-		Code:    CreateOfferResultCodeCreateOfferSuccess,
+// NewManageOfferResultManageOfferSuccess creates a new  ManageOfferResult, initialized with
+// ManageOfferResultCodeManageOfferSuccess as the disciminant and the provided val
+func NewManageOfferResultManageOfferSuccess(val ManageOfferSuccessResult) ManageOfferResult {
+	return ManageOfferResult{
+		Code:    ManageOfferResultCodeManageOfferSuccess,
 		Success: &val,
 	}
 }
 
-// NewCreateOfferResultCreateOfferMalformed creates a new  CreateOfferResult, initialized with
-// CreateOfferResultCodeCreateOfferMalformed as the disciminant and the provided val
-func NewCreateOfferResultCreateOfferMalformed() CreateOfferResult {
-	return CreateOfferResult{
-		Code: CreateOfferResultCodeCreateOfferMalformed,
+// NewManageOfferResultManageOfferMalformed creates a new  ManageOfferResult, initialized with
+// ManageOfferResultCodeManageOfferMalformed as the disciminant and the provided val
+func NewManageOfferResultManageOfferMalformed() ManageOfferResult {
+	return ManageOfferResult{
+		Code: ManageOfferResultCodeManageOfferMalformed,
 	}
 }
 
-// NewCreateOfferResultCreateOfferNoTrust creates a new  CreateOfferResult, initialized with
-// CreateOfferResultCodeCreateOfferNoTrust as the disciminant and the provided val
-func NewCreateOfferResultCreateOfferNoTrust() CreateOfferResult {
-	return CreateOfferResult{
-		Code: CreateOfferResultCodeCreateOfferNoTrust,
+// NewManageOfferResultManageOfferNoTrust creates a new  ManageOfferResult, initialized with
+// ManageOfferResultCodeManageOfferNoTrust as the disciminant and the provided val
+func NewManageOfferResultManageOfferNoTrust() ManageOfferResult {
+	return ManageOfferResult{
+		Code: ManageOfferResultCodeManageOfferNoTrust,
 	}
 }
 
-// NewCreateOfferResultCreateOfferNotAuthorized creates a new  CreateOfferResult, initialized with
-// CreateOfferResultCodeCreateOfferNotAuthorized as the disciminant and the provided val
-func NewCreateOfferResultCreateOfferNotAuthorized() CreateOfferResult {
-	return CreateOfferResult{
-		Code: CreateOfferResultCodeCreateOfferNotAuthorized,
+// NewManageOfferResultManageOfferNotAuthorized creates a new  ManageOfferResult, initialized with
+// ManageOfferResultCodeManageOfferNotAuthorized as the disciminant and the provided val
+func NewManageOfferResultManageOfferNotAuthorized() ManageOfferResult {
+	return ManageOfferResult{
+		Code: ManageOfferResultCodeManageOfferNotAuthorized,
 	}
 }
 
-// NewCreateOfferResultCreateOfferLineFull creates a new  CreateOfferResult, initialized with
-// CreateOfferResultCodeCreateOfferLineFull as the disciminant and the provided val
-func NewCreateOfferResultCreateOfferLineFull() CreateOfferResult {
-	return CreateOfferResult{
-		Code: CreateOfferResultCodeCreateOfferLineFull,
+// NewManageOfferResultManageOfferLineFull creates a new  ManageOfferResult, initialized with
+// ManageOfferResultCodeManageOfferLineFull as the disciminant and the provided val
+func NewManageOfferResultManageOfferLineFull() ManageOfferResult {
+	return ManageOfferResult{
+		Code: ManageOfferResultCodeManageOfferLineFull,
 	}
 }
 
-// NewCreateOfferResultCreateOfferUnderfunded creates a new  CreateOfferResult, initialized with
-// CreateOfferResultCodeCreateOfferUnderfunded as the disciminant and the provided val
-func NewCreateOfferResultCreateOfferUnderfunded() CreateOfferResult {
-	return CreateOfferResult{
-		Code: CreateOfferResultCodeCreateOfferUnderfunded,
+// NewManageOfferResultManageOfferUnderfunded creates a new  ManageOfferResult, initialized with
+// ManageOfferResultCodeManageOfferUnderfunded as the disciminant and the provided val
+func NewManageOfferResultManageOfferUnderfunded() ManageOfferResult {
+	return ManageOfferResult{
+		Code: ManageOfferResultCodeManageOfferUnderfunded,
 	}
 }
 
-// NewCreateOfferResultCreateOfferCrossSelf creates a new  CreateOfferResult, initialized with
-// CreateOfferResultCodeCreateOfferCrossSelf as the disciminant and the provided val
-func NewCreateOfferResultCreateOfferCrossSelf() CreateOfferResult {
-	return CreateOfferResult{
-		Code: CreateOfferResultCodeCreateOfferCrossSelf,
+// NewManageOfferResultManageOfferCrossSelf creates a new  ManageOfferResult, initialized with
+// ManageOfferResultCodeManageOfferCrossSelf as the disciminant and the provided val
+func NewManageOfferResultManageOfferCrossSelf() ManageOfferResult {
+	return ManageOfferResult{
+		Code: ManageOfferResultCodeManageOfferCrossSelf,
 	}
 }
 
-// NewCreateOfferResultCreateOfferNotFound creates a new  CreateOfferResult, initialized with
-// CreateOfferResultCodeCreateOfferNotFound as the disciminant and the provided val
-func NewCreateOfferResultCreateOfferNotFound() CreateOfferResult {
-	return CreateOfferResult{
-		Code: CreateOfferResultCodeCreateOfferNotFound,
+// NewManageOfferResultManageOfferNotFound creates a new  ManageOfferResult, initialized with
+// ManageOfferResultCodeManageOfferNotFound as the disciminant and the provided val
+func NewManageOfferResultManageOfferNotFound() ManageOfferResult {
+	return ManageOfferResult{
+		Code: ManageOfferResultCodeManageOfferNotFound,
 	}
 }
 
-// NewCreateOfferResultCreateOfferMismatch creates a new  CreateOfferResult, initialized with
-// CreateOfferResultCodeCreateOfferMismatch as the disciminant and the provided val
-func NewCreateOfferResultCreateOfferMismatch() CreateOfferResult {
-	return CreateOfferResult{
-		Code: CreateOfferResultCodeCreateOfferMismatch,
+// NewManageOfferResultManageOfferMismatch creates a new  ManageOfferResult, initialized with
+// ManageOfferResultCodeManageOfferMismatch as the disciminant and the provided val
+func NewManageOfferResultManageOfferMismatch() ManageOfferResult {
+	return ManageOfferResult{
+		Code: ManageOfferResultCodeManageOfferMismatch,
 	}
 }
 
-// NewCreateOfferResultCreateOfferLowReserve creates a new  CreateOfferResult, initialized with
-// CreateOfferResultCodeCreateOfferLowReserve as the disciminant and the provided val
-func NewCreateOfferResultCreateOfferLowReserve() CreateOfferResult {
-	return CreateOfferResult{
-		Code: CreateOfferResultCodeCreateOfferLowReserve,
+// NewManageOfferResultManageOfferLowReserve creates a new  ManageOfferResult, initialized with
+// ManageOfferResultCodeManageOfferLowReserve as the disciminant and the provided val
+func NewManageOfferResultManageOfferLowReserve() ManageOfferResult {
+	return ManageOfferResult{
+		Code: ManageOfferResultCodeManageOfferLowReserve,
 	}
 }
 
 // MustSuccess retrieves the Success value from the union,
 // panicing if the value is not set.
-func (u CreateOfferResult) MustSuccess() CreateOfferSuccessResult {
+func (u ManageOfferResult) MustSuccess() ManageOfferSuccessResult {
 	val, ok := u.GetSuccess()
 
 	if !ok {
@@ -3641,7 +3739,7 @@ func (u CreateOfferResult) MustSuccess() CreateOfferSuccessResult {
 
 // GetSuccess retrieves the Success value from the union,
 // returning ok if the union's switch indicated the value is valid.
-func (u CreateOfferResult) GetSuccess() (result CreateOfferSuccessResult, ok bool) {
+func (u ManageOfferResult) GetSuccess() (result ManageOfferSuccessResult, ok bool) {
 	armName, _ := u.ArmForSwitch(int32(u.Code))
 
 	if armName == "Success" {
@@ -3663,7 +3761,8 @@ func (u CreateOfferResult) GetSuccess() (result CreateOfferSuccessResult, ok boo
 //        SET_OPTIONS_TOO_MANY_SIGNERS = -2, // max number of signers already reached
 //        SET_OPTIONS_BAD_FLAGS = -3,        // invalid combination of clear/set flags
 //        SET_OPTIONS_INVALID_INFLATION = -4, // inflation account does not exist
-//        SET_OPTIONS_CANT_CHANGE = -5        // can no longer change this option
+//        SET_OPTIONS_CANT_CHANGE = -5,       // can no longer change this option
+//        SET_OPTIONS_UNKNOWN_FLAG = -6		// can't set an unknown flag
 //    };
 //
 type SetOptionsResultCode int32
@@ -3675,6 +3774,7 @@ const (
 	SetOptionsResultCodeSetOptionsBadFlag                               = -3
 	SetOptionsResultCodeSetOptionsInvalidInflation                      = -4
 	SetOptionsResultCodeSetOptionsCantChange                            = -5
+	SetOptionsResultCodeSetOptionsUnknownFlag                           = -6
 )
 
 var setOptionsResultCodeMap = map[int32]string{
@@ -3684,6 +3784,7 @@ var setOptionsResultCodeMap = map[int32]string{
 	-3: "SetOptionsResultCodeSetOptionsBadFlag",
 	-4: "SetOptionsResultCodeSetOptionsInvalidInflation",
 	-5: "SetOptionsResultCodeSetOptionsCantChange",
+	-6: "SetOptionsResultCodeSetOptionsUnknownFlag",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -3775,6 +3876,14 @@ func NewSetOptionsResultSetOptionsInvalidInflation() SetOptionsResult {
 func NewSetOptionsResultSetOptionsCantChange() SetOptionsResult {
 	return SetOptionsResult{
 		Code: SetOptionsResultCodeSetOptionsCantChange,
+	}
+}
+
+// NewSetOptionsResultSetOptionsUnknownFlag creates a new  SetOptionsResult, initialized with
+// SetOptionsResultCodeSetOptionsUnknownFlag as the disciminant and the provided val
+func NewSetOptionsResultSetOptionsUnknownFlag() SetOptionsResult {
+	return SetOptionsResult{
+		Code: SetOptionsResultCodeSetOptionsUnknownFlag,
 	}
 }
 
@@ -3902,9 +4011,9 @@ func NewChangeTrustResultChangeTrustLowReserve() ChangeTrustResult {
 //        // codes considered as "failure" for the operation
 //        ALLOW_TRUST_MALFORMED = -1,     // currency is not CURRENCY_TYPE_ALPHANUM
 //        ALLOW_TRUST_NO_TRUST_LINE = -2, // trustor does not have a trustline
-//        ALLOW_TRUST_TRUST_NOT_REQUIRED =
-//            -3,                      // source account does not require trust
-//        ALLOW_TRUST_CANT_REVOKE = -4 // source account can't revoke trust
+//    									// source account does not require trust
+//        ALLOW_TRUST_TRUST_NOT_REQUIRED = -3,
+//        ALLOW_TRUST_CANT_REVOKE = -4    // source account can't revoke trust
 //    };
 //
 type AllowTrustResultCode int32
@@ -4293,8 +4402,10 @@ func (e OperationResultCode) String() string {
 //            PaymentResult paymentResult;
 //        case PATH_PAYMENT:
 //            PathPaymentResult pathPaymentResult;
-//        case CREATE_OFFER:
-//            CreateOfferResult createOfferResult;
+//        case MANAGE_OFFER:
+//            ManageOfferResult manageOfferResult;
+//        case CREATE_PASSIVE_OFFER:
+//            ManageOfferResult createPassiveOfferResult;
 //        case SET_OPTIONS:
 //            SetOptionsResult setOptionsResult;
 //        case CHANGE_TRUST:
@@ -4308,16 +4419,17 @@ func (e OperationResultCode) String() string {
 //        }
 //
 type OperationResultTr struct {
-	Type                OperationType
-	CreateAccountResult *CreateAccountResult
-	PaymentResult       *PaymentResult
-	PathPaymentResult   *PathPaymentResult
-	CreateOfferResult   *CreateOfferResult
-	SetOptionsResult    *SetOptionsResult
-	ChangeTrustResult   *ChangeTrustResult
-	AllowTrustResult    *AllowTrustResult
-	AccountMergeResult  *AccountMergeResult
-	InflationResult     *InflationResult
+	Type                     OperationType
+	CreateAccountResult      *CreateAccountResult
+	PaymentResult            *PaymentResult
+	PathPaymentResult        *PathPaymentResult
+	ManageOfferResult        *ManageOfferResult
+	CreatePassiveOfferResult *ManageOfferResult
+	SetOptionsResult         *SetOptionsResult
+	ChangeTrustResult        *ChangeTrustResult
+	AllowTrustResult         *AllowTrustResult
+	AccountMergeResult       *AccountMergeResult
+	InflationResult          *InflationResult
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -4336,8 +4448,10 @@ func (u OperationResultTr) ArmForSwitch(sw int32) (string, bool) {
 		return "PaymentResult", true
 	case OperationTypePathPayment:
 		return "PathPaymentResult", true
-	case OperationTypeCreateOffer:
-		return "CreateOfferResult", true
+	case OperationTypeManageOffer:
+		return "ManageOfferResult", true
+	case OperationTypeCreatePassiveOffer:
+		return "CreatePassiveOfferResult", true
 	case OperationTypeSetOption:
 		return "SetOptionsResult", true
 	case OperationTypeChangeTrust:
@@ -4380,12 +4494,21 @@ func NewOperationResultTrPathPayment(val PathPaymentResult) OperationResultTr {
 	}
 }
 
-// NewOperationResultTrCreateOffer creates a new  OperationResultTr, initialized with
-// OperationTypeCreateOffer as the disciminant and the provided val
-func NewOperationResultTrCreateOffer(val CreateOfferResult) OperationResultTr {
+// NewOperationResultTrManageOffer creates a new  OperationResultTr, initialized with
+// OperationTypeManageOffer as the disciminant and the provided val
+func NewOperationResultTrManageOffer(val ManageOfferResult) OperationResultTr {
 	return OperationResultTr{
-		Type:              OperationTypeCreateOffer,
-		CreateOfferResult: &val,
+		Type:              OperationTypeManageOffer,
+		ManageOfferResult: &val,
+	}
+}
+
+// NewOperationResultTrCreatePassiveOffer creates a new  OperationResultTr, initialized with
+// OperationTypeCreatePassiveOffer as the disciminant and the provided val
+func NewOperationResultTrCreatePassiveOffer(val ManageOfferResult) OperationResultTr {
+	return OperationResultTr{
+		Type: OperationTypeCreatePassiveOffer,
+		CreatePassiveOfferResult: &val,
 	}
 }
 
@@ -4509,25 +4632,50 @@ func (u OperationResultTr) GetPathPaymentResult() (result PathPaymentResult, ok 
 	return
 }
 
-// MustCreateOfferResult retrieves the CreateOfferResult value from the union,
+// MustManageOfferResult retrieves the ManageOfferResult value from the union,
 // panicing if the value is not set.
-func (u OperationResultTr) MustCreateOfferResult() CreateOfferResult {
-	val, ok := u.GetCreateOfferResult()
+func (u OperationResultTr) MustManageOfferResult() ManageOfferResult {
+	val, ok := u.GetManageOfferResult()
 
 	if !ok {
-		panic("arm CreateOfferResult is not set")
+		panic("arm ManageOfferResult is not set")
 	}
 
 	return val
 }
 
-// GetCreateOfferResult retrieves the CreateOfferResult value from the union,
+// GetManageOfferResult retrieves the ManageOfferResult value from the union,
 // returning ok if the union's switch indicated the value is valid.
-func (u OperationResultTr) GetCreateOfferResult() (result CreateOfferResult, ok bool) {
+func (u OperationResultTr) GetManageOfferResult() (result ManageOfferResult, ok bool) {
 	armName, _ := u.ArmForSwitch(int32(u.Type))
 
-	if armName == "CreateOfferResult" {
-		result = *u.CreateOfferResult
+	if armName == "ManageOfferResult" {
+		result = *u.ManageOfferResult
+		ok = true
+	}
+
+	return
+}
+
+// MustCreatePassiveOfferResult retrieves the CreatePassiveOfferResult value from the union,
+// panicing if the value is not set.
+func (u OperationResultTr) MustCreatePassiveOfferResult() ManageOfferResult {
+	val, ok := u.GetCreatePassiveOfferResult()
+
+	if !ok {
+		panic("arm CreatePassiveOfferResult is not set")
+	}
+
+	return val
+}
+
+// GetCreatePassiveOfferResult retrieves the CreatePassiveOfferResult value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u OperationResultTr) GetCreatePassiveOfferResult() (result ManageOfferResult, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "CreatePassiveOfferResult" {
+		result = *u.CreatePassiveOfferResult
 		ok = true
 	}
 
@@ -4672,8 +4820,10 @@ func (u OperationResultTr) GetInflationResult() (result InflationResult, ok bool
 //            PaymentResult paymentResult;
 //        case PATH_PAYMENT:
 //            PathPaymentResult pathPaymentResult;
-//        case CREATE_OFFER:
-//            CreateOfferResult createOfferResult;
+//        case MANAGE_OFFER:
+//            ManageOfferResult manageOfferResult;
+//        case CREATE_PASSIVE_OFFER:
+//            ManageOfferResult createPassiveOfferResult;
 //        case SET_OPTIONS:
 //            SetOptionsResult setOptionsResult;
 //        case CHANGE_TRUST:
