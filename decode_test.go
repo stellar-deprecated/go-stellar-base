@@ -22,7 +22,7 @@ func TestDecode(t *testing.T) {
 
 		r = bytes.NewReader([]byte{0x00, 0x00, 0x00, 0x08})
 		xdr.Unmarshal(r, &op)
-		So(op, ShouldEqual, xdr.OperationTypeInflation)
+		So(op, ShouldEqual, xdr.OperationTypeAccountMerge)
 
 		// works for negative values
 		var trc xdr.TransactionResultCode
