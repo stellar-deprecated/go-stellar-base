@@ -5,7 +5,6 @@ import (
 	"encoding/base32"
 	"encoding/binary"
 	"fmt"
-	"log"
 
 	"github.com/stellar/go-stellar-base/crc16"
 )
@@ -43,11 +42,6 @@ func Decode(expected VersionByte, src string) ([]byte, error) {
 	vp := raw[0 : len(raw)-2]
 	payload := raw[1 : len(raw)-2]
 	checksum := raw[len(raw)-2:]
-
-	log.Println(raw)
-	log.Println(payload)
-	log.Println(version)
-	log.Println(checksum)
 
 	// ensure version byte is expected
 	if version != expected {
