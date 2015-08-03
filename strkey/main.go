@@ -67,6 +67,15 @@ func Decode(expected VersionByte, src string) ([]byte, error) {
 	return payload, nil
 }
 
+// MustDecode is like Decode, but panics on error
+func MustDecode(expected VersionByte, src string) []byte {
+	d, err := Decode(expected, src)
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
+
 // Encode encodes the provided data to a StrKey, using the provided version
 // byte.
 func Encode(version VersionByte, src []byte) (string, error) {
@@ -94,6 +103,15 @@ func Encode(version VersionByte, src []byte) (string, error) {
 
 	result := base32.StdEncoding.EncodeToString(raw.Bytes())
 	return result, nil
+}
+
+// MustEncode is like Encode, but panics on error
+func MustEncode(version VersionByte, src []byte) string {
+	e, err := Encode(version, src)
+	if err != nil {
+		panic(err)
+	}
+	return e
 }
 
 // checkValidVersionByte returns an error if the provided value
