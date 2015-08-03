@@ -73,7 +73,7 @@ func (m Sign) MutateTransactionEnvelope(txe *xdr.TransactionEnvelope) error {
 
 	ds := xdr.DecoratedSignature{
 		Hint:      m.Key.Hint(),
-		Signature: xdr.Uint512(sig),
+		Signature: xdr.Signature(sig[:]),
 	}
 
 	txe.Signatures = append(txe.Signatures, ds)
