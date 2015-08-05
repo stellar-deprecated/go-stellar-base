@@ -182,11 +182,35 @@ type SignatureHint [4]byte
 //
 type NodeId PublicKey
 
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u NodeId) SwitchFieldName() string {
+	return PublicKey(u).SwitchFieldName()
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of PublicKey
+func (u NodeId) ArmForSwitch(sw int32) (string, bool) {
+	return PublicKey(u).ArmForSwitch(sw)
+}
+
 // AccountId is an XDR Typedef defines as:
 //
 //   typedef PublicKey AccountID;
 //
 type AccountId PublicKey
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u AccountId) SwitchFieldName() string {
+	return PublicKey(u).SwitchFieldName()
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of PublicKey
+func (u AccountId) ArmForSwitch(sw int32) (string, bool) {
+	return PublicKey(u).ArmForSwitch(sw)
+}
 
 // Thresholds is an XDR Typedef defines as:
 //

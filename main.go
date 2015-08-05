@@ -14,13 +14,16 @@ const One = 10000000
 
 // AddressToAccountId converts the provided address into a xdr.AccountId
 func AddressToAccountId(address string) (result xdr.AccountId, err error) {
+
 	bytes, err := strkey.Decode(strkey.VersionByteAccountID, address)
 
 	if err != nil {
 		return
 	}
 
-	pk, err := xdr.NewPublicKey(xdr.CryptoKeyTypeKeyTypeEd25519, bytes)
+	var raw xdr.Uint256
+	copy(raw[:], bytes)
+	pk, err := xdr.NewPublicKey(xdr.CryptoKeyTypeKeyTypeEd25519, raw)
 	if err != nil {
 		return
 	}

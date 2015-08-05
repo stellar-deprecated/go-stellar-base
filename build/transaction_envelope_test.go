@@ -26,7 +26,7 @@ func TestTransactionEnvelopeMutators(t *testing.T) {
 		})
 
 		Convey("Sign adds a signature to the envelope", func() {
-			_, spriv, _ := stellarbase.GenerateKeyFromSeed("s3Fy8h5LEcYVE8aofthKWHeJpygbntw5HgcekFw93K6XqTW4gEx")
+			_, spriv, _ := stellarbase.GenerateKeyFromSeed("SDOTALIMPAM2IV65IOZA7KZL7XWZI5BODFXTRVLIHLQZQCKK57PH5F3H")
 
 			// TODO: ensure the signatures are valid
 

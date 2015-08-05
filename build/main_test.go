@@ -12,7 +12,7 @@ import (
 //
 // It uses the transaction builder system
 func ExampleTransactionBuilder() {
-	_, spriv, err := stellarbase.GenerateKeyFromSeed("s3Fy8h5LEcYVE8aofthKWHeJpygbntw5HgcekFw93K6XqTW4gEx")
+	_, spriv, err := stellarbase.GenerateKeyFromSeed("SDOTALIMPAM2IV65IOZA7KZL7XWZI5BODFXTRVLIHLQZQCKK57PH5F3H")
 
 	if err != nil {
 		log.Fatal(err)
