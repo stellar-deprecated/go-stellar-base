@@ -194,6 +194,25 @@ func (u NodeId) ArmForSwitch(sw int32) (string, bool) {
 	return PublicKey(u).ArmForSwitch(sw)
 }
 
+// NewNodeId creates a new  NodeId.
+func NewNodeId(aType CryptoKeyType, value interface{}) (result NodeId, err error) {
+	u, err := NewPublicKey(aType, value)
+	result = NodeId(u)
+	return
+}
+
+// MustEd25519 retrieves the Ed25519 value from the union,
+// panicing if the value is not set.
+func (u NodeId) MustEd25519() Uint256 {
+	return PublicKey(u).MustEd25519()
+}
+
+// GetEd25519 retrieves the Ed25519 value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u NodeId) GetEd25519() (result Uint256, ok bool) {
+	return PublicKey(u).GetEd25519()
+}
+
 // AccountId is an XDR Typedef defines as:
 //
 //   typedef PublicKey AccountID;
@@ -210,6 +229,25 @@ func (u AccountId) SwitchFieldName() string {
 // the value for an instance of PublicKey
 func (u AccountId) ArmForSwitch(sw int32) (string, bool) {
 	return PublicKey(u).ArmForSwitch(sw)
+}
+
+// NewAccountId creates a new  AccountId.
+func NewAccountId(aType CryptoKeyType, value interface{}) (result AccountId, err error) {
+	u, err := NewPublicKey(aType, value)
+	result = AccountId(u)
+	return
+}
+
+// MustEd25519 retrieves the Ed25519 value from the union,
+// panicing if the value is not set.
+func (u AccountId) MustEd25519() Uint256 {
+	return PublicKey(u).MustEd25519()
+}
+
+// GetEd25519 retrieves the Ed25519 value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u AccountId) GetEd25519() (result Uint256, ok bool) {
+	return PublicKey(u).GetEd25519()
 }
 
 // Thresholds is an XDR Typedef defines as:

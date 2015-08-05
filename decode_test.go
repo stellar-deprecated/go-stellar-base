@@ -141,9 +141,7 @@ func TestDecode(t *testing.T) {
 		tm := m.MustV0()
 		So(len(tm.Changes), ShouldEqual, 1)
 		So(len(tm.Operations), ShouldEqual, 1)
-
-		// m.Changes[0].MustUpdated()
-		// m.Changes[1].MustUpdated()
+		So(len(tm.Operations[0].Changes), ShouldEqual, 2)
 	})
 
 	Convey("Roundtrip TransactionEnvelope", t, func() {
