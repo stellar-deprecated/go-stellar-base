@@ -640,7 +640,7 @@ func NewAccountEntryExt(v int32, value interface{}) (result AccountEntryExt, err
 //        SequenceNumber seqNum;    // last sequence number used for this account
 //        uint32 numSubEntries;     // number of sub-entries this account has
 //                                  // drives the reserve
-//        AccountID* inflationDest; // Account to vote during inflation
+//        AccountID* inflationDest; // Account to vote for during inflation
 //        uint32 flags;             // see AccountFlags
 //
 //        string32 homeDomain; // can be used for reverse federation and memo lookup
@@ -747,7 +747,7 @@ func NewTrustLineEntryExt(v int32, value interface{}) (result TrustLineEntryExt,
 //   struct TrustLineEntry
 //    {
 //        AccountID accountID; // account this trustline belongs to
-//        Asset asset;   // type of asset (with issuer)
+//        Asset asset;         // type of asset (with issuer)
 //        int64 balance;       // how much of this asset the user has.
 //                             // Asset defines the unit for this;
 //
@@ -848,8 +848,8 @@ func NewOfferEntryExt(v int32, value interface{}) (result OfferEntryExt, err err
 //        AccountID sellerID;
 //        uint64 offerID;
 //        Asset selling; // A
-//        Asset buying; // B
-//        int64 amount;       // amount of A
+//        Asset buying;  // B
+//        int64 amount;  // amount of A
 //
 //        /* price for this offer:
 //            price of A in terms of B
@@ -879,19 +879,19 @@ type OfferEntry struct {
 	Ext      OfferEntryExt
 }
 
-// LedgerEntry is an XDR Union defines as:
+// LedgerEntryData is an XDR NestedUnion defines as:
 //
-//   union LedgerEntry switch (LedgerEntryType type)
-//    {
-//    case ACCOUNT:
-//        AccountEntry account;
-//    case TRUSTLINE:
-//        TrustLineEntry trustLine;
-//    case OFFER:
-//        OfferEntry offer;
-//    };
+//   union switch (LedgerEntryType type)
+//        {
+//        case ACCOUNT:
+//            AccountEntry account;
+//        case TRUSTLINE:
+//            TrustLineEntry trustLine;
+//        case OFFER:
+//            OfferEntry offer;
+//        }
 //
-type LedgerEntry struct {
+type LedgerEntryData struct {
 	Type      LedgerEntryType
 	Account   *AccountEntry
 	TrustLine *TrustLineEntry
@@ -900,13 +900,13 @@ type LedgerEntry struct {
 
 // SwitchFieldName returns the field name in which this union's
 // discriminant is stored
-func (u LedgerEntry) SwitchFieldName() string {
+func (u LedgerEntryData) SwitchFieldName() string {
 	return "Type"
 }
 
 // ArmForSwitch returns which field name should be used for storing
-// the value for an instance of LedgerEntry
-func (u LedgerEntry) ArmForSwitch(sw int32) (string, bool) {
+// the value for an instance of LedgerEntryData
+func (u LedgerEntryData) ArmForSwitch(sw int32) (string, bool) {
 	switch LedgerEntryType(sw) {
 	case LedgerEntryTypeAccount:
 		return "Account", true
@@ -918,8 +918,8 @@ func (u LedgerEntry) ArmForSwitch(sw int32) (string, bool) {
 	return "-", false
 }
 
-// NewLedgerEntry creates a new  LedgerEntry.
-func NewLedgerEntry(aType LedgerEntryType, value interface{}) (result LedgerEntry, err error) {
+// NewLedgerEntryData creates a new  LedgerEntryData.
+func NewLedgerEntryData(aType LedgerEntryType, value interface{}) (result LedgerEntryData, err error) {
 	result.Type = aType
 	switch LedgerEntryType(aType) {
 	case LedgerEntryTypeAccount:
@@ -949,7 +949,7 @@ func NewLedgerEntry(aType LedgerEntryType, value interface{}) (result LedgerEntr
 
 // MustAccount retrieves the Account value from the union,
 // panicing if the value is not set.
-func (u LedgerEntry) MustAccount() AccountEntry {
+func (u LedgerEntryData) MustAccount() AccountEntry {
 	val, ok := u.GetAccount()
 
 	if !ok {
@@ -961,7 +961,7 @@ func (u LedgerEntry) MustAccount() AccountEntry {
 
 // GetAccount retrieves the Account value from the union,
 // returning ok if the union's switch indicated the value is valid.
-func (u LedgerEntry) GetAccount() (result AccountEntry, ok bool) {
+func (u LedgerEntryData) GetAccount() (result AccountEntry, ok bool) {
 	armName, _ := u.ArmForSwitch(int32(u.Type))
 
 	if armName == "Account" {
@@ -974,7 +974,7 @@ func (u LedgerEntry) GetAccount() (result AccountEntry, ok bool) {
 
 // MustTrustLine retrieves the TrustLine value from the union,
 // panicing if the value is not set.
-func (u LedgerEntry) MustTrustLine() TrustLineEntry {
+func (u LedgerEntryData) MustTrustLine() TrustLineEntry {
 	val, ok := u.GetTrustLine()
 
 	if !ok {
@@ -986,7 +986,7 @@ func (u LedgerEntry) MustTrustLine() TrustLineEntry {
 
 // GetTrustLine retrieves the TrustLine value from the union,
 // returning ok if the union's switch indicated the value is valid.
-func (u LedgerEntry) GetTrustLine() (result TrustLineEntry, ok bool) {
+func (u LedgerEntryData) GetTrustLine() (result TrustLineEntry, ok bool) {
 	armName, _ := u.ArmForSwitch(int32(u.Type))
 
 	if armName == "TrustLine" {
@@ -999,7 +999,7 @@ func (u LedgerEntry) GetTrustLine() (result TrustLineEntry, ok bool) {
 
 // MustOffer retrieves the Offer value from the union,
 // panicing if the value is not set.
-func (u LedgerEntry) MustOffer() OfferEntry {
+func (u LedgerEntryData) MustOffer() OfferEntry {
 	val, ok := u.GetOffer()
 
 	if !ok {
@@ -1011,7 +1011,7 @@ func (u LedgerEntry) MustOffer() OfferEntry {
 
 // GetOffer retrieves the Offer value from the union,
 // returning ok if the union's switch indicated the value is valid.
-func (u LedgerEntry) GetOffer() (result OfferEntry, ok bool) {
+func (u LedgerEntryData) GetOffer() (result OfferEntry, ok bool) {
 	armName, _ := u.ArmForSwitch(int32(u.Type))
 
 	if armName == "Offer" {
@@ -1020,6 +1020,76 @@ func (u LedgerEntry) GetOffer() (result OfferEntry, ok bool) {
 	}
 
 	return
+}
+
+// LedgerEntryExt is an XDR NestedUnion defines as:
+//
+//   union switch (int v)
+//        {
+//        case 0:
+//            void;
+//        }
+//
+type LedgerEntryExt struct {
+	V int32
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u LedgerEntryExt) SwitchFieldName() string {
+	return "V"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of LedgerEntryExt
+func (u LedgerEntryExt) ArmForSwitch(sw int32) (string, bool) {
+	switch int32(sw) {
+	case 0:
+		return "", true
+	}
+	return "-", false
+}
+
+// NewLedgerEntryExt creates a new  LedgerEntryExt.
+func NewLedgerEntryExt(v int32, value interface{}) (result LedgerEntryExt, err error) {
+	result.V = v
+	switch int32(v) {
+	case 0:
+		// void
+	}
+	return
+}
+
+// LedgerEntry is an XDR Struct defines as:
+//
+//   struct LedgerEntry
+//    {
+//        uint32 lastModifiedLedgerSeq; // ledger the LedgerEntry was last changed
+//
+//        union switch (LedgerEntryType type)
+//        {
+//        case ACCOUNT:
+//            AccountEntry account;
+//        case TRUSTLINE:
+//            TrustLineEntry trustLine;
+//        case OFFER:
+//            OfferEntry offer;
+//        }
+//        data;
+//
+//        // reserved for future use
+//        union switch (int v)
+//        {
+//        case 0:
+//            void;
+//        }
+//        ext;
+//    };
+//
+type LedgerEntry struct {
+	LastModifiedLedgerSeq Uint32
+	Data                  LedgerEntryData
+	Ext                   LedgerEntryExt
 }
 
 // EnvelopeType is an XDR Enum defines as:
@@ -1143,7 +1213,7 @@ type CreateAccountOp struct {
 //   struct PaymentOp
 //    {
 //        AccountID destination; // recipient of the payment
-//        Asset asset;     // what they end up with
+//        Asset asset;           // what they end up with
 //        int64 amount;          // amount they end up with
 //    };
 //
@@ -1158,12 +1228,12 @@ type PaymentOp struct {
 //   struct PathPaymentOp
 //    {
 //        Asset sendAsset; // asset we pay with
-//        int64 sendMax;         // the maximum amount of sendAsset to
-//                               // send (excluding fees).
-//                               // The operation will fail if can't be met
+//        int64 sendMax;   // the maximum amount of sendAsset to
+//                         // send (excluding fees).
+//                         // The operation will fail if can't be met
 //
 //        AccountID destination; // recipient of the payment
-//        Asset destAsset; // what they end up with
+//        Asset destAsset;       // what they end up with
 //        int64 destAmount;      // amount they end up with
 //
 //        Asset path<5>; // additional hops it must go through to get there
@@ -1203,10 +1273,10 @@ type ManageOfferOp struct {
 //
 //   struct CreatePassiveOfferOp
 //    {
-//        Asset selling;  // A
-//        Asset buying;   // B
-//        int64 amount;   // amount taker gets. if set to 0, delete the offer
-//        Price price;    // cost of A in terms of B
+//        Asset selling; // A
+//        Asset buying;  // B
+//        int64 amount;  // amount taker gets. if set to 0, delete the offer
+//        Price price;   // cost of A in terms of B
 //    };
 //
 type CreatePassiveOfferOp struct {
@@ -1273,7 +1343,7 @@ type ChangeTrustOp struct {
 //        case ASSET_TYPE_CREDIT_ALPHANUM4:
 //            opaque assetCode4[4];
 //
-//    	case ASSET_TYPE_CREDIT_ALPHANUM12:
+//        case ASSET_TYPE_CREDIT_ALPHANUM12:
 //            opaque assetCode12[12];
 //
 //            // add other asset types here in the future
@@ -1386,7 +1456,7 @@ func (u AllowTrustOpAsset) GetAssetCode12() (result [12]byte, ok bool) {
 //        case ASSET_TYPE_CREDIT_ALPHANUM4:
 //            opaque assetCode4[4];
 //
-//    	case ASSET_TYPE_CREDIT_ALPHANUM12:
+//        case ASSET_TYPE_CREDIT_ALPHANUM12:
 //            opaque assetCode12[12];
 //
 //            // add other asset types here in the future
@@ -2149,25 +2219,25 @@ type TransactionEnvelope struct {
 //   struct ClaimOfferAtom
 //    {
 //        // emited to identify the offer
-//        AccountID offerOwner; // Account that owns the offer
+//        AccountID sellerID; // Account that owns the offer
 //        uint64 offerID;
 //
 //        // amount and asset taken from the owner
-//        Asset assetClaimed;
-//        int64 amountClaimed;
+//        Asset assetSold;
+//        int64 amountSold;
 //
-//        // amount and assetsent to the owner
-//        Asset assetSend;
-//        int64 amountSend;
+//        // amount and asset sent to the owner
+//        Asset assetBought;
+//        int64 amountBought;
 //    };
 //
 type ClaimOfferAtom struct {
-	OfferOwner    AccountId
-	OfferId       Uint64
-	AssetClaimed  Asset
-	AmountClaimed Int64
-	AssetSend     Asset
-	AmountSend    Int64
+	SellerId     AccountId
+	OfferId      Uint64
+	AssetSold    Asset
+	AmountSold   Int64
+	AssetBought  Asset
+	AmountBought Int64
 }
 
 // CreateAccountResultCode is an XDR Enum defines as:
@@ -2272,7 +2342,7 @@ func NewCreateAccountResult(code CreateAccountResultCode, value interface{}) (re
 //        PAYMENT_SRC_NO_TRUST = -3,       // no trust line on source account
 //        PAYMENT_SRC_NOT_AUTHORIZED = -4, // source not authorized to transfer
 //        PAYMENT_NO_DESTINATION = -5,     // destination account does not exist
-//        PAYMENT_NO_TRUST = -6, // destination missing a trust line for asset
+//        PAYMENT_NO_TRUST = -6,       // destination missing a trust line for asset
 //        PAYMENT_NOT_AUTHORIZED = -7, // destination not authorized to hold asset
 //        PAYMENT_LINE_FULL = -8       // destination would go above their limit
 //    };
@@ -2372,11 +2442,12 @@ func NewPaymentResult(code PaymentResultCode, value interface{}) (result Payment
 //        PATH_PAYMENT_SRC_NO_TRUST = -3,       // no trust line on source account
 //        PATH_PAYMENT_SRC_NOT_AUTHORIZED = -4, // source not authorized to transfer
 //        PATH_PAYMENT_NO_DESTINATION = -5,     // destination account does not exist
-//        PATH_PAYMENT_NO_TRUST = -6,       // dest missing a trust line for asset
-//        PATH_PAYMENT_NOT_AUTHORIZED = -7, // dest not authorized to hold asset
-//        PATH_PAYMENT_LINE_FULL = -8,      // dest would go above their limit
-//        PATH_PAYMENT_TOO_FEW_OFFERS = -9, // not enough offers to satisfy path
-//        PATH_PAYMENT_OVER_SENDMAX = -10   // could not satisfy sendmax
+//        PATH_PAYMENT_NO_TRUST = -6,           // dest missing a trust line for asset
+//        PATH_PAYMENT_NOT_AUTHORIZED = -7,     // dest not authorized to hold asset
+//        PATH_PAYMENT_LINE_FULL = -8,          // dest would go above their limit
+//        PATH_PAYMENT_TOO_FEW_OFFERS = -9,     // not enough offers to satisfy path
+//        PATH_PAYMENT_OFFER_CROSS_SELF = -10,  // would cross one of its own offers
+//        PATH_PAYMENT_OVER_SENDMAX = -11       // could not satisfy sendmax
 //    };
 //
 type PathPaymentResultCode int32
@@ -2392,7 +2463,8 @@ const (
 	PathPaymentResultCodePathPaymentNotAuthorized                          = -7
 	PathPaymentResultCodePathPaymentLineFull                               = -8
 	PathPaymentResultCodePathPaymentTooFewOffers                           = -9
-	PathPaymentResultCodePathPaymentOverSendmax                            = -10
+	PathPaymentResultCodePathPaymentOfferCrossSelf                         = -10
+	PathPaymentResultCodePathPaymentOverSendmax                            = -11
 )
 
 var pathPaymentResultCodeMap = map[int32]string{
@@ -2406,7 +2478,8 @@ var pathPaymentResultCodeMap = map[int32]string{
 	-7:  "PathPaymentResultCodePathPaymentNotAuthorized",
 	-8:  "PathPaymentResultCodePathPaymentLineFull",
 	-9:  "PathPaymentResultCodePathPaymentTooFewOffers",
-	-10: "PathPaymentResultCodePathPaymentOverSendmax",
+	-10: "PathPaymentResultCodePathPaymentOfferCrossSelf",
+	-11: "PathPaymentResultCodePathPaymentOverSendmax",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -3137,13 +3210,14 @@ func (e AccountMergeResultCode) String() string {
 //   union AccountMergeResult switch (AccountMergeResultCode code)
 //    {
 //    case ACCOUNT_MERGE_SUCCESS:
-//        void;
+//        int64 sourceAccountBalance; // how much got transfered from source account
 //    default:
 //        void;
 //    };
 //
 type AccountMergeResult struct {
-	Code AccountMergeResultCode
+	Code                 AccountMergeResultCode
+	SourceAccountBalance *Int64
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -3157,7 +3231,7 @@ func (u AccountMergeResult) SwitchFieldName() string {
 func (u AccountMergeResult) ArmForSwitch(sw int32) (string, bool) {
 	switch AccountMergeResultCode(sw) {
 	case AccountMergeResultCodeAccountMergeSuccess:
-		return "", true
+		return "SourceAccountBalance", true
 	default:
 		return "", true
 	}
@@ -3168,10 +3242,40 @@ func NewAccountMergeResult(code AccountMergeResultCode, value interface{}) (resu
 	result.Code = code
 	switch AccountMergeResultCode(code) {
 	case AccountMergeResultCodeAccountMergeSuccess:
-		// void
+		tv, ok := value.(Int64)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be Int64")
+			return
+		}
+		result.SourceAccountBalance = &tv
 	default:
 		// void
 	}
+	return
+}
+
+// MustSourceAccountBalance retrieves the SourceAccountBalance value from the union,
+// panicing if the value is not set.
+func (u AccountMergeResult) MustSourceAccountBalance() Int64 {
+	val, ok := u.GetSourceAccountBalance()
+
+	if !ok {
+		panic("arm SourceAccountBalance is not set")
+	}
+
+	return val
+}
+
+// GetSourceAccountBalance retrieves the SourceAccountBalance value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u AccountMergeResult) GetSourceAccountBalance() (result Int64, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Code))
+
+	if armName == "SourceAccountBalance" {
+		result = *u.SourceAccountBalance
+		ok = true
+	}
+
 	return
 }
 
@@ -3839,7 +3943,7 @@ func (u OperationResult) GetTr() (result OperationResultTr, ok bool) {
 //    {
 //        txSUCCESS = 0, // all operations succeeded
 //
-//        txFAILED = -1, // one of the operations failed (but none were applied)
+//        txFAILED = -1, // one of the operations failed (none were applied)
 //
 //        txTOO_EARLY = -2,         // ledger closeTime before minTime
 //        txTOO_LATE = -3,          // ledger closeTime after maxTime
