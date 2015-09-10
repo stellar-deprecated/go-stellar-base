@@ -14,9 +14,9 @@ import (
 
 const (
 	// PublicNetworkPassphrase is the pass phrase used for every transaction intended for the public stellar network
-	PublicNetworkPassphrase = ""
+	PublicNetworkPassphrase = "Public Global Stellar Network ; September 2015"
 	// TestNetworkPassphrase is the pass phrase used for every transaction intended for the SDF-run test network
-	TestNetworkPassphrase = ""
+	TestNetworkPassphrase = "Test SDF Network ; September 2015"
 )
 
 var (
