@@ -308,7 +308,7 @@ func (e AssetType) String() string {
 //
 //   struct
 //        {
-//            opaque assetCode[4];
+//            opaque assetCode[4]; // 1 to 4 characters
 //            AccountID issuer;
 //        }
 //
@@ -321,7 +321,7 @@ type AssetAlphaNum4 struct {
 //
 //   struct
 //        {
-//            opaque assetCode[12];
+//            opaque assetCode[12]; // 5 to 12 characters
 //            AccountID issuer;
 //        }
 //
@@ -340,14 +340,14 @@ type AssetAlphaNum12 struct {
 //    case ASSET_TYPE_CREDIT_ALPHANUM4:
 //        struct
 //        {
-//            opaque assetCode[4];
+//            opaque assetCode[4]; // 1 to 4 characters
 //            AccountID issuer;
 //        } alphaNum4;
 //
 //    case ASSET_TYPE_CREDIT_ALPHANUM12:
 //        struct
 //        {
-//            opaque assetCode[12];
+//            opaque assetCode[12]; // 5 to 12 characters
 //            AccountID issuer;
 //        } alphaNum12;
 //
@@ -3407,7 +3407,7 @@ func (u InflationResult) GetPayouts() (result []InflationPayout, ok bool) {
 //    {
 //        opINNER = 0, // inner object result is valid
 //
-//        opBAD_AUTH = -1,  // not enough signatures to perform operation
+//        opBAD_AUTH = -1,  // too few valid signatures / wrong network
 //        opNO_ACCOUNT = -2 // source account was not found
 //    };
 //
@@ -3950,11 +3950,11 @@ func (u OperationResult) GetTr() (result OperationResultTr, ok bool) {
 //        txMISSING_OPERATION = -4, // no operation was specified
 //        txBAD_SEQ = -5,           // sequence number does not match source account
 //
-//        txBAD_AUTH = -6,             // not enough signatures to perform transaction
+//        txBAD_AUTH = -6,             // too few valid signatures / wrong network
 //        txINSUFFICIENT_BALANCE = -7, // fee would bring account below reserve
 //        txNO_ACCOUNT = -8,           // source account not found
 //        txINSUFFICIENT_FEE = -9,     // fee is too small
-//        txBAD_AUTH_EXTRA = -10,      // too many signatures on transaction
+//        txBAD_AUTH_EXTRA = -10,      // unused signatures attached to transaction
 //        txINTERNAL_ERROR = -11       // an unknown error occured
 //    };
 //
@@ -5317,6 +5317,7 @@ type Error struct {
 //    {
 //        uint32 ledgerVersion;
 //        uint32 overlayVersion;
+//        Hash networkID;
 //        string versionStr<100>;
 //        int listeningPort;
 //        NodeID peerID;
@@ -5325,6 +5326,7 @@ type Error struct {
 type Hello struct {
 	LedgerVersion  Uint32
 	OverlayVersion Uint32
+	NetworkId      Hash
 	VersionStr     string
 	ListeningPort  int32
 	PeerId         NodeId
