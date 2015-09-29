@@ -2620,9 +2620,8 @@ func (u PathPaymentResult) GetSuccess() (result PathPaymentResultSuccess, ok boo
 //
 //        // update errors
 //        MANAGE_OFFER_NOT_FOUND = -9, // offerID does not match an existing offer
-//        MANAGE_OFFER_MISMATCH = -10, // currencies don't match offer
 //
-//        MANAGE_OFFER_LOW_RESERVE = -11 // not enough funds to create a new Offer
+//        MANAGE_OFFER_LOW_RESERVE = -10 // not enough funds to create a new Offer
 //    };
 //
 type ManageOfferResultCode int32
@@ -2638,8 +2637,7 @@ const (
 	ManageOfferResultCodeManageOfferUnderfunded                             = -7
 	ManageOfferResultCodeManageOfferCrossSelf                               = -8
 	ManageOfferResultCodeManageOfferNotFound                                = -9
-	ManageOfferResultCodeManageOfferMismatch                                = -10
-	ManageOfferResultCodeManageOfferLowReserve                              = -11
+	ManageOfferResultCodeManageOfferLowReserve                              = -10
 )
 
 var manageOfferResultCodeMap = map[int32]string{
@@ -2653,8 +2651,7 @@ var manageOfferResultCodeMap = map[int32]string{
 	-7:  "ManageOfferResultCodeManageOfferUnderfunded",
 	-8:  "ManageOfferResultCodeManageOfferCrossSelf",
 	-9:  "ManageOfferResultCodeManageOfferNotFound",
-	-10: "ManageOfferResultCodeManageOfferMismatch",
-	-11: "ManageOfferResultCodeManageOfferLowReserve",
+	-10: "ManageOfferResultCodeManageOfferLowReserve",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -2902,6 +2899,7 @@ func (u ManageOfferResult) GetSuccess() (result ManageOfferSuccessResult, ok boo
 //        SET_OPTIONS_UNKNOWN_FLAG = -6,           // can't set an unknown flag
 //        SET_OPTIONS_THRESHOLD_OUT_OF_RANGE = -7, // bad value for weight/threshold
 //        SET_OPTIONS_BAD_SIGNER = -8              // signer cannot be masterkey
+//	      SET_OPTIONS_INVALID_HOME_DOMAIN = -9     // malformed home domain
 //    };
 //
 type SetOptionsResultCode int32
@@ -2916,6 +2914,7 @@ const (
 	SetOptionsResultCodeSetOptionsUnknownFlag                              = -6
 	SetOptionsResultCodeSetOptionsThresholdOutOfRange                      = -7
 	SetOptionsResultCodeSetOptionsBadSigner                                = -8
+	SetOptionsResultCodeSetOptionsInvalidHomeDomain                        = -9
 )
 
 var setOptionsResultCodeMap = map[int32]string{
@@ -2928,6 +2927,7 @@ var setOptionsResultCodeMap = map[int32]string{
 	-6: "SetOptionsResultCodeSetOptionsUnknownFlag",
 	-7: "SetOptionsResultCodeSetOptionsThresholdOutOfRange",
 	-8: "SetOptionsResultCodeSetOptionsBadSigner",
+	-9: "SetOptionsResultCodeSetOptionsInvalidHomeDomain",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -3170,25 +3170,25 @@ func NewAllowTrustResult(code AllowTrustResultCode, value interface{}) (result A
 //        // codes considered as "failure" for the operation
 //        ACCOUNT_MERGE_MALFORMED = -1,  // can't merge onto itself
 //        ACCOUNT_MERGE_NO_ACCOUNT = -2, // destination does not exist
-//        ACCOUNT_MERGE_HAS_CREDIT = -3, // account has active trust lines
+//	      ACCOUNT_MERGE_HAS_SUB_ENTRIES = -3, // account has trust lines/offers
 //        ACCOUNT_MERGE_CREDIT_HELD = -4 // an issuer cannot be merged if used
 //    };
 //
 type AccountMergeResultCode int32
 
 const (
-	AccountMergeResultCodeAccountMergeSuccess    AccountMergeResultCode = 0
-	AccountMergeResultCodeAccountMergeMalformed                         = -1
-	AccountMergeResultCodeAccountMergeNoAccount                         = -2
-	AccountMergeResultCodeAccountMergeHasCredit                         = -3
-	AccountMergeResultCodeAccountMergeCreditHeld                        = -4
+	AccountMergeResultCodeAccountMergeSuccess       AccountMergeResultCode = 0
+	AccountMergeResultCodeAccountMergeMalformed                            = -1
+	AccountMergeResultCodeAccountMergeNoAccount                            = -2
+	AccountMergeResultCodeAccountMergeHasSubEntries                        = -3
+	AccountMergeResultCodeAccountMergeCreditHeld                           = -4
 )
 
 var accountMergeResultCodeMap = map[int32]string{
 	0:  "AccountMergeResultCodeAccountMergeSuccess",
 	-1: "AccountMergeResultCodeAccountMergeMalformed",
 	-2: "AccountMergeResultCodeAccountMergeNoAccount",
-	-3: "AccountMergeResultCodeAccountMergeHasCredit",
+	-3: "AccountMergeResultCodeAccountMergeHasSubEntries",
 	-4: "AccountMergeResultCodeAccountMergeCreditHeld",
 }
 

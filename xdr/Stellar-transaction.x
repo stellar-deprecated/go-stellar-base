@@ -436,9 +436,8 @@ enum ManageOfferResultCode
 
     // update errors
     MANAGE_OFFER_NOT_FOUND = -9, // offerID does not match an existing offer
-    MANAGE_OFFER_MISMATCH = -10, // currencies don't match offer
 
-    MANAGE_OFFER_LOW_RESERVE = -11 // not enough funds to create a new Offer
+    MANAGE_OFFER_LOW_RESERVE = -10 // not enough funds to create a new Offer
 };
 
 enum ManageOfferEffect
@@ -486,7 +485,8 @@ enum SetOptionsResultCode
     SET_OPTIONS_CANT_CHANGE = -5,            // can no longer change this option
     SET_OPTIONS_UNKNOWN_FLAG = -6,           // can't set an unknown flag
     SET_OPTIONS_THRESHOLD_OUT_OF_RANGE = -7, // bad value for weight/threshold
-    SET_OPTIONS_BAD_SIGNER = -8              // signer cannot be masterkey
+    SET_OPTIONS_BAD_SIGNER = -8,             // signer cannot be masterkey
+    SET_OPTIONS_INVALID_HOME_DOMAIN = -9     // malformed home domain
 };
 
 union SetOptionsResult switch (SetOptionsResultCode code)
@@ -549,7 +549,7 @@ enum AccountMergeResultCode
     // codes considered as "failure" for the operation
     ACCOUNT_MERGE_MALFORMED = -1,  // can't merge onto itself
     ACCOUNT_MERGE_NO_ACCOUNT = -2, // destination does not exist
-    ACCOUNT_MERGE_HAS_CREDIT = -3, // account has active trust lines
+    ACCOUNT_MERGE_HAS_SUB_ENTRIES = -3, // account has trust lines/offers.
     ACCOUNT_MERGE_CREDIT_HELD = -4 // an issuer cannot be merged if used
 };
 
