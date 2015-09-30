@@ -95,10 +95,9 @@ func (b *TransactionBuilder) Sign(signers ...stellarbase.Signer) (result Transac
 //
 // ------------------------------------------------------------
 
-// MutateTransaction for SourceAccount sets the transaction's SourceAccount
-// to the pubilic key for the address provided
+// MutateTransaction for Defaults sets reasonable defaults on the transaction being built
 func (m Defaults) MutateTransaction(o *TransactionBuilder) error {
-	o.TX.Fee = 10
+	o.TX.Fee = 100
 	memo, err := xdr.NewMemo(xdr.MemoTypeMemoNone, nil)
 	o.TX.Memo = memo
 	o.NetworkID = DefaultNetwork.ID()
