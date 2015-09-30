@@ -17,8 +17,9 @@ type TransactionEnvelopeMutator interface {
 
 // TransactionEnvelopeBuilder helps you build a TransactionEnvelope
 type TransactionEnvelopeBuilder struct {
-	E   xdr.TransactionEnvelope
-	Err error
+	E         xdr.TransactionEnvelope
+	NetworkID [32]byte
+	Err       error
 }
 
 // Mutate applies the provided TransactionEnvelopeMutators to this builder's
@@ -76,7 +77,10 @@ func (b TransactionEnvelopeBuilder) Base64() (string, error) {
 
 // MutateTransactionEnvelope adds a signature to the provided envelope
 func (m Sign) MutateTransactionEnvelope(txe *TransactionEnvelopeBuilder) error {
-	tb := TransactionBuilder{TX: txe.E.Tx}
+	tb := TransactionBuilder{
+		TX:        txe.E.Tx,
+		NetworkID: txe.NetworkID,
+	}
 	hash, err := tb.Hash()
 
 	if err != nil {
@@ -106,5 +110,6 @@ func (m TransactionBuilder) MutateTransactionEnvelope(txe *TransactionEnvelopeBu
 	}
 
 	txe.E.Tx = m.TX
+	txe.NetworkID = m.NetworkID
 	return nil
 }
