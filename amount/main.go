@@ -10,8 +10,10 @@
 package amount
 
 import (
+	"fmt"
 	"github.com/stellar/go-stellar-base/xdr"
 	"math/big"
+	"strconv"
 )
 
 // One is the value of one whole unit of currency.  Stellar uses 7 fixed digits
@@ -19,26 +21,30 @@ import (
 const One = 10000000
 
 func Parse(v string) (xdr.Int64, error) {
-	var f, o, r big.Float
+	var f, o, r big.Rat
 
-	_, _, err := f.Parse(v, 10)
-	if err != nil {
-		return 0, err
+	_, ok := f.SetString(v)
+	if !ok {
+		return xdr.Int64(0), fmt.Errorf("cannot parse amount: %s", v)
 	}
 
 	o.SetInt64(One)
 	r.Mul(&f, &o)
 
-	i, _ := r.Int64()
+	is := r.FloatString(0)
+	i, err := strconv.ParseInt(is, 10, 64)
+	if err != nil {
+		return xdr.Int64(0), err
+	}
 	return xdr.Int64(i), nil
 }
 
 func String(v xdr.Int64) string {
-	var f, o, r big.Float
+	var f, o, r big.Rat
 
 	f.SetInt64(int64(v))
 	o.SetInt64(One)
 	r.Quo(&f, &o)
 
-	return r.Text('f', 7)
+	return r.FloatString(7)
 }
