@@ -10,6 +10,7 @@
 package amount
 
 import (
+	"github.com/stellar/go-stellar-base/xdr"
 	"math/big"
 )
 
@@ -17,7 +18,7 @@ import (
 // for fractional values, thus One is 10 million (10^7)
 const One = 10000000
 
-func Parse(v string) (int64, error) {
+func Parse(v string) (xdr.Int64, error) {
 	var f, o, r big.Float
 
 	_, _, err := f.Parse(v, 10)
@@ -29,13 +30,13 @@ func Parse(v string) (int64, error) {
 	r.Mul(&f, &o)
 
 	i, _ := r.Int64()
-	return i, nil
+	return xdr.Int64(i), nil
 }
 
-func String(v int64) string {
+func String(v xdr.Int64) string {
 	var f, o, r big.Float
 
-	f.SetInt64(v)
+	f.SetInt64(int64(v))
 	o.SetInt64(One)
 	r.Quo(&f, &o)
 

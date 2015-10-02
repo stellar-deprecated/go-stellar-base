@@ -2,12 +2,13 @@ package amount_test
 
 import (
 	"github.com/stellar/go-stellar-base/amount"
+	"github.com/stellar/go-stellar-base/xdr"
 	"testing"
 )
 
 var Tests = []struct {
 	S string
-	I int64
+	I xdr.Int64
 }{
 	{"100.0000000", 1000000000},
 	{"100.0000001", 1000000001},
