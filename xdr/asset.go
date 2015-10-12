@@ -22,10 +22,11 @@ func (a Asset) String() string {
 	return fmt.Sprintf("%s/%s/%s", t, c, i)
 }
 
-// Extract is a helper function to extract information from an xdr.Asset structure.  It extracts
-// the asset's type to the `typ` input parameter (which must be either a *string or *xdr.AssetType).
-// It also extracts the asset's code and issuer to `code` and `issuer` respectively if they are of type *string
-// and the asset is non-native
+// Extract is a helper function to extract information from an xdr.Asset
+// structure.  It extracts the asset's type to the `typ` input parameter (which
+// must be either a *string or *xdr.AssetType).  It also extracts the asset's
+// code and issuer to `code` and `issuer` respectively if they are of type
+// *string and the asset is non-native
 func (a Asset) Extract(typ interface{}, code interface{}, issuer interface{}) error {
 	switch typ := typ.(type) {
 	case *AssetType:
@@ -80,6 +81,7 @@ func (a Asset) Extract(typ interface{}, code interface{}, issuer interface{}) er
 	return nil
 }
 
+// MustExtract behaves as Extract, but panics if an error occurs.
 func (a Asset) MustExtract(typ interface{}, code interface{}, issuer interface{}) {
 	err := a.Extract(typ, code, issuer)
 
