@@ -18,9 +18,17 @@ var _ = Describe("Transaction Mutators:", func() {
 	JustBeforeEach(func() { subject.Mutate(mut) })
 
 	Describe("Defaults", func() {
-		BeforeEach(func() { mut = Defaults{} })
+		BeforeEach(func() {
+			subject.Mutate(Payment())
+			mut = Defaults{}
+		})
 		It("sets the fee", func() { Expect(subject.TX.Fee).To(BeEquivalentTo(100)) })
 		It("sets the memo", func() { Expect(subject.TX.Memo.Type).To(Equal(xdr.MemoTypeMemoNone)) })
+
+		Context("on a transaction with 2 operations", func() {
+			BeforeEach(func() { subject.Mutate(Payment()) })
+			It("sets the fee to 200", func() { Expect(subject.TX.Fee).To(BeEquivalentTo(200)) })
+		})
 	})
 
 	Describe("PaymentBuilder", func() {

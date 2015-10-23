@@ -13,10 +13,8 @@ import (
 // to Mutate.
 func Transaction(muts ...TransactionMutator) (result *TransactionBuilder) {
 	result = &TransactionBuilder{}
+	result.Mutate(muts...)
 	result.Mutate(Defaults{})
-	for _, m := range muts {
-		m.MutateTransaction(result)
-	}
 	return
 }
 
@@ -102,11 +100,15 @@ func (b *TransactionBuilder) Sign(signers ...stellarbase.Signer) (result Transac
 
 // MutateTransaction for Defaults sets reasonable defaults on the transaction being built
 func (m Defaults) MutateTransaction(o *TransactionBuilder) error {
-	o.TX.Fee = 100
-	memo, err := xdr.NewMemo(xdr.MemoTypeMemoNone, nil)
-	o.TX.Memo = memo
-	o.NetworkID = DefaultNetwork.ID()
-	return err
+
+	if o.TX.Fee == 0 {
+		o.TX.Fee = xdr.Uint32(100 * len(o.TX.Operations))
+	}
+
+	if o.NetworkID == [32]byte{} {
+		o.NetworkID = DefaultNetwork.ID()
+	}
+	return nil
 }
 
 // MutateTransaction for SourceAccount sets the transaction's SourceAccount
