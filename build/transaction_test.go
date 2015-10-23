@@ -1,48 +1,55 @@
 package build
 
 import (
-	"testing"
-
-	. "github.com/smartystreets/goconvey/convey"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/stellar/go-stellar-base"
 	"github.com/stellar/go-stellar-base/xdr"
 )
 
-func TestTransactionMutators(t *testing.T) {
-	Convey("TransactionBuilder Mutators:", t, func() {
-		b := TransactionBuilder{}
+var _ = Describe("Transaction Mutators:", func() {
 
-		Convey("Defaults works", func() {
-			b.Mutate(Defaults{})
-			So(b.TX.Fee, ShouldEqual, 100)
-			So(b.TX.Memo.Type, ShouldResemble, xdr.MemoTypeMemoNone)
-		})
+	var (
+		subject *TransactionBuilder
+		mut     TransactionMutator
+	)
 
-		Convey("PaymentBuilder appends its payment to the operation list", func() {
-			b.Mutate(Payment())
-			So(len(b.TX.Operations), ShouldEqual, 1)
-		})
+	BeforeEach(func() { subject = &TransactionBuilder{} })
+	JustBeforeEach(func() { subject.Mutate(mut) })
 
-		Convey("SourceAccount sets the transaction's SourceAccount correctly", func() {
-			address := "GAWSI2JO2CF36Z43UGMUJCDQ2IMR5B3P5TMS7XM7NUTU3JHG3YJUDQXA"
-			aid, _ := stellarbase.AddressToAccountId(address)
+	Describe("Defaults", func() {
+		BeforeEach(func() { mut = Defaults{} })
+		It("sets the fee", func() { Expect(subject.TX.Fee).To(BeEquivalentTo(100)) })
+		It("sets the memo", func() { Expect(subject.TX.Memo.Type).To(Equal(xdr.MemoTypeMemoNone)) })
+	})
 
-			b.Mutate(SourceAccount{address})
-			So(b.TX.SourceAccount.MustEd25519(), ShouldEqual, aid.MustEd25519())
-			So(b.Err, ShouldBeNil)
-		})
-
-		Convey("SourceAccount sets an error for invalid addresses", func() {
-			address := "foo"
-			b.Mutate(SourceAccount{address})
-			So(b.Err, ShouldNotBeNil)
-		})
-
-		Convey("Sequence sets the transaction's Sequence correctly", func() {
-			b.Mutate(Sequence{1})
-			So(b.TX.SeqNum, ShouldEqual, 1)
-			b.Mutate(Sequence{12345})
-			So(b.TX.SeqNum, ShouldEqual, 12345)
+	Describe("PaymentBuilder", func() {
+		BeforeEach(func() { mut = Payment() })
+		It("adds itself to the tx's operations", func() {
+			Expect(subject.TX.Operations).To(HaveLen(1))
 		})
 	})
-}
+
+	Describe("SourceAccount", func() {
+		Context("with a valid address", func() {
+			address := "GAXEMCEXBERNSRXOEKD4JAIKVECIXQCENHEBRVSPX2TTYZPMNEDSQCNQ"
+			BeforeEach(func() { mut = SourceAccount{address} })
+			It("sets the AccountId correctly", func() {
+				aid, _ := stellarbase.AddressToAccountId(address)
+				Expect(subject.TX.SourceAccount.MustEd25519()).To(Equal(aid.MustEd25519()))
+			})
+		})
+
+		Context("with bad address", func() {
+			BeforeEach(func() { mut = SourceAccount{"foo"} })
+			It("fails", func() { Expect(subject.Err).To(HaveOccurred()) })
+		})
+	})
+
+	Describe("Sequence", func() {
+		BeforeEach(func() { mut = Sequence{12345} })
+		It("succeeds", func() { Expect(subject.Err).NotTo(HaveOccurred()) })
+		It("sets the sequence", func() { Expect(subject.TX.SeqNum).To(BeEquivalentTo(12345)) })
+	})
+
+})

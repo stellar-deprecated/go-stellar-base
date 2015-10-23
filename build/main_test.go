@@ -3,9 +3,17 @@ package build
 import (
 	"fmt"
 	"log"
+	"testing"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/stellar/go-stellar-base"
 )
+
+func TestBuild(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Package: github.com/stellar/go-stellar-base/build")
+}
 
 // ExampleTransactionBuilder creates and signs a simple transaction, and then
 // encodes it into a hex string capable of being submitted to stellar-core.
