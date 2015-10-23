@@ -4,7 +4,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/stellar/go-stellar-base"
-	"github.com/stellar/go-stellar-base/xdr"
 )
 
 var _ = Describe("Transaction Mutators:", func() {
@@ -23,7 +22,7 @@ var _ = Describe("Transaction Mutators:", func() {
 			mut = Defaults{}
 		})
 		It("sets the fee", func() { Expect(subject.TX.Fee).To(BeEquivalentTo(100)) })
-		It("sets the memo", func() { Expect(subject.TX.Memo.Type).To(Equal(xdr.MemoTypeMemoNone)) })
+		It("sets the network id", func() { Expect(subject.NetworkID).To(Equal(DefaultNetwork.ID())) })
 
 		Context("on a transaction with 2 operations", func() {
 			BeforeEach(func() { subject.Mutate(Payment()) })
