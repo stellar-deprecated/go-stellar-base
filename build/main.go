@@ -9,6 +9,7 @@ package build
 
 import (
 	"github.com/stellar/go-stellar-base"
+	"github.com/stellar/go-stellar-base/keypair"
 	"github.com/stellar/go-stellar-base/xdr"
 )
 
@@ -37,7 +38,16 @@ type Destination struct {
 // SourceAccount is a mutator capable of setting the source account on
 // an xdr.Operation and an xdr.Transaction
 type SourceAccount struct {
-	Address string
+	AddressOrSeed string
+}
+
+func (sa SourceAccount) SetAccountId(aid *xdr.AccountId) error {
+	kp, err := keypair.Parse(sa.AddressOrSeed)
+	if err != nil {
+		return err
+	}
+
+	return aid.SetAddress(kp.Address())
 }
 
 // NativeAmount is a mutator that configures a payment to be using native
@@ -54,7 +64,7 @@ type Sequence struct {
 // Sign is a mutator that contributes a signature of the provided envelope's
 // transaction with the configured key
 type Sign struct {
-	Key stellarbase.Signer
+	Seed string
 }
 
 // Network establishes the stellar network that a transaction should apply to.

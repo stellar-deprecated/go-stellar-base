@@ -4,7 +4,6 @@ import (
 	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/stellar/go-stellar-base"
 )
 
 var _ = Describe("TransactionEnvelope Mutators:", func() {
@@ -34,10 +33,9 @@ var _ = Describe("TransactionEnvelope Mutators:", func() {
 
 	Describe("Sign", func() {
 		Context("with a valid key", func() {
-			spub, spriv, _ := stellarbase.GenerateKeyFromSeed("SDOTALIMPAM2IV65IOZA7KZL7XWZI5BODFXTRVLIHLQZQCKK57PH5F3H")
 			BeforeEach(func() {
-				subject.MutateTX(SourceAccount{spub.Address()})
-				mut = Sign{&spriv}
+				subject.MutateTX(SourceAccount{"SDOTALIMPAM2IV65IOZA7KZL7XWZI5BODFXTRVLIHLQZQCKK57PH5F3H"})
+				mut = Sign{"SDOTALIMPAM2IV65IOZA7KZL7XWZI5BODFXTRVLIHLQZQCKK57PH5F3H"}
 			})
 
 			It("succeeds", func() { Expect(subject.Err).NotTo(HaveOccurred()) })
@@ -47,7 +45,7 @@ var _ = Describe("TransactionEnvelope Mutators:", func() {
 		})
 
 		Context("with an invalid key", func() {
-			BeforeEach(func() { mut = Sign{nil} })
+			BeforeEach(func() { mut = Sign{""} })
 			It("fails", func() {
 				Expect(subject.Err).To(HaveOccurred())
 			})

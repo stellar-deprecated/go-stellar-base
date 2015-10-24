@@ -82,7 +82,7 @@ func (b *TransactionBuilder) HashHex() (string, error) {
 // Sign returns an new TransactionEnvelopeBuilder using this builder's
 // transaction as the basis and with signatures of that transaction from the
 // provided Signers.
-func (b *TransactionBuilder) Sign(signers ...stellarbase.Signer) (result TransactionEnvelopeBuilder) {
+func (b *TransactionBuilder) Sign(signers ...string) (result TransactionEnvelopeBuilder) {
 	result.Mutate(b)
 
 	for _, s := range signers {
@@ -114,9 +114,7 @@ func (m Defaults) MutateTransaction(o *TransactionBuilder) error {
 // MutateTransaction for SourceAccount sets the transaction's SourceAccount
 // to the pubilic key for the address provided
 func (m SourceAccount) MutateTransaction(o *TransactionBuilder) error {
-	aid, err := stellarbase.AddressToAccountId(m.Address)
-	o.TX.SourceAccount = aid
-	return err
+	return m.SetAccountId(&o.TX.SourceAccount)
 }
 
 // MutateTransaction for PaymentBuilder causes the underylying PaymentOp
