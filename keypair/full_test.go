@@ -40,4 +40,13 @@ var _ = Describe("keypair.Full", func() {
 		}),
 	)
 
+	Describe("SignDecorated()", func() {
+		It("returns the correct xdr struct", func() {
+			sig, err := subject.SignDecorated(message)
+			Expect(err).To(BeNil())
+			Expect(sig.Hint).To(BeEquivalentTo(hint))
+			Expect(sig.Signature).To(BeEquivalentTo(signature))
+		})
+	})
+
 })

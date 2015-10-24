@@ -3,6 +3,7 @@ package keypair
 import (
 	"github.com/agl/ed25519"
 	"github.com/stellar/go-stellar-base/strkey"
+	"github.com/stellar/go-stellar-base/xdr"
 )
 
 // FromAddress represents a keypair to which only the address is know.  This KP
@@ -17,6 +18,11 @@ type FromAddress struct {
 
 func (kp *FromAddress) Address() string {
 	return kp.address
+}
+
+func (kp *FromAddress) Hint() (r [4]byte) {
+	copy(r[:], kp.publicKey()[28:])
+	return
 }
 
 func (kp *FromAddress) Verify(input []byte, sig []byte) error {
@@ -35,6 +41,10 @@ func (kp *FromAddress) Verify(input []byte, sig []byte) error {
 
 func (kp *FromAddress) Sign(input []byte) ([]byte, error) {
 	return nil, ErrCannotSign
+}
+
+func (kp *FromAddress) SignDecorated(input []byte) (xdr.DecoratedSignature, error) {
+	return xdr.DecoratedSignature{}, ErrCannotSign
 }
 
 func (kp *FromAddress) publicKey() *[32]byte {

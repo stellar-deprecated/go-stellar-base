@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/agl/ed25519"
 	"github.com/stellar/go-stellar-base/strkey"
+	"github.com/stellar/go-stellar-base/xdr"
 )
 
 type Full struct {
@@ -12,6 +13,11 @@ type Full struct {
 
 func (kp *Full) Address() string {
 	return strkey.MustEncode(strkey.VersionByteAccountID, kp.publicKey()[:])
+}
+
+func (kp *Full) Hint() (r [4]byte) {
+	copy(r[:], kp.publicKey()[28:])
+	return
 }
 
 func (kp *Full) Seed() string {
@@ -34,7 +40,19 @@ func (kp *Full) Verify(input []byte, sig []byte) error {
 
 func (kp *Full) Sign(input []byte) ([]byte, error) {
 	_, priv := kp.keys()
-	return ed25519.Sign(priv, input)[:], nil
+	return xdr.Signature(ed25519.Sign(priv, input)[:]), nil
+}
+
+func (kp *Full) SignDecorated(input []byte) (xdr.DecoratedSignature, error) {
+	sig, err := kp.Sign(input)
+	if err != nil {
+		return xdr.DecoratedSignature{}, err
+	}
+
+	return xdr.DecoratedSignature{
+		Hint:      xdr.SignatureHint(kp.Hint()),
+		Signature: xdr.Signature(sig),
+	}, nil
 }
 
 func (kp *Full) publicKey() *[32]byte {

@@ -19,5 +19,12 @@ var _ = Describe("keypair.FromAddress", func() {
 			_, err := subject.Sign(message)
 			Expect(err).To(HaveOccurred())
 		})
+
+	})
+	Describe("SignDecorated()", func() {
+		It("fails", func() {
+			_, err := subject.SignDecorated(message)
+			Expect(err).To(HaveOccurred())
+		})
 	})
 })

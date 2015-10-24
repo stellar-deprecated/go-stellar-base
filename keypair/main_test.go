@@ -17,6 +17,7 @@ func TestBuild(t *testing.T) {
 var (
 	address   = "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H"
 	seed      = "SDHOAMBNLGCE2MV5ZKIVZAQD3VCLGP53P3OBSBI6UN5L5XZI5TKHFQL4"
+	hint      = [4]byte{0x56, 0xfc, 0x05, 0xf7}
 	message   = []byte("hello")
 	signature = []byte{
 		0x2E, 0x75, 0xcc, 0x20, 0xd5, 0x19, 0x11, 0x1c, 0xaa, 0xaa, 0xdd, 0xdf,
@@ -36,6 +37,12 @@ func ItBehavesLikeAKP(subject *KP) {
 	Describe("Address()", func() {
 		It("returns the correct address", func() {
 			Expect((*subject).Address()).To(Equal(address))
+		})
+	})
+
+	Describe("Hint()", func() {
+		It("returns the correct hint", func() {
+			Expect((*subject).Hint()).To(Equal(hint))
 		})
 	})
 

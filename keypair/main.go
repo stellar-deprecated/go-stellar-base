@@ -3,6 +3,7 @@ package keypair
 import (
 	"errors"
 	"github.com/stellar/go-stellar-base/strkey"
+	"github.com/stellar/go-stellar-base/xdr"
 )
 
 var (
@@ -23,8 +24,10 @@ var (
 // KP is the main interface for this package
 type KP interface {
 	Address() string
+	Hint() [4]byte
 	Verify(input []byte, signature []byte) error
 	Sign(input []byte) ([]byte, error)
+	SignDecorated(input []byte) (xdr.DecoratedSignature, error)
 }
 
 func Parse(addressOrSeed string) (KP, error) {
