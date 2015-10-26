@@ -114,7 +114,7 @@ func (m Defaults) MutateTransaction(o *TransactionBuilder) error {
 // MutateTransaction for SourceAccount sets the transaction's SourceAccount
 // to the pubilic key for the address provided
 func (m SourceAccount) MutateTransaction(o *TransactionBuilder) error {
-	return m.SetAccountId(&o.TX.SourceAccount)
+	return setAccountId(m.AddressOrSeed, &o.TX.SourceAccount)
 }
 
 // MutateTransaction for PaymentBuilder causes the underylying PaymentOp
