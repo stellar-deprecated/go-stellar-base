@@ -92,3 +92,12 @@ func FromRawSeed(rawSeed [32]byte) (KP, error) {
 
 	return &Full{seed}, nil
 }
+
+func MustParse(addressOrSeed string) KP {
+	kp, err := Parse(addressOrSeed)
+	if err != nil {
+		panic(err)
+	}
+
+	return kp
+}

@@ -5,27 +5,43 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	b "github.com/stellar/go-stellar-base/build"
 	"github.com/stellar/go-stellar-base/hash"
 	"github.com/stellar/go-stellar-base/keypair"
 	"github.com/stellar/go-stellar-base/xdr"
 )
+
+// ExampleBuildTransaction creates and signs a simple transaction using the build package.
+// The build package is designed to make it easier and more intuitive to configure and sign
+// a transaction.
+func ExampleBuildTransaction() {
+	source := "SA26PHIKZM6CXDGR472SSGUQQRYXM6S437ZNHZGRM6QA4FOPLLLFRGDX"
+	tx := b.Transaction(
+		b.SourceAccount{source},
+		b.Sequence{1},
+		b.Payment(
+			b.Destination{"SBQHO2IMYKXAYJFCWGXC7YKLJD2EGDPSK3IUDHVJ6OOTTKLSCK6Z6POM"},
+			b.NativeAmount{"50.0"},
+		),
+	)
+
+	txe := tx.Sign(source)
+	txeB64, err := txe.Base64()
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("tx base64: %s", txeB64)
+}
 
 // ExampleLowLevelTransaction creates and signs a simple transaction, and then
 // encodes it into a hex string capable of being submitted to stellar-core.
 //
 // It uses the low-level xdr facilities to create the transaction.
 func ExampleLowLevelTransaction() {
-	skp, err := keypair.Parse("SA26PHIKZM6CXDGR472SSGUQQRYXM6S437ZNHZGRM6QA4FOPLLLFRGDX")
-
-	if err != nil {
-		panic(err)
-	}
-
-	dkp, err := keypair.Parse("SBQHO2IMYKXAYJFCWGXC7YKLJD2EGDPSK3IUDHVJ6OOTTKLSCK6Z6POM")
-
-	if err != nil {
-		panic(err)
-	}
+	skp := keypair.MustParse("SA26PHIKZM6CXDGR472SSGUQQRYXM6S437ZNHZGRM6QA4FOPLLLFRGDX")
+	dkp := keypair.MustParse("SBQHO2IMYKXAYJFCWGXC7YKLJD2EGDPSK3IUDHVJ6OOTTKLSCK6Z6POM")
 
 	asset, err := xdr.NewAsset(xdr.AssetTypeAssetTypeNative, nil)
 	if err != nil {
