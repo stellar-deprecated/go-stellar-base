@@ -1,9 +1,12 @@
 package keypair
 
 import (
+	"crypto/rand"
 	"errors"
+	"github.com/stellar/go-stellar-base/network"
 	"github.com/stellar/go-stellar-base/strkey"
 	"github.com/stellar/go-stellar-base/xdr"
+	"io"
 )
 
 var (
@@ -30,6 +33,38 @@ type KP interface {
 	SignDecorated(input []byte) (xdr.DecoratedSignature, error)
 }
 
+// Random creates a random full keypair
+func Random() (KP, error) {
+	var rawSeed [32]byte
+
+	_, err := io.ReadFull(rand.Reader, rawSeed[:])
+	if err != nil {
+		return nil, err
+	}
+
+	kp, err := FromRawSeed(rawSeed)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return kp, nil
+}
+
+// Master returns the master keypair for a given network passphrase
+func Master(networkPassphrase string) KP {
+	kp, err := FromRawSeed(network.ID(networkPassphrase))
+
+	if err != nil {
+		panic(err)
+	}
+
+	return kp
+}
+
+// Parse constructs a new KP from the provided string, which should be either
+// an address, or a seed.  If the provided input is a seed, the resulting KP
+// will have signing capabilities.
 func Parse(addressOrSeed string) (KP, error) {
 	_, err := strkey.Decode(strkey.VersionByteAccountID, addressOrSeed)
 	if err == nil {
@@ -46,4 +81,14 @@ func Parse(addressOrSeed string) (KP, error) {
 	}
 
 	return nil, err
+}
+
+// FromRawSeed creates a new keypair from the provided raw ED25519 seed:w
+func FromRawSeed(rawSeed [32]byte) (KP, error) {
+	seed, err := strkey.Encode(strkey.VersionByteSeed, rawSeed[:])
+	if err != nil {
+		return nil, err
+	}
+
+	return &Full{seed}, nil
 }

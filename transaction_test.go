@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/stellar/go-stellar-base/hash"
+	"github.com/stellar/go-stellar-base/keypair"
 	"github.com/stellar/go-stellar-base/xdr"
 )
 
@@ -14,13 +15,13 @@ import (
 //
 // It uses the low-level xdr facilities to create the transaction.
 func ExampleLowLevelTransaction() {
-	spub, spriv, err := GenerateKeyFromSeed("SA26PHIKZM6CXDGR472SSGUQQRYXM6S437ZNHZGRM6QA4FOPLLLFRGDX")
+	skp, err := keypair.Parse("SA26PHIKZM6CXDGR472SSGUQQRYXM6S437ZNHZGRM6QA4FOPLLLFRGDX")
 
 	if err != nil {
 		panic(err)
 	}
 
-	dpub, _, err := GenerateKeyFromSeed("SBQHO2IMYKXAYJFCWGXC7YKLJD2EGDPSK3IUDHVJ6OOTTKLSCK6Z6POM")
+	dkp, err := keypair.Parse("SBQHO2IMYKXAYJFCWGXC7YKLJD2EGDPSK3IUDHVJ6OOTTKLSCK6Z6POM")
 
 	if err != nil {
 		panic(err)
@@ -31,7 +32,7 @@ func ExampleLowLevelTransaction() {
 		panic(err)
 	}
 
-	destination, err := AddressToAccountId(dpub.Address())
+	destination, err := AddressToAccountId(dkp.Address())
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +45,7 @@ func ExampleLowLevelTransaction() {
 
 	memo, err := xdr.NewMemo(xdr.MemoTypeMemoNone, nil)
 
-	source, err := AddressToAccountId(spub.Address())
+	source, err := AddressToAccountId(skp.Address())
 	if err != nil {
 		panic(err)
 	}
@@ -71,10 +72,13 @@ func ExampleLowLevelTransaction() {
 	}
 
 	txHash := hash.Hash(txBytes.Bytes())
-	signature := spriv.Sign(txHash[:])
+	signature, err := skp.Sign(txHash[:])
+	if err != nil {
+		panic(err)
+	}
 
 	ds := xdr.DecoratedSignature{
-		Hint:      spriv.Hint(),
+		Hint:      skp.Hint(),
 		Signature: xdr.Signature(signature[:]),
 	}
 
