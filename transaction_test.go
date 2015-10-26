@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	"github.com/stellar/go-stellar-base/hash"
 	"github.com/stellar/go-stellar-base/xdr"
 )
 
@@ -69,7 +70,7 @@ func ExampleLowLevelTransaction() {
 		panic(err)
 	}
 
-	txHash := Hash(txBytes.Bytes())
+	txHash := hash.Hash(txBytes.Bytes())
 	signature := spriv.Sign(txHash[:])
 
 	ds := xdr.DecoratedSignature{

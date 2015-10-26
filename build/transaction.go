@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/stellar/go-stellar-base"
+	"github.com/stellar/go-stellar-base/hash"
 	"github.com/stellar/go-stellar-base/xdr"
 )
 
@@ -66,7 +66,7 @@ func (b *TransactionBuilder) Hash() ([32]byte, error) {
 		return [32]byte{}, err
 	}
 
-	return stellarbase.Hash(txBytes.Bytes()), nil
+	return hash.Hash(txBytes.Bytes()), nil
 }
 
 // HashHex returns the hex-encoded hash of this builder's transaction

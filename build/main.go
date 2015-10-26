@@ -8,7 +8,7 @@
 package build
 
 import (
-	"github.com/stellar/go-stellar-base"
+	"github.com/stellar/go-stellar-base/hash"
 	"github.com/stellar/go-stellar-base/xdr"
 )
 
@@ -64,5 +64,5 @@ type Network struct {
 }
 
 func (n *Network) ID() [32]byte {
-	return stellarbase.Hash([]byte(n.Passphrase))
+	return hash.Hash([]byte(n.Passphrase))
 }
