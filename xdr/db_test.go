@@ -23,10 +23,10 @@ var _ = Describe("sql.Scanner implementations", func() {
 
 			Expect(scanned).To(Equal(val))
 		},
-		Entry("zero", int32(0), AccountFlags(0), true),
-		Entry("required", int32(1), AccountFlags(1), true),
-		Entry("revokable", int32(2), AccountFlags(2), true),
-		Entry("immutable", int32(4), AccountFlags(4), true),
+		Entry("zero", int64(0), AccountFlags(0), true),
+		Entry("required", int64(1), AccountFlags(1), true),
+		Entry("revokable", int64(2), AccountFlags(2), true),
+		Entry("immutable", int64(4), AccountFlags(4), true),
 		Entry("string", "0", AccountFlags(0), false),
 	)
 
@@ -43,9 +43,9 @@ var _ = Describe("sql.Scanner implementations", func() {
 
 			Expect(scanned).To(Equal(val))
 		},
-		Entry("native", int32(0), AssetTypeAssetTypeNative, true),
-		Entry("credit alphanum4", int32(1), AssetTypeAssetTypeCreditAlphanum4, true),
-		Entry("credit alphanum12", int32(2), AssetTypeAssetTypeCreditAlphanum12, true),
+		Entry("native", int64(0), AssetTypeAssetTypeNative, true),
+		Entry("credit alphanum4", int64(1), AssetTypeAssetTypeCreditAlphanum4, true),
+		Entry("credit alphanum12", int64(2), AssetTypeAssetTypeCreditAlphanum12, true),
 		Entry("string", "native", AssetTypeAssetTypeNative, false),
 	)
 
@@ -83,6 +83,7 @@ var _ = Describe("sql.Scanner implementations", func() {
 		},
 		Entry("default", "AQAAAA==", Thresholds{0x01, 0x00, 0x00, 0x00}, true),
 		Entry("non-default", "AgACAg==", Thresholds{0x02, 0x00, 0x02, 0x02}, true),
+		Entry("bytes", []byte("AQAAAA=="), Thresholds{0x01, 0x00, 0x00, 0x00}, true),
 		Entry("number", 0, Thresholds{}, false),
 	)
 })
