@@ -11,7 +11,7 @@ import (
 func (this *AccountFlags) Scan(src interface{}) error {
 	val, ok := src.(int32)
 	if !ok {
-		return errors.New("Invalid value for xdr.AssetType")
+		return errors.New("Invalid value for xdr.AccountFlags")
 	}
 
 	*this = AccountFlags(val)
@@ -41,7 +41,7 @@ func (this *Int64) Scan(src interface{}) error {
 func (this *Thresholds) Scan(src interface{}) error {
 	val, ok := src.(string)
 	if !ok {
-		return errors.New("Invalid value for xdr.Int64")
+		return errors.New("Invalid value for xdr.Thresholds")
 	}
 
 	reader := strings.NewReader(val)
