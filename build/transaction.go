@@ -3,6 +3,7 @@ package build
 import (
 	"bytes"
 	"encoding/hex"
+	"errors"
 	"fmt"
 
 	"github.com/stellar/go-stellar-base/hash"
@@ -98,6 +99,19 @@ func (b *TransactionBuilder) Sign(signers ...string) (result TransactionEnvelope
 //
 // ------------------------------------------------------------
 
+// MutateTransaction for CreateAccountBuilder causes the underylying
+// CreateAccountOp to be added to the operation list for the provided
+// transaction
+func (m CreateAccountBuilder) MutateTransaction(o *TransactionBuilder) error {
+	if m.Err != nil {
+		return m.Err
+	}
+
+	m.O.Body, m.Err = xdr.NewOperationBody(xdr.OperationTypeCreateAccount, m.CA)
+	o.TX.Operations = append(o.TX.Operations, m.O)
+	return m.Err
+}
+
 // MutateTransaction for Defaults sets reasonable defaults on the transaction being built
 func (m Defaults) MutateTransaction(o *TransactionBuilder) error {
 
@@ -111,10 +125,28 @@ func (m Defaults) MutateTransaction(o *TransactionBuilder) error {
 	return nil
 }
 
-// MutateTransaction for SourceAccount sets the transaction's SourceAccount
-// to the pubilic key for the address provided
-func (m SourceAccount) MutateTransaction(o *TransactionBuilder) error {
-	return setAccountId(m.AddressOrSeed, &o.TX.SourceAccount)
+// MutateTransaction for MemoID sets the memo.
+func (m MemoID) MutateTransaction(o *TransactionBuilder) (err error) {
+	o.TX.Memo, err = xdr.NewMemo(xdr.MemoTypeMemoId, xdr.Uint64(m.Value))
+	return
+}
+
+// MutateTransaction for MemoText sets the memo.
+func (m MemoText) MutateTransaction(o *TransactionBuilder) (err error) {
+
+	if len([]byte(m.Value)) > MemoTextMaxLength {
+		err = errors.New("Memo too long; over 28 bytes")
+		return
+	}
+
+	o.TX.Memo, err = xdr.NewMemo(xdr.MemoTypeMemoText, m.Value)
+	return
+}
+
+// MutateTransaction for Network sets the Network ID to use when signing this transaction
+func (m Network) MutateTransaction(o *TransactionBuilder) error {
+	o.NetworkID = m.ID()
+	return nil
 }
 
 // MutateTransaction for PaymentBuilder causes the underylying PaymentOp
@@ -129,27 +161,14 @@ func (m PaymentBuilder) MutateTransaction(o *TransactionBuilder) error {
 	return m.Err
 }
 
-// MutateTransaction for CreateAccountBuilder causes the underylying
-// CreateAccountOp to be added to the operation list for the provided
-// transaction
-func (m CreateAccountBuilder) MutateTransaction(o *TransactionBuilder) error {
-	if m.Err != nil {
-		return m.Err
-	}
-
-	m.O.Body, m.Err = xdr.NewOperationBody(xdr.OperationTypeCreateAccount, m.CA)
-	o.TX.Operations = append(o.TX.Operations, m.O)
-	return m.Err
-}
-
 // MutateTransaction for Sequence sets the SeqNum on the transaction.
 func (m Sequence) MutateTransaction(o *TransactionBuilder) error {
 	o.TX.SeqNum = xdr.SequenceNumber(m.Sequence)
 	return nil
 }
 
-// MutateTransaction for Network sets the Network ID to use when signing this transaction
-func (m Network) MutateTransaction(o *TransactionBuilder) error {
-	o.NetworkID = m.ID()
-	return nil
+// MutateTransaction for SourceAccount sets the transaction's SourceAccount
+// to the pubilic key for the address provided
+func (m SourceAccount) MutateTransaction(o *TransactionBuilder) error {
+	return setAccountId(m.AddressOrSeed, &o.TX.SourceAccount)
 }

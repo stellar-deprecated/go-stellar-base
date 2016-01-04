@@ -12,9 +12,25 @@ import (
 	"github.com/stellar/go-stellar-base/xdr"
 )
 
+const (
+	// MemoTextMaxLength represents the maximum number of bytes a valid memo of
+	// type "MEMO_TEXT" can be.
+	MemoTextMaxLength = 28
+)
+
 var (
-	PublicNetwork  = Network{network.PublicNetworkPassphrase}
-	TestNetwork    = Network{network.TestNetworkPassphrase}
+	// PublicNetwork is a mutator that configures the transaction for submission
+	// to the main public stellar network.
+	PublicNetwork = Network{network.PublicNetworkPassphrase}
+
+	// TestNetwork is a mutator that configures the transaction for submission
+	// to the test stellar network (often called testnet).
+	TestNetwork = Network{network.TestNetworkPassphrase}
+
+	// DefaultNetwork is a mutator that configures the transaction for submission
+	// to the default stellar network.  Integrators may change this value to
+	// another `Network` mutator if they would like to effect the default in a
+	// process-global manner.
 	DefaultNetwork = TestNetwork
 )
 
@@ -27,10 +43,16 @@ type Destination struct {
 	AddressOrSeed string
 }
 
-// SourceAccount is a mutator capable of setting the source account on
-// an xdr.Operation and an xdr.Transaction
-type SourceAccount struct {
-	AddressOrSeed string
+// MemoID is a mutator that sets a memo on the mutated transaction of type
+// MEMO_ID.
+type MemoID struct {
+	Value uint64
+}
+
+// MemoText is a mutator that sets a memo on the mutated transaction of type
+// MEMO_TEXT.
+type MemoText struct {
+	Value string
 }
 
 // NativeAmount is a mutator that configures a payment to be using native
@@ -50,12 +72,19 @@ type Sign struct {
 	Seed string
 }
 
+// SourceAccount is a mutator capable of setting the source account on
+// an xdr.Operation and an xdr.Transaction
+type SourceAccount struct {
+	AddressOrSeed string
+}
+
 // Network establishes the stellar network that a transaction should apply to.
 // This modifier influences how a transaction is hashed for the purposes of signature generation.
 type Network struct {
 	Passphrase string
 }
 
+// ID returns the network ID derived from this struct's Passphrase
 func (n *Network) ID() [32]byte {
 	return network.ID(n.Passphrase)
 }

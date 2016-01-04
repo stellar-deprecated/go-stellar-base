@@ -4,6 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/stellar/go-stellar-base"
+	"github.com/stellar/go-stellar-base/xdr"
 )
 
 var _ = Describe("Transaction Mutators:", func() {
@@ -27,6 +28,29 @@ var _ = Describe("Transaction Mutators:", func() {
 		Context("on a transaction with 2 operations", func() {
 			BeforeEach(func() { subject.Mutate(Payment()) })
 			It("sets the fee to 200", func() { Expect(subject.TX.Fee).To(BeEquivalentTo(200)) })
+		})
+	})
+
+	Describe("MemoID", func() {
+		BeforeEach(func() { mut = MemoID{123} })
+		It("sets an ID memo on the transaction", func() {
+			Expect(subject.TX.Memo.Type).To(Equal(xdr.MemoTypeMemoId))
+			Expect(subject.TX.Memo.MustId()).To(Equal(xdr.Uint64(123)))
+		})
+	})
+
+	Describe("MemoText", func() {
+		BeforeEach(func() { mut = MemoText{"hello"} })
+		It("sets a TEXT memo on the transaction", func() {
+			Expect(subject.TX.Memo.Type).To(Equal(xdr.MemoTypeMemoText))
+			Expect(subject.TX.Memo.MustText()).To(Equal("hello"))
+		})
+
+		Context("a string longer than 28 bytes", func() {
+			BeforeEach(func() { mut = MemoText{"12345678901234567890123456789"} })
+			It("sets an error", func() {
+				Expect(subject.Err).ToNot(BeNil())
+			})
 		})
 	})
 
