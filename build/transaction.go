@@ -125,9 +125,21 @@ func (m Defaults) MutateTransaction(o *TransactionBuilder) error {
 	return nil
 }
 
+// MutateTransaction for MemoHash sets the memo.
+func (m MemoHash) MutateTransaction(o *TransactionBuilder) (err error) {
+	o.TX.Memo, err = xdr.NewMemo(xdr.MemoTypeMemoHash, m.Value)
+	return
+}
+
 // MutateTransaction for MemoID sets the memo.
 func (m MemoID) MutateTransaction(o *TransactionBuilder) (err error) {
 	o.TX.Memo, err = xdr.NewMemo(xdr.MemoTypeMemoId, xdr.Uint64(m.Value))
+	return
+}
+
+// MutateTransaction for MemoReturn sets the memo.
+func (m MemoReturn) MutateTransaction(o *TransactionBuilder) (err error) {
+	o.TX.Memo, err = xdr.NewMemo(xdr.MemoTypeMemoReturn, m.Value)
 	return
 }
 

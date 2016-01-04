@@ -43,10 +43,22 @@ type Destination struct {
 	AddressOrSeed string
 }
 
+// MemoHash is a mutator that sets a memo on the mutated transaction of type
+// MEMO_HASH.
+type MemoHash struct {
+	Value xdr.Hash
+}
+
 // MemoID is a mutator that sets a memo on the mutated transaction of type
 // MEMO_ID.
 type MemoID struct {
 	Value uint64
+}
+
+// MemoReturn is a mutator that sets a memo on the mutated transaction of type
+// MEMO_RETURN.
+type MemoReturn struct {
+	Value xdr.Hash
 }
 
 // MemoText is a mutator that sets a memo on the mutated transaction of type

@@ -31,11 +31,27 @@ var _ = Describe("Transaction Mutators:", func() {
 		})
 	})
 
+	Describe("MemoHash", func() {
+		BeforeEach(func() { mut = MemoHash{[32]byte{0x01}} })
+		It("sets a Hash memo on the transaction", func() {
+			Expect(subject.TX.Memo.Type).To(Equal(xdr.MemoTypeMemoHash))
+			Expect(subject.TX.Memo.MustHash()).To(Equal(xdr.Hash([32]byte{0x01})))
+		})
+	})
+
 	Describe("MemoID", func() {
 		BeforeEach(func() { mut = MemoID{123} })
 		It("sets an ID memo on the transaction", func() {
 			Expect(subject.TX.Memo.Type).To(Equal(xdr.MemoTypeMemoId))
 			Expect(subject.TX.Memo.MustId()).To(Equal(xdr.Uint64(123)))
+		})
+	})
+
+	Describe("MemoReturn", func() {
+		BeforeEach(func() { mut = MemoReturn{[32]byte{0x01}} })
+		It("sets a Hash memo on the transaction", func() {
+			Expect(subject.TX.Memo.Type).To(Equal(xdr.MemoTypeMemoReturn))
+			Expect(subject.TX.Memo.MustRetHash()).To(Equal(xdr.Hash([32]byte{0x01})))
 		})
 	})
 
