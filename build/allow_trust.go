@@ -2,6 +2,7 @@ package build
 
 import (
 	"errors"
+	
 	"github.com/stellar/go-stellar-base/xdr"
 )
 
@@ -34,6 +35,8 @@ func (b *AllowTrustBuilder) Mutate(muts ...interface{}) {
 			err = mut.MutateAllowTrust(&b.AT)
 		case OperationMutator:
 			err = mut.MutateOperation(&b.O)
+		default:
+			err = errors.New("Mutator type not allowed")
 		}
 
 		if err != nil {
@@ -44,31 +47,30 @@ func (b *AllowTrustBuilder) Mutate(muts ...interface{}) {
 }
 
 // MutateAllowTrust for Authorize sets the AllowTrustOp's Authorize field
-func (m Authorize) MutateAllowTrust(o *xdr.AllowTrustOp) {
+func (m Authorize) MutateAllowTrust(o *xdr.AllowTrustOp) error {
 	o.Authorize = m.Value
+	return nil
 }
 
 // MutateAllowTrust for Asset sets the AllowTrustOp's Asset field
 func (m AllowTrustAsset) MutateAllowTrust(o *xdr.AllowTrustOp) (err error) {
-	var assetType xdr.AssetType
-	var code []byte
 	length := len(m.Code)
 
 	switch {
 	case length >= 1 && length <= 4:
-		assetType = xdr.AssetTypeAssetTypeCreditAlphanum4
-		code = make([]byte, 4)
+		var code [4]byte
+		byteArray := []byte(m.Code)
+		copy(code[:], byteArray[0:length])
+		o.Asset, err = xdr.NewAllowTrustOpAsset(xdr.AssetTypeAssetTypeCreditAlphanum4, code)
 	case length >= 5 && length <= 12:
-		assetType = xdr.AssetTypeAssetTypeCreditAlphanum12
-		code = make([]byte, 12)
+		var code [12]byte
+		byteArray := []byte(m.Code)
+		copy(code[:], byteArray[0:length])
+		o.Asset, err = xdr.NewAllowTrustOpAsset(xdr.AssetTypeAssetTypeCreditAlphanum12, code)
 	default:
-		return errors.New("Asset code length is invalid")
+		err = errors.New("Asset code length is invalid")
 	}
 
-	byteArray := []byte(m.Code)
-	copy(code, byteArray[:length])
-
-	o.Asset, err = xdr.NewAllowTrustOpAsset(assetType, code)
 	return
 }
 

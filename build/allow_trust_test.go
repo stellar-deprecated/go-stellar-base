@@ -1,7 +1,6 @@
 package build
 
 import (
-	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/stellar/go-stellar-base"
@@ -71,7 +70,7 @@ var _ = Describe("Payment Mutators", func() {
 
 			It("sets Asset properly", func() {
 				Expect(subject.AT.Asset.Type).To(Equal(xdr.AssetTypeAssetTypeCreditAlphanum4))
-				Expect(subject.AT.Asset.AssetCode4).To(Equal([4]byte{'U', 'S', 'D', 0}))
+				Expect(*subject.AT.Asset.AssetCode4).To(Equal([4]byte{'U', 'S', 'D', 0}))
 				Expect(subject.AT.Asset.AssetCode12).To(BeNil())
 			})
 		})
@@ -84,7 +83,7 @@ var _ = Describe("Payment Mutators", func() {
 			It("sets Asset properly", func() {
 				Expect(subject.AT.Asset.Type).To(Equal(xdr.AssetTypeAssetTypeCreditAlphanum12))
 				Expect(subject.AT.Asset.AssetCode4).To(BeNil())
-				Expect(subject.AT.Asset.AssetCode12).To(Equal([12]byte{'A', 'B', 'C', 'D', 'E', 'F', 0, 0, 0, 0, 0, 0}))
+				Expect(*subject.AT.Asset.AssetCode12).To(Equal([12]byte{'A', 'B', 'C', 'D', 'E', 'F', 0, 0, 0, 0, 0, 0}))
 			})
 		})
 	})
@@ -96,7 +95,6 @@ var _ = Describe("Payment Mutators", func() {
 			})
 
 			It("sets authorize flag properly", func() {
-				fmt.Println(subject.AT.Authorize)
 				Expect(subject.AT.Authorize).To(Equal(true))
 			})
 		})
