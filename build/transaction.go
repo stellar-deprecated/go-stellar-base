@@ -99,6 +99,18 @@ func (b *TransactionBuilder) Sign(signers ...string) (result TransactionEnvelope
 //
 // ------------------------------------------------------------
 
+// MutateTransaction for AllowTrustBuilder causes the underylying AllowTrustOp
+// to be added to the operation list for the provided transaction
+func (m AllowTrustBuilder) MutateTransaction(o *TransactionBuilder) error {
+	if m.Err != nil {
+		return m.Err
+	}
+
+	m.O.Body, m.Err = xdr.NewOperationBody(xdr.OperationTypeAllowTrust, m.AT)
+	o.TX.Operations = append(o.TX.Operations, m.O)
+	return m.Err
+}
+
 // MutateTransaction for CreateAccountBuilder causes the underylying
 // CreateAccountOp to be added to the operation list for the provided
 // transaction
