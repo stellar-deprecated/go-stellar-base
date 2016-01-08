@@ -86,7 +86,7 @@ type NativeAmount struct {
 
 // Sequence is a mutator that sets the sequence number on a transaction
 type Sequence struct {
-	Sequence xdr.SequenceNumber
+	Sequence uint64
 }
 
 // Sign is a mutator that contributes a signature of the provided envelope's
