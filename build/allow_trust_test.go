@@ -7,7 +7,7 @@ import (
 	"github.com/stellar/go-stellar-base/xdr"
 )
 
-var _ = Describe("Payment Mutators", func() {
+var _ = Describe("AllowTrustBuilder Mutators", func() {
 
 	var (
 		subject AllowTrustBuilder
@@ -86,6 +86,28 @@ var _ = Describe("Payment Mutators", func() {
 				Expect(*subject.AT.Asset.AssetCode12).To(Equal([12]byte{'A', 'B', 'C', 'D', 'E', 'F', 0, 0, 0, 0, 0, 0}))
 			})
 		})
+
+		Context("asset code length invalid", func() {
+			Context("empty", func() {
+				BeforeEach(func() {
+					mut = AllowTrustAsset{""}
+				})
+
+				It("failed", func() {
+					Expect(subject.Err).To(MatchError("Asset code length is invalid"))
+				})
+			});
+
+			Context("too long", func() {
+				BeforeEach(func() {
+					mut = AllowTrustAsset{"1234567890123"}
+				})
+
+				It("failed", func() {
+					Expect(subject.Err).To(MatchError("Asset code length is invalid"))
+				})
+			});
+		})
 	})
 
 	Describe("Authorize", func() {
@@ -101,6 +123,7 @@ var _ = Describe("Payment Mutators", func() {
 
 		Context("when equal false", func() {
 			BeforeEach(func() {
+				subject.AT.Authorize = true
 				mut = Authorize{false}
 			})
 
