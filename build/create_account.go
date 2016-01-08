@@ -1,6 +1,8 @@
 package build
 
 import (
+	"errors"
+	
 	"github.com/stellar/go-stellar-base/amount"
 	"github.com/stellar/go-stellar-base/xdr"
 )
@@ -35,6 +37,8 @@ func (b *CreateAccountBuilder) Mutate(muts ...interface{}) {
 			err = mut.MutateCreateAccount(&b.CA)
 		case OperationMutator:
 			err = mut.MutateOperation(&b.O)
+		default:
+			err = errors.New("Mutator type not allowed")
 		}
 
 		if err != nil {

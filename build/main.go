@@ -34,6 +34,17 @@ var (
 	DefaultNetwork = TestNetwork
 )
 
+// AllowTrustAsset is a mutator capable of setting the asset on
+// an operations that have one.
+type AllowTrustAsset struct {
+	Code string
+}
+
+// Authorize is a mutator capable of setting the `authorize` flag
+type Authorize struct {
+	Value bool
+}
+
 // Defaults is a mutator that sets defaults
 type Defaults struct{}
 
@@ -88,6 +99,12 @@ type Sign struct {
 // an xdr.Operation and an xdr.Transaction
 type SourceAccount struct {
 	AddressOrSeed string
+}
+
+// Trustor is a mutator capable of setting the trustor on
+// allow_trust operation.
+type Trustor struct {
+	Address string
 }
 
 // Network establishes the stellar network that a transaction should apply to.
