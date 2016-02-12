@@ -2270,7 +2270,7 @@ type TransactionEnvelope struct {
 //
 //   struct ClaimOfferAtom
 //    {
-//        // emited to identify the offer
+//        // emitted to identify the offer
 //        AccountID sellerID; // Account that owns the offer
 //        uint64 offerID;
 //
@@ -5163,13 +5163,109 @@ type LedgerHeaderHistoryEntry struct {
 	Ext    LedgerHeaderHistoryEntryExt
 }
 
+// LedgerScpMessages is an XDR Struct defines as:
+//
+//   struct LedgerSCPMessages
+//    {
+//        uint32 ledgerSeq;
+//        SCPEnvelope messages<>;
+//    };
+//
+type LedgerScpMessages struct {
+	LedgerSeq Uint32
+	Messages  []ScpEnvelope
+}
+
+// ScpHistoryEntryV0 is an XDR Struct defines as:
+//
+//   struct SCPHistoryEntryV0
+//    {
+//        SCPQuorumSet quorumSets<>; // additional quorum sets used by ledgerMessages
+//        LedgerSCPMessages ledgerMessages;
+//    };
+//
+type ScpHistoryEntryV0 struct {
+	QuorumSets     []ScpQuorumSet
+	LedgerMessages LedgerScpMessages
+}
+
+// ScpHistoryEntry is an XDR Union defines as:
+//
+//   union SCPHistoryEntry switch (int v)
+//    {
+//    case 0:
+//        SCPHistoryEntryV0 v0;
+//    };
+//
+type ScpHistoryEntry struct {
+	V  int32
+	V0 *ScpHistoryEntryV0
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u ScpHistoryEntry) SwitchFieldName() string {
+	return "V"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of ScpHistoryEntry
+func (u ScpHistoryEntry) ArmForSwitch(sw int32) (string, bool) {
+	switch int32(sw) {
+	case 0:
+		return "V0", true
+	}
+	return "-", false
+}
+
+// NewScpHistoryEntry creates a new  ScpHistoryEntry.
+func NewScpHistoryEntry(v int32, value interface{}) (result ScpHistoryEntry, err error) {
+	result.V = v
+	switch int32(v) {
+	case 0:
+		tv, ok := value.(ScpHistoryEntryV0)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be ScpHistoryEntryV0")
+			return
+		}
+		result.V0 = &tv
+	}
+	return
+}
+
+// MustV0 retrieves the V0 value from the union,
+// panicing if the value is not set.
+func (u ScpHistoryEntry) MustV0() ScpHistoryEntryV0 {
+	val, ok := u.GetV0()
+
+	if !ok {
+		panic("arm V0 is not set")
+	}
+
+	return val
+}
+
+// GetV0 retrieves the V0 value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u ScpHistoryEntry) GetV0() (result ScpHistoryEntryV0, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.V))
+
+	if armName == "V0" {
+		result = *u.V0
+		ok = true
+	}
+
+	return
+}
+
 // LedgerEntryChangeType is an XDR Enum defines as:
 //
 //   enum LedgerEntryChangeType
 //    {
 //        LEDGER_ENTRY_CREATED = 0, // entry was added to the ledger
 //        LEDGER_ENTRY_UPDATED = 1, // entry was modified in the ledger
-//        LEDGER_ENTRY_REMOVED = 2  // entry was removed from the ledger
+//        LEDGER_ENTRY_REMOVED = 2, // entry was removed from the ledger
+//        LEDGER_ENTRY_STATE = 3    // value of the entry
 //    };
 //
 type LedgerEntryChangeType int32
@@ -5178,12 +5274,14 @@ const (
 	LedgerEntryChangeTypeLedgerEntryCreated LedgerEntryChangeType = 0
 	LedgerEntryChangeTypeLedgerEntryUpdated LedgerEntryChangeType = 1
 	LedgerEntryChangeTypeLedgerEntryRemoved LedgerEntryChangeType = 2
+	LedgerEntryChangeTypeLedgerEntryState   LedgerEntryChangeType = 3
 )
 
 var ledgerEntryChangeTypeMap = map[int32]string{
 	0: "LedgerEntryChangeTypeLedgerEntryCreated",
 	1: "LedgerEntryChangeTypeLedgerEntryUpdated",
 	2: "LedgerEntryChangeTypeLedgerEntryRemoved",
+	3: "LedgerEntryChangeTypeLedgerEntryState",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -5209,6 +5307,8 @@ func (e LedgerEntryChangeType) String() string {
 //        LedgerEntry updated;
 //    case LEDGER_ENTRY_REMOVED:
 //        LedgerKey removed;
+//    case LEDGER_ENTRY_STATE:
+//        LedgerEntry state;
 //    };
 //
 type LedgerEntryChange struct {
@@ -5216,6 +5316,7 @@ type LedgerEntryChange struct {
 	Created *LedgerEntry
 	Updated *LedgerEntry
 	Removed *LedgerKey
+	State   *LedgerEntry
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -5234,6 +5335,8 @@ func (u LedgerEntryChange) ArmForSwitch(sw int32) (string, bool) {
 		return "Updated", true
 	case LedgerEntryChangeTypeLedgerEntryRemoved:
 		return "Removed", true
+	case LedgerEntryChangeTypeLedgerEntryState:
+		return "State", true
 	}
 	return "-", false
 }
@@ -5263,6 +5366,13 @@ func NewLedgerEntryChange(aType LedgerEntryChangeType, value interface{}) (resul
 			return
 		}
 		result.Removed = &tv
+	case LedgerEntryChangeTypeLedgerEntryState:
+		tv, ok := value.(LedgerEntry)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be LedgerEntry")
+			return
+		}
+		result.State = &tv
 	}
 	return
 }
@@ -5336,6 +5446,31 @@ func (u LedgerEntryChange) GetRemoved() (result LedgerKey, ok bool) {
 
 	if armName == "Removed" {
 		result = *u.Removed
+		ok = true
+	}
+
+	return
+}
+
+// MustState retrieves the State value from the union,
+// panicing if the value is not set.
+func (u LedgerEntryChange) MustState() LedgerEntry {
+	val, ok := u.GetState()
+
+	if !ok {
+		panic("arm State is not set")
+	}
+
+	return val
+}
+
+// GetState retrieves the State value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u LedgerEntryChange) GetState() (result LedgerEntry, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "State" {
+		result = *u.State
 		ok = true
 	}
 
@@ -5504,6 +5639,7 @@ type AuthCert struct {
 //    {
 //        uint32 ledgerVersion;
 //        uint32 overlayVersion;
+//        uint32 overlayMinVersion;
 //        Hash networkID;
 //        string versionStr<100>;
 //        int listeningPort;
@@ -5513,14 +5649,15 @@ type AuthCert struct {
 //    };
 //
 type Hello struct {
-	LedgerVersion  Uint32
-	OverlayVersion Uint32
-	NetworkId      Hash
-	VersionStr     string
-	ListeningPort  int32
-	PeerId         NodeId
-	Cert           AuthCert
-	Nonce          Uint256
+	LedgerVersion     Uint32
+	OverlayVersion    Uint32
+	OverlayMinVersion Uint32
+	NetworkId         Hash
+	VersionStr        string
+	ListeningPort     int32
+	PeerId            NodeId
+	Cert              AuthCert
+	Nonce             Uint256
 }
 
 // Auth is an XDR Struct defines as:
@@ -5685,7 +5822,8 @@ func (u PeerAddressIp) GetIpv6() (result [16]byte, ok bool) {
 //            opaque ipv4[4];
 //        case IPv6:
 //            opaque ipv6[16];
-//        } ip;
+//        }
+//        ip;
 //        uint32 port;
 //        uint32 numFailures;
 //    };
@@ -5701,7 +5839,6 @@ type PeerAddress struct {
 //   enum MessageType
 //    {
 //        ERROR_MSG = 0,
-//        HELLO = 1,
 //        AUTH = 2,
 //        DONT_HAVE = 3,
 //
@@ -5716,14 +5853,17 @@ type PeerAddress struct {
 //        // SCP
 //        GET_SCP_QUORUMSET = 9,
 //        SCP_QUORUMSET = 10,
-//        SCP_MESSAGE = 11
+//        SCP_MESSAGE = 11,
+//        GET_SCP_STATE = 12,
+//
+//        // new messages
+//        HELLO = 13
 //    };
 //
 type MessageType int32
 
 const (
 	MessageTypeErrorMsg        MessageType = 0
-	MessageTypeHello           MessageType = 1
 	MessageTypeAuth            MessageType = 2
 	MessageTypeDontHave        MessageType = 3
 	MessageTypeGetPeers        MessageType = 4
@@ -5734,11 +5874,12 @@ const (
 	MessageTypeGetScpQuorumset MessageType = 9
 	MessageTypeScpQuorumset    MessageType = 10
 	MessageTypeScpMessage      MessageType = 11
+	MessageTypeGetScpState     MessageType = 12
+	MessageTypeHello           MessageType = 13
 )
 
 var messageTypeMap = map[int32]string{
 	0:  "MessageTypeErrorMsg",
-	1:  "MessageTypeHello",
 	2:  "MessageTypeAuth",
 	3:  "MessageTypeDontHave",
 	4:  "MessageTypeGetPeers",
@@ -5749,6 +5890,8 @@ var messageTypeMap = map[int32]string{
 	9:  "MessageTypeGetScpQuorumset",
 	10: "MessageTypeScpQuorumset",
 	11: "MessageTypeScpMessage",
+	12: "MessageTypeGetScpState",
+	13: "MessageTypeHello",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -5809,21 +5952,24 @@ type DontHave struct {
 //        SCPQuorumSet qSet;
 //    case SCP_MESSAGE:
 //        SCPEnvelope envelope;
+//    case GET_SCP_STATE:
+//        uint32 getSCPLedgerSeq; // ledger seq requested ; if 0, requests the latest
 //    };
 //
 type StellarMessage struct {
-	Type        MessageType
-	Error       *Error
-	Hello       *Hello
-	Auth        *Auth
-	DontHave    *DontHave
-	Peers       *[]PeerAddress
-	TxSetHash   *Uint256
-	TxSet       *TransactionSet
-	Transaction *TransactionEnvelope
-	QSetHash    *Uint256
-	QSet        *ScpQuorumSet
-	Envelope    *ScpEnvelope
+	Type            MessageType
+	Error           *Error
+	Hello           *Hello
+	Auth            *Auth
+	DontHave        *DontHave
+	Peers           *[]PeerAddress
+	TxSetHash       *Uint256
+	TxSet           *TransactionSet
+	Transaction     *TransactionEnvelope
+	QSetHash        *Uint256
+	QSet            *ScpQuorumSet
+	Envelope        *ScpEnvelope
+	GetScpLedgerSeq *Uint32
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -5860,6 +6006,8 @@ func (u StellarMessage) ArmForSwitch(sw int32) (string, bool) {
 		return "QSet", true
 	case MessageTypeScpMessage:
 		return "Envelope", true
+	case MessageTypeGetScpState:
+		return "GetScpLedgerSeq", true
 	}
 	return "-", false
 }
@@ -5947,6 +6095,13 @@ func NewStellarMessage(aType MessageType, value interface{}) (result StellarMess
 			return
 		}
 		result.Envelope = &tv
+	case MessageTypeGetScpState:
+		tv, ok := value.(Uint32)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be Uint32")
+			return
+		}
+		result.GetScpLedgerSeq = &tv
 	}
 	return
 }
@@ -6226,19 +6381,118 @@ func (u StellarMessage) GetEnvelope() (result ScpEnvelope, ok bool) {
 	return
 }
 
-// AuthenticatedMessage is an XDR Struct defines as:
+// MustGetScpLedgerSeq retrieves the GetScpLedgerSeq value from the union,
+// panicing if the value is not set.
+func (u StellarMessage) MustGetScpLedgerSeq() Uint32 {
+	val, ok := u.GetGetScpLedgerSeq()
+
+	if !ok {
+		panic("arm GetScpLedgerSeq is not set")
+	}
+
+	return val
+}
+
+// GetGetScpLedgerSeq retrieves the GetScpLedgerSeq value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u StellarMessage) GetGetScpLedgerSeq() (result Uint32, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "GetScpLedgerSeq" {
+		result = *u.GetScpLedgerSeq
+		ok = true
+	}
+
+	return
+}
+
+// AuthenticatedMessageV0 is an XDR NestedStruct defines as:
 //
-//   struct AuthenticatedMessage
+//   struct
 //    {
 //       uint64 sequence;
 //       StellarMessage message;
 //       HmacSha256Mac mac;
-//    };
+//        }
 //
-type AuthenticatedMessage struct {
+type AuthenticatedMessageV0 struct {
 	Sequence Uint64
 	Message  StellarMessage
 	Mac      HmacSha256Mac
+}
+
+// AuthenticatedMessage is an XDR Union defines as:
+//
+//   union AuthenticatedMessage switch (uint32 v)
+//    {
+//    case 0:
+//        struct
+//    {
+//       uint64 sequence;
+//       StellarMessage message;
+//       HmacSha256Mac mac;
+//        } v0;
+//    };
+//
+type AuthenticatedMessage struct {
+	V  Uint32
+	V0 *AuthenticatedMessageV0
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u AuthenticatedMessage) SwitchFieldName() string {
+	return "V"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of AuthenticatedMessage
+func (u AuthenticatedMessage) ArmForSwitch(sw int32) (string, bool) {
+	switch Uint32(sw) {
+	case 0:
+		return "V0", true
+	}
+	return "-", false
+}
+
+// NewAuthenticatedMessage creates a new  AuthenticatedMessage.
+func NewAuthenticatedMessage(v Uint32, value interface{}) (result AuthenticatedMessage, err error) {
+	result.V = v
+	switch Uint32(v) {
+	case 0:
+		tv, ok := value.(AuthenticatedMessageV0)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be AuthenticatedMessageV0")
+			return
+		}
+		result.V0 = &tv
+	}
+	return
+}
+
+// MustV0 retrieves the V0 value from the union,
+// panicing if the value is not set.
+func (u AuthenticatedMessage) MustV0() AuthenticatedMessageV0 {
+	val, ok := u.GetV0()
+
+	if !ok {
+		panic("arm V0 is not set")
+	}
+
+	return val
+}
+
+// GetV0 retrieves the V0 value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u AuthenticatedMessage) GetV0() (result AuthenticatedMessageV0, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.V))
+
+	if armName == "V0" {
+		result = *u.V0
+		ok = true
+	}
+
+	return
 }
 
 // Value is an XDR Typedef defines as:
@@ -6322,8 +6576,8 @@ type ScpNomination struct {
 //                SCPBallot ballot;         // b
 //                SCPBallot* prepared;      // p
 //                SCPBallot* preparedPrime; // p'
-//                uint32 nC;                // n_c
-//                uint32 nP;                // n_P
+//                uint32 nC;                // c.n
+//                uint32 nH;                // h.n
 //            }
 //
 type ScpStatementPrepare struct {
@@ -6332,40 +6586,40 @@ type ScpStatementPrepare struct {
 	Prepared      *ScpBallot
 	PreparedPrime *ScpBallot
 	NC            Uint32
-	NP            Uint32
+	NH            Uint32
 }
 
 // ScpStatementConfirm is an XDR NestedStruct defines as:
 //
 //   struct
 //            {
+//                SCPBallot ballot;   // b
+//                uint32 nPrepared;   // p.n
+//                uint32 nCommit;     // c.n
+//                uint32 nH;          // h.n
 //                Hash quorumSetHash; // D
-//                uint32 nPrepared;   // n_p
-//                SCPBallot commit;   // c
-//                uint32 nP;          // n_P
 //            }
 //
 type ScpStatementConfirm struct {
-	QuorumSetHash Hash
+	Ballot        ScpBallot
 	NPrepared     Uint32
-	Commit        ScpBallot
-	NP            Uint32
+	NCommit       Uint32
+	NH            Uint32
+	QuorumSetHash Hash
 }
 
 // ScpStatementExternalize is an XDR NestedStruct defines as:
 //
 //   struct
 //            {
-//                SCPBallot commit; // c
-//                uint32 nP;        // n_P
-//                // not from the paper, but useful to build tooling to
-//                // traverse the graph based off only the latest statement
+//                SCPBallot commit;         // c
+//                uint32 nH;                // h.n
 //                Hash commitQuorumSetHash; // D used before EXTERNALIZE
 //            }
 //
 type ScpStatementExternalize struct {
 	Commit              ScpBallot
-	NP                  Uint32
+	NH                  Uint32
 	CommitQuorumSetHash Hash
 }
 
@@ -6380,24 +6634,23 @@ type ScpStatementExternalize struct {
 //                SCPBallot ballot;         // b
 //                SCPBallot* prepared;      // p
 //                SCPBallot* preparedPrime; // p'
-//                uint32 nC;                // n_c
-//                uint32 nP;                // n_P
+//                uint32 nC;                // c.n
+//                uint32 nH;                // h.n
 //            } prepare;
 //        case SCP_ST_CONFIRM:
 //            struct
 //            {
+//                SCPBallot ballot;   // b
+//                uint32 nPrepared;   // p.n
+//                uint32 nCommit;     // c.n
+//                uint32 nH;          // h.n
 //                Hash quorumSetHash; // D
-//                uint32 nPrepared;   // n_p
-//                SCPBallot commit;   // c
-//                uint32 nP;          // n_P
 //            } confirm;
 //        case SCP_ST_EXTERNALIZE:
 //            struct
 //            {
-//                SCPBallot commit; // c
-//                uint32 nP;        // n_P
-//                // not from the paper, but useful to build tooling to
-//                // traverse the graph based off only the latest statement
+//                SCPBallot commit;         // c
+//                uint32 nH;                // h.n
 //                Hash commitQuorumSetHash; // D used before EXTERNALIZE
 //            } externalize;
 //        case SCP_ST_NOMINATE:
@@ -6586,24 +6839,23 @@ func (u ScpStatementPledges) GetNominate() (result ScpNomination, ok bool) {
 //                SCPBallot ballot;         // b
 //                SCPBallot* prepared;      // p
 //                SCPBallot* preparedPrime; // p'
-//                uint32 nC;                // n_c
-//                uint32 nP;                // n_P
+//                uint32 nC;                // c.n
+//                uint32 nH;                // h.n
 //            } prepare;
 //        case SCP_ST_CONFIRM:
 //            struct
 //            {
+//                SCPBallot ballot;   // b
+//                uint32 nPrepared;   // p.n
+//                uint32 nCommit;     // c.n
+//                uint32 nH;          // h.n
 //                Hash quorumSetHash; // D
-//                uint32 nPrepared;   // n_p
-//                SCPBallot commit;   // c
-//                uint32 nP;          // n_P
 //            } confirm;
 //        case SCP_ST_EXTERNALIZE:
 //            struct
 //            {
-//                SCPBallot commit; // c
-//                uint32 nP;        // n_P
-//                // not from the paper, but useful to build tooling to
-//                // traverse the graph based off only the latest statement
+//                SCPBallot commit;         // c
+//                uint32 nH;                // h.n
 //                Hash commitQuorumSetHash; // D used before EXTERNALIZE
 //            } externalize;
 //        case SCP_ST_NOMINATE:
