@@ -80,6 +80,11 @@ func (t *TransactionResult) Scan(src interface{}) error {
 	return safeBase64Scan(src, t)
 }
 
+// Scan reads from src into an TransactionResultPair struct
+func (t *TransactionResultPair) Scan(src interface{}) error {
+	return safeBase64Scan(src, t)
+}
+
 // safeBase64Scan scans from src (which should be either a []byte or string)
 // into dest by using `SafeUnmarshalBase64`.
 func safeBase64Scan(src, dest interface{}) error {
