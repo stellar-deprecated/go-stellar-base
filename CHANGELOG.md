@@ -10,6 +10,7 @@ bumps.  A breaking change will get clearly notified in this log.
 
 ### Added
 
+- `*xdr.AccountId` learned `Address()` to make getting the strkey form of an account id simpler.
 - `build` package learned `ClearData()` and `SetData()` to configure ManageData operations.
 
 
