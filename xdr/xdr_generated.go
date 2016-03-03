@@ -306,11 +306,23 @@ type Thresholds [4]byte
 //
 type String32 string
 
+// String64 is an XDR Typedef defines as:
+//
+//   typedef string string64<64>;
+//
+type String64 string
+
 // SequenceNumber is an XDR Typedef defines as:
 //
 //   typedef uint64 SequenceNumber;
 //
 type SequenceNumber Uint64
+
+// DataValue is an XDR Typedef defines as:
+//
+//   typedef opaque DataValue<64>;
+//
+type DataValue []byte
 
 // AssetType is an XDR Enum defines as:
 //
@@ -556,7 +568,8 @@ func (e ThresholdIndexes) String() string {
 //    {
 //        ACCOUNT = 0,
 //        TRUSTLINE = 1,
-//        OFFER = 2
+//        OFFER = 2,
+//        DATA = 3
 //    };
 //
 type LedgerEntryType int32
@@ -565,12 +578,14 @@ const (
 	LedgerEntryTypeAccount   LedgerEntryType = 0
 	LedgerEntryTypeTrustline LedgerEntryType = 1
 	LedgerEntryTypeOffer     LedgerEntryType = 2
+	LedgerEntryTypeData      LedgerEntryType = 3
 )
 
 var ledgerEntryTypeMap = map[int32]string{
 	0: "LedgerEntryTypeAccount",
 	1: "LedgerEntryTypeTrustline",
 	2: "LedgerEntryTypeOffer",
+	3: "LedgerEntryTypeData",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -928,6 +943,68 @@ type OfferEntry struct {
 	Ext      OfferEntryExt
 }
 
+// DataEntryExt is an XDR NestedUnion defines as:
+//
+//   union switch (int v)
+//        {
+//        case 0:
+//            void;
+//        }
+//
+type DataEntryExt struct {
+	V int32
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u DataEntryExt) SwitchFieldName() string {
+	return "V"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of DataEntryExt
+func (u DataEntryExt) ArmForSwitch(sw int32) (string, bool) {
+	switch int32(sw) {
+	case 0:
+		return "", true
+	}
+	return "-", false
+}
+
+// NewDataEntryExt creates a new  DataEntryExt.
+func NewDataEntryExt(v int32, value interface{}) (result DataEntryExt, err error) {
+	result.V = v
+	switch int32(v) {
+	case 0:
+		// void
+	}
+	return
+}
+
+// DataEntry is an XDR Struct defines as:
+//
+//   struct DataEntry
+//    {
+//        AccountID accountID; // account this data belongs to
+//        string64 dataName;
+//        DataValue dataValue;
+//
+//        // reserved for future use
+//        union switch (int v)
+//        {
+//        case 0:
+//            void;
+//        }
+//        ext;
+//    };
+//
+type DataEntry struct {
+	AccountId AccountId
+	DataName  String64
+	DataValue DataValue
+	Ext       DataEntryExt
+}
+
 // LedgerEntryData is an XDR NestedUnion defines as:
 //
 //   union switch (LedgerEntryType type)
@@ -938,6 +1015,8 @@ type OfferEntry struct {
 //            TrustLineEntry trustLine;
 //        case OFFER:
 //            OfferEntry offer;
+//        case DATA:
+//            DataEntry data;
 //        }
 //
 type LedgerEntryData struct {
@@ -945,6 +1024,7 @@ type LedgerEntryData struct {
 	Account   *AccountEntry
 	TrustLine *TrustLineEntry
 	Offer     *OfferEntry
+	Data      *DataEntry
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -963,6 +1043,8 @@ func (u LedgerEntryData) ArmForSwitch(sw int32) (string, bool) {
 		return "TrustLine", true
 	case LedgerEntryTypeOffer:
 		return "Offer", true
+	case LedgerEntryTypeData:
+		return "Data", true
 	}
 	return "-", false
 }
@@ -992,6 +1074,13 @@ func NewLedgerEntryData(aType LedgerEntryType, value interface{}) (result Ledger
 			return
 		}
 		result.Offer = &tv
+	case LedgerEntryTypeData:
+		tv, ok := value.(DataEntry)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be DataEntry")
+			return
+		}
+		result.Data = &tv
 	}
 	return
 }
@@ -1071,6 +1160,31 @@ func (u LedgerEntryData) GetOffer() (result OfferEntry, ok bool) {
 	return
 }
 
+// MustData retrieves the Data value from the union,
+// panicing if the value is not set.
+func (u LedgerEntryData) MustData() DataEntry {
+	val, ok := u.GetData()
+
+	if !ok {
+		panic("arm Data is not set")
+	}
+
+	return val
+}
+
+// GetData retrieves the Data value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u LedgerEntryData) GetData() (result DataEntry, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "Data" {
+		result = *u.Data
+		ok = true
+	}
+
+	return
+}
+
 // LedgerEntryExt is an XDR NestedUnion defines as:
 //
 //   union switch (int v)
@@ -1123,6 +1237,8 @@ func NewLedgerEntryExt(v int32, value interface{}) (result LedgerEntryExt, err e
 //            TrustLineEntry trustLine;
 //        case OFFER:
 //            OfferEntry offer;
+//        case DATA:
+//            DataEntry data;
 //        }
 //        data;
 //
@@ -1203,7 +1319,8 @@ type DecoratedSignature struct {
 //        CHANGE_TRUST = 6,
 //        ALLOW_TRUST = 7,
 //        ACCOUNT_MERGE = 8,
-//        INFLATION = 9
+//        INFLATION = 9,
+//        MANAGE_DATA = 10
 //    };
 //
 type OperationType int32
@@ -1219,19 +1336,21 @@ const (
 	OperationTypeAllowTrust         OperationType = 7
 	OperationTypeAccountMerge       OperationType = 8
 	OperationTypeInflation          OperationType = 9
+	OperationTypeManageData         OperationType = 10
 )
 
 var operationTypeMap = map[int32]string{
-	0: "OperationTypeCreateAccount",
-	1: "OperationTypePayment",
-	2: "OperationTypePathPayment",
-	3: "OperationTypeManageOffer",
-	4: "OperationTypeCreatePassiveOffer",
-	5: "OperationTypeSetOptions",
-	6: "OperationTypeChangeTrust",
-	7: "OperationTypeAllowTrust",
-	8: "OperationTypeAccountMerge",
-	9: "OperationTypeInflation",
+	0:  "OperationTypeCreateAccount",
+	1:  "OperationTypePayment",
+	2:  "OperationTypePathPayment",
+	3:  "OperationTypeManageOffer",
+	4:  "OperationTypeCreatePassiveOffer",
+	5:  "OperationTypeSetOptions",
+	6:  "OperationTypeChangeTrust",
+	7:  "OperationTypeAllowTrust",
+	8:  "OperationTypeAccountMerge",
+	9:  "OperationTypeInflation",
+	10: "OperationTypeManageData",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -1524,6 +1643,19 @@ type AllowTrustOp struct {
 	Authorize bool
 }
 
+// ManageDataOp is an XDR Struct defines as:
+//
+//   struct ManageDataOp
+//    {
+//        string64 dataName;
+//        DataValue* dataValue;   // set to null to clear
+//    };
+//
+type ManageDataOp struct {
+	DataName  String64
+	DataValue *DataValue
+}
+
 // OperationBody is an XDR NestedUnion defines as:
 //
 //   union switch (OperationType type)
@@ -1548,6 +1680,8 @@ type AllowTrustOp struct {
 //            AccountID destination;
 //        case INFLATION:
 //            void;
+//        case MANAGE_DATA:
+//            ManageDataOp manageDataOp;
 //        }
 //
 type OperationBody struct {
@@ -1561,6 +1695,7 @@ type OperationBody struct {
 	ChangeTrustOp        *ChangeTrustOp
 	AllowTrustOp         *AllowTrustOp
 	Destination          *AccountId
+	ManageDataOp         *ManageDataOp
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -1593,6 +1728,8 @@ func (u OperationBody) ArmForSwitch(sw int32) (string, bool) {
 		return "Destination", true
 	case OperationTypeInflation:
 		return "", true
+	case OperationTypeManageData:
+		return "ManageDataOp", true
 	}
 	return "-", false
 }
@@ -1666,6 +1803,13 @@ func NewOperationBody(aType OperationType, value interface{}) (result OperationB
 		result.Destination = &tv
 	case OperationTypeInflation:
 		// void
+	case OperationTypeManageData:
+		tv, ok := value.(ManageDataOp)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be ManageDataOp")
+			return
+		}
+		result.ManageDataOp = &tv
 	}
 	return
 }
@@ -1895,6 +2039,31 @@ func (u OperationBody) GetDestination() (result AccountId, ok bool) {
 	return
 }
 
+// MustManageDataOp retrieves the ManageDataOp value from the union,
+// panicing if the value is not set.
+func (u OperationBody) MustManageDataOp() ManageDataOp {
+	val, ok := u.GetManageDataOp()
+
+	if !ok {
+		panic("arm ManageDataOp is not set")
+	}
+
+	return val
+}
+
+// GetManageDataOp retrieves the ManageDataOp value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u OperationBody) GetManageDataOp() (result ManageDataOp, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "ManageDataOp" {
+		result = *u.ManageDataOp
+		ok = true
+	}
+
+	return
+}
+
 // Operation is an XDR Struct defines as:
 //
 //   struct Operation
@@ -1926,6 +2095,8 @@ func (u OperationBody) GetDestination() (result AccountId, ok bool) {
 //            AccountID destination;
 //        case INFLATION:
 //            void;
+//        case MANAGE_DATA:
+//            ManageDataOp manageDataOp;
 //        }
 //        body;
 //    };
@@ -3503,6 +3674,93 @@ func (u InflationResult) GetPayouts() (result []InflationPayout, ok bool) {
 	return
 }
 
+// ManageDataResultCode is an XDR Enum defines as:
+//
+//   enum ManageDataResultCode
+//    {
+//        // codes considered as "success" for the operation
+//        MANAGE_DATA_SUCCESS = 0,
+//        // codes considered as "failure" for the operation
+//        MANAGE_DATA_NOT_SUPPORTED_YET = -1, // The network hasn't moved to this protocol change yet
+//        MANAGE_DATA_NAME_NOT_FOUND = -2,    // Trying to remove a Data Entry that isn't there
+//        MANAGE_DATA_LOW_RESERVE = -3,       // not enough funds to create a new Data Entry
+//        MANAGE_DATA_INVALID_NAME = -4       // Name not a valid string
+//    };
+//
+type ManageDataResultCode int32
+
+const (
+	ManageDataResultCodeManageDataSuccess         ManageDataResultCode = 0
+	ManageDataResultCodeManageDataNotSupportedYet ManageDataResultCode = -1
+	ManageDataResultCodeManageDataNameNotFound    ManageDataResultCode = -2
+	ManageDataResultCodeManageDataLowReserve      ManageDataResultCode = -3
+	ManageDataResultCodeManageDataInvalidName     ManageDataResultCode = -4
+)
+
+var manageDataResultCodeMap = map[int32]string{
+	0:  "ManageDataResultCodeManageDataSuccess",
+	-1: "ManageDataResultCodeManageDataNotSupportedYet",
+	-2: "ManageDataResultCodeManageDataNameNotFound",
+	-3: "ManageDataResultCodeManageDataLowReserve",
+	-4: "ManageDataResultCodeManageDataInvalidName",
+}
+
+// ValidEnum validates a proposed value for this enum.  Implements
+// the Enum interface for ManageDataResultCode
+func (e ManageDataResultCode) ValidEnum(v int32) bool {
+	_, ok := manageDataResultCodeMap[v]
+	return ok
+}
+
+// String returns the name of `e`
+func (e ManageDataResultCode) String() string {
+	name, _ := manageDataResultCodeMap[int32(e)]
+	return name
+}
+
+// ManageDataResult is an XDR Union defines as:
+//
+//   union ManageDataResult switch (ManageDataResultCode code)
+//    {
+//    case MANAGE_DATA_SUCCESS:
+//        void;
+//    default:
+//        void;
+//    };
+//
+type ManageDataResult struct {
+	Code ManageDataResultCode
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u ManageDataResult) SwitchFieldName() string {
+	return "Code"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of ManageDataResult
+func (u ManageDataResult) ArmForSwitch(sw int32) (string, bool) {
+	switch ManageDataResultCode(sw) {
+	case ManageDataResultCodeManageDataSuccess:
+		return "", true
+	default:
+		return "", true
+	}
+}
+
+// NewManageDataResult creates a new  ManageDataResult.
+func NewManageDataResult(code ManageDataResultCode, value interface{}) (result ManageDataResult, err error) {
+	result.Code = code
+	switch ManageDataResultCode(code) {
+	case ManageDataResultCodeManageDataSuccess:
+		// void
+	default:
+		// void
+	}
+	return
+}
+
 // OperationResultCode is an XDR Enum defines as:
 //
 //   enum OperationResultCode
@@ -3564,6 +3822,8 @@ func (e OperationResultCode) String() string {
 //            AccountMergeResult accountMergeResult;
 //        case INFLATION:
 //            InflationResult inflationResult;
+//        case MANAGE_DATA:
+//            ManageDataResult manageDataResult;
 //        }
 //
 type OperationResultTr struct {
@@ -3578,6 +3838,7 @@ type OperationResultTr struct {
 	AllowTrustResult         *AllowTrustResult
 	AccountMergeResult       *AccountMergeResult
 	InflationResult          *InflationResult
+	ManageDataResult         *ManageDataResult
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -3610,6 +3871,8 @@ func (u OperationResultTr) ArmForSwitch(sw int32) (string, bool) {
 		return "AccountMergeResult", true
 	case OperationTypeInflation:
 		return "InflationResult", true
+	case OperationTypeManageData:
+		return "ManageDataResult", true
 	}
 	return "-", false
 }
@@ -3688,6 +3951,13 @@ func NewOperationResultTr(aType OperationType, value interface{}) (result Operat
 			return
 		}
 		result.InflationResult = &tv
+	case OperationTypeManageData:
+		tv, ok := value.(ManageDataResult)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be ManageDataResult")
+			return
+		}
+		result.ManageDataResult = &tv
 	}
 	return
 }
@@ -3942,6 +4212,31 @@ func (u OperationResultTr) GetInflationResult() (result InflationResult, ok bool
 	return
 }
 
+// MustManageDataResult retrieves the ManageDataResult value from the union,
+// panicing if the value is not set.
+func (u OperationResultTr) MustManageDataResult() ManageDataResult {
+	val, ok := u.GetManageDataResult()
+
+	if !ok {
+		panic("arm ManageDataResult is not set")
+	}
+
+	return val
+}
+
+// GetManageDataResult retrieves the ManageDataResult value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u OperationResultTr) GetManageDataResult() (result ManageDataResult, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "ManageDataResult" {
+		result = *u.ManageDataResult
+		ok = true
+	}
+
+	return
+}
+
 // OperationResult is an XDR Union defines as:
 //
 //   union OperationResult switch (OperationResultCode code)
@@ -3969,6 +4264,8 @@ func (u OperationResultTr) GetInflationResult() (result InflationResult, ok bool
 //            AccountMergeResult accountMergeResult;
 //        case INFLATION:
 //            InflationResult inflationResult;
+//        case MANAGE_DATA:
+//            ManageDataResult manageDataResult;
 //        }
 //        tr;
 //    default:
@@ -4644,6 +4941,19 @@ type LedgerKeyOffer struct {
 	OfferId  Uint64
 }
 
+// LedgerKeyData is an XDR NestedStruct defines as:
+//
+//   struct
+//        {
+//            AccountID accountID;
+//            string64 dataName;
+//        }
+//
+type LedgerKeyData struct {
+	AccountId AccountId
+	DataName  String64
+}
+
 // LedgerKey is an XDR Union defines as:
 //
 //   union LedgerKey switch (LedgerEntryType type)
@@ -4667,6 +4977,13 @@ type LedgerKeyOffer struct {
 //            AccountID sellerID;
 //            uint64 offerID;
 //        } offer;
+//
+//    case DATA:
+//        struct
+//        {
+//            AccountID accountID;
+//            string64 dataName;
+//        } data;
 //    };
 //
 type LedgerKey struct {
@@ -4674,6 +4991,7 @@ type LedgerKey struct {
 	Account   *LedgerKeyAccount
 	TrustLine *LedgerKeyTrustLine
 	Offer     *LedgerKeyOffer
+	Data      *LedgerKeyData
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -4692,6 +5010,8 @@ func (u LedgerKey) ArmForSwitch(sw int32) (string, bool) {
 		return "TrustLine", true
 	case LedgerEntryTypeOffer:
 		return "Offer", true
+	case LedgerEntryTypeData:
+		return "Data", true
 	}
 	return "-", false
 }
@@ -4721,6 +5041,13 @@ func NewLedgerKey(aType LedgerEntryType, value interface{}) (result LedgerKey, e
 			return
 		}
 		result.Offer = &tv
+	case LedgerEntryTypeData:
+		tv, ok := value.(LedgerKeyData)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be LedgerKeyData")
+			return
+		}
+		result.Data = &tv
 	}
 	return
 }
@@ -4794,6 +5121,31 @@ func (u LedgerKey) GetOffer() (result LedgerKeyOffer, ok bool) {
 
 	if armName == "Offer" {
 		result = *u.Offer
+		ok = true
+	}
+
+	return
+}
+
+// MustData retrieves the Data value from the union,
+// panicing if the value is not set.
+func (u LedgerKey) MustData() LedgerKeyData {
+	val, ok := u.GetData()
+
+	if !ok {
+		panic("arm Data is not set")
+	}
+
+	return val
+}
+
+// GetData retrieves the Data value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u LedgerKey) GetData() (result LedgerKeyData, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "Data" {
+		result = *u.Data
 		ok = true
 	}
 
