@@ -9,10 +9,7 @@ bumps.  A breaking change will get clearly notified in this log.
 ## [Unreleased]
 
 ### Added
-- `*xdr.PathPaymentResult` learned `SendAmount()`, a helper to extract how much
-  of the source asset was spent when making a multi-asset payment.
-
-### Added
+- `*xdr.PathPaymentResult` learned `SendAmount()`, a helper to extract how much of the source asset was spent when making a multi-asset payment.
 
 - `*xdr.AccountId` learned `Address()` to make getting the strkey form of an account id simpler.
 - `build` package learned `ClearData()` and `SetData()` to configure ManageData operations.
