@@ -3,8 +3,9 @@ package xdr
 import (
 	"errors"
 	"fmt"
-	"github.com/stellar/go-stellar-base/strkey"
 	"strings"
+
+	"github.com/stellar/go-stellar-base/strkey"
 )
 
 // This file contains helpers for working with xdr.Asset structs
@@ -20,6 +21,27 @@ func (a Asset) String() string {
 	}
 
 	return fmt.Sprintf("%s/%s/%s", t, c, i)
+}
+
+// Equals returns true if `other` is equivalent to `a`
+func (a Asset) Equals(other Asset) bool {
+	if a.Type != other.Type {
+		return false
+	}
+	switch a.Type {
+	case AssetTypeAssetTypeNative:
+		return true
+	case AssetTypeAssetTypeCreditAlphanum4:
+		l := a.MustAlphaNum4()
+		r := other.MustAlphaNum4()
+		return l.AssetCode == r.AssetCode && l.Issuer.Equals(r.Issuer)
+	case AssetTypeAssetTypeCreditAlphanum12:
+		l := a.MustAlphaNum12()
+		r := other.MustAlphaNum12()
+		return l.AssetCode == r.AssetCode && l.Issuer.Equals(r.Issuer)
+	default:
+		panic(fmt.Errorf("Unknown asset type: %v", a.Type))
+	}
 }
 
 // Extract is a helper function to extract information from an xdr.Asset
