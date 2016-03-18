@@ -48,3 +48,19 @@ func (aid *AccountId) Address() string {
 		panic(fmt.Errorf("Unknown account id type: %v", aid.Type))
 	}
 }
+
+// Equals returns true if `other` is equivalent to `aid`
+func (aid *AccountId) Equals(other AccountId) bool {
+	if aid.Type != other.Type {
+		return false
+	}
+
+	switch aid.Type {
+	case CryptoKeyTypeKeyTypeEd25519:
+		l := aid.MustEd25519()
+		r := other.MustEd25519()
+		return l == r
+	default:
+		panic(fmt.Errorf("Unknown account id type: %v", aid.Type))
+	}
+}
