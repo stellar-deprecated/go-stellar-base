@@ -42,14 +42,13 @@ func (aid *AccountId) Equals(other AccountId) bool {
 }
 
 // LedgerKey implements the `Keyer` interface
-func (aid *AccountId) LedgerKey() LedgerKey {
-	data := LedgerKeyAccount{*aid}
-	ret, err := NewLedgerKey(LedgerEntryTypeAccount, data)
+func (aid *AccountId) LedgerKey() (ret LedgerKey) {
+	err := ret.SetAccount(*aid)
 	if err != nil {
 		panic(err)
 	}
 
-	return ret
+	return
 }
 
 // SetAddress modifies the receiver, setting it's value to the AccountId form

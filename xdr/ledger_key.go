@@ -34,3 +34,54 @@ func (key *LedgerKey) Equals(other LedgerKey) bool {
 		panic(fmt.Errorf("Unknown ledger key type: %v", key.Type))
 	}
 }
+
+// SetAccount mutates `key` such that it represents the identity of `account`
+func (key *LedgerKey) SetAccount(account AccountId) error {
+	data := LedgerKeyAccount{account}
+	nkey, err := NewLedgerKey(LedgerEntryTypeAccount, data)
+	if err != nil {
+		return err
+	}
+
+	*key = nkey
+	return nil
+}
+
+// SetData mutates `key` such that it represents the identity of the
+// data entry owned by `account` and for `name`.
+func (key *LedgerKey) SetData(account AccountId, name string) error {
+	data := LedgerKeyData{account, String64(name)}
+	nkey, err := NewLedgerKey(LedgerEntryTypeData, data)
+	if err != nil {
+		return err
+	}
+
+	*key = nkey
+	return nil
+}
+
+// SetOffer mutates `key` such that it represents the identity of the
+// data entry owned by `account` and for offer `id`.
+func (key *LedgerKey) SetOffer(account AccountId, id uint64) error {
+	data := LedgerKeyOffer{account, Uint64(id)}
+	nkey, err := NewLedgerKey(LedgerEntryTypeOffer, data)
+	if err != nil {
+		return err
+	}
+
+	*key = nkey
+	return nil
+}
+
+// SetTrustline mutates `key` such that it represents the identity of the
+// trustline owned by `account` and for `asset`.
+func (key *LedgerKey) SetTrustline(account AccountId, line Asset) error {
+	data := LedgerKeyTrustLine{account, line}
+	nkey, err := NewLedgerKey(LedgerEntryTypeTrustline, data)
+	if err != nil {
+		return err
+	}
+
+	*key = nkey
+	return nil
+}
