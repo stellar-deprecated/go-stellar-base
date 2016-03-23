@@ -36,3 +36,14 @@ var _ = Describe("xdr.AccountId#Equals()", func() {
 		Expect(l.Equals(r)).To(BeFalse())
 	})
 })
+
+var _ = Describe("xdr.AccountId#LedgerKey()", func() {
+	It("works", func() {
+		var aid AccountId
+		aid.SetAddress("GCR22L3WS7TP72S4Z27YTO6JIQYDJK2KLS2TQNHK6Y7XYPA3AGT3X4FH")
+
+		key := aid.LedgerKey()
+		packed := key.MustAccount().AccountId
+		Expect(packed.Equals(aid)).To(BeTrue())
+	})
+})
