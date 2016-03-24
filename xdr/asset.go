@@ -10,6 +10,47 @@ import (
 
 // This file contains helpers for working with xdr.Asset structs
 
+// SetCredit overwrites `a` with a credit asset using `code` and `issuer`.  The
+// asset type (CreditAlphanum4 or CreditAlphanum12) is chosen automatically
+// based upon the length of `code`.
+func (a *Asset) SetCredit(code string, issuer AccountId) error {
+	length := len(code)
+	var typ AssetType
+	var body interface{}
+
+	switch {
+	case length >= 1 && length <= 4:
+		newbody := AssetAlphaNum4{Issuer: issuer}
+		copy(newbody.AssetCode[:], []byte(code)[:length])
+		typ = AssetTypeAssetTypeCreditAlphanum4
+		body = newbody
+	case length >= 5 && length <= 12:
+		newbody := AssetAlphaNum12{Issuer: issuer}
+		copy(newbody.AssetCode[:], []byte(code)[:length])
+		typ = AssetTypeAssetTypeCreditAlphanum4
+		body = newbody
+	default:
+		return errors.New("Asset code length is invalid")
+	}
+
+	newa, err := NewAsset(typ, body)
+	if err != nil {
+		return err
+	}
+	*a = newa
+	return nil
+}
+
+// SetNative overwrites `a` with the native asset type
+func (a *Asset) SetNative() error {
+	newa, err := NewAsset(AssetTypeAssetTypeNative, nil)
+	if err != nil {
+		return err
+	}
+	*a = newa
+	return nil
+}
+
 // String returns a display friendly form of the asset
 func (a Asset) String() string {
 	var t, c, i string

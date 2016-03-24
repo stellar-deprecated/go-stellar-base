@@ -7,30 +7,6 @@ import (
 	"github.com/stellar/go-stellar-base/strkey"
 )
 
-// SetAddress modifies the receiver, setting it's value to the AccountId form
-// of the provided address.
-func (aid *AccountId) SetAddress(address string) error {
-	if aid == nil {
-		return nil
-	}
-
-	raw, err := strkey.Decode(strkey.VersionByteAccountID, address)
-	if err != nil {
-		return err
-	}
-
-	if len(raw) != 32 {
-		return errors.New("invalid address")
-	}
-
-	var ui Uint256
-	copy(ui[:], raw)
-
-	*aid, err = NewAccountId(CryptoKeyTypeKeyTypeEd25519, ui)
-
-	return err
-}
-
 // Address returns the strkey encoded form of this AccountId.  This method will
 // panic if the accountid is backed by a public key of an unknown type.
 func (aid *AccountId) Address() string {
@@ -63,4 +39,38 @@ func (aid *AccountId) Equals(other AccountId) bool {
 	default:
 		panic(fmt.Errorf("Unknown account id type: %v", aid.Type))
 	}
+}
+
+// LedgerKey implements the `Keyer` interface
+func (aid *AccountId) LedgerKey() (ret LedgerKey) {
+	err := ret.SetAccount(*aid)
+	if err != nil {
+		panic(err)
+	}
+
+	return
+}
+
+// SetAddress modifies the receiver, setting it's value to the AccountId form
+// of the provided address.
+func (aid *AccountId) SetAddress(address string) error {
+	if aid == nil {
+		return nil
+	}
+
+	raw, err := strkey.Decode(strkey.VersionByteAccountID, address)
+	if err != nil {
+		return err
+	}
+
+	if len(raw) != 32 {
+		return errors.New("invalid address")
+	}
+
+	var ui Uint256
+	copy(ui[:], raw)
+
+	*aid, err = NewAccountId(CryptoKeyTypeKeyTypeEd25519, ui)
+
+	return err
 }
