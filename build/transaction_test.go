@@ -84,13 +84,6 @@ var _ = Describe("Transaction Mutators:", func() {
 		})
 	})
 
-	Describe("PathPaymentBuilder", func() {
-		BeforeEach(func() { mut = PathPayment() })
-		It("adds itself to the tx's operations", func() {
-			Expect(subject.TX.Operations).To(HaveLen(1))
-		})
-	})
-
 	Describe("SourceAccount", func() {
 		Context("with a valid address", func() {
 			address := "GAXEMCEXBERNSRXOEKD4JAIKVECIXQCENHEBRVSPX2TTYZPMNEDSQCNQ"
