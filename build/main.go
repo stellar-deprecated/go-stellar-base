@@ -36,7 +36,7 @@ var (
 
 // Asset is struct used in path_payment mutators
 type Asset struct {
-	Code string
+	Code   string
 	Issuer string
 	Native bool
 }
@@ -65,7 +65,7 @@ func CreditAsset(code, issuer string) Asset {
 // CreditAmount is a mutator that configures a payment to be using credit
 // asset and have the amount provided.
 type CreditAmount struct {
-	Code string
+	Code   string
 	Issuer string
 	Amount string
 }
@@ -113,7 +113,7 @@ type NativeAmount struct {
 type PayWithPath struct {
 	Asset
 	MaxAmount string
-	Path []Asset
+	Path      []Asset
 }
 
 func (pathSend PayWithPath) Through(asset Asset) PayWithPath {
@@ -123,7 +123,7 @@ func (pathSend PayWithPath) Through(asset Asset) PayWithPath {
 
 func PayWith(sendAsset Asset, maxAmount string) PayWithPath {
 	return PayWithPath{
-		Asset: sendAsset,
+		Asset:     sendAsset,
 		MaxAmount: maxAmount,
 	}
 }
