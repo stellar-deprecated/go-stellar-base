@@ -34,9 +34,9 @@ type HorizonHttpClient interface {
 // Client struct contains data required to connect to Horizon instance
 type Client struct {
 	// URL of Horizon server to connect
-	URL        string
+	URL string
 	// Will be populated with &http.Client when nil. If you want to configure your http.Client make sure Timeout is at least 10 seconds.
-	Client     HorizonHttpClient
+	Client HorizonHttpClient
 	// clientInit initializes http client once
 	clientInit sync.Once
 }
@@ -80,7 +80,7 @@ func decodeResponse(resp *http.Response, object interface{}) (horizonError error
 	defer resp.Body.Close()
 	decoder := json.NewDecoder(resp.Body)
 
-	if resp.StatusCode != 200 {
+	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 		horizonError = &HorizonError{
 			Err:     errors.New("Error response"),
 			Problem: &res.Problem{},
