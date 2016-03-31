@@ -26,6 +26,10 @@ type HorizonError struct {
 	Problem structs.Problem
 }
 
+func (herror *HorizonError) Error() string {
+	return herror.Error()
+}
+
 type HorizonHttpClient interface {
 	Get(url string) (resp *http.Response, err error)
 	PostForm(url string, data url.Values) (resp *http.Response, err error)
@@ -38,8 +42,8 @@ type Client struct {
 	once   sync.Once
 }
 
-// LoadAccount loads the account state from horizon
-func (c *Client) LoadAccount(accountId string) (account structs.Account, horizonError *HorizonError) {
+// LoadAccount loads the account state from horizon. horizonError is HorizonError struct that implements error interface.
+func (c *Client) LoadAccount(accountId string) (account structs.Account, horizonError error) {
 	c.once.Do(c.initHttpClient)
 	resp, err := c.client.Get(c.URL + "/accounts/" + accountId)
 	if err != nil {
@@ -57,7 +61,7 @@ func (c *Client) LoadAccount(accountId string) (account structs.Account, horizon
 	if resp.StatusCode != 200 {
 		err = errors.New("Error response")
 		horizonError = &HorizonError{Err: err}
-		json.Unmarshal(body, &horizonError.Problem)
+		json.Unmarshal(body, &horizonError.(*HorizonError).Problem)
 		return
 	}
 
@@ -70,8 +74,8 @@ func (c *Client) LoadAccount(accountId string) (account structs.Account, horizon
 	return
 }
 
-// SubmitTransaction submits a transaction to the network
-func (c *Client) SubmitTransaction(transactionEnvelopeXdr string) (response structs.TransactionSuccess, horizonError *HorizonError) {
+// SubmitTransaction submits a transaction to the network. horizonError is HorizonError struct that implements error interface.
+func (c *Client) SubmitTransaction(transactionEnvelopeXdr string) (response structs.TransactionSuccess, horizonError error) {
 	v := url.Values{}
 	v.Set("tx", transactionEnvelopeXdr)
 
@@ -92,7 +96,7 @@ func (c *Client) SubmitTransaction(transactionEnvelopeXdr string) (response stru
 	if resp.StatusCode != 200 {
 		err = errors.New("Error response")
 		horizonError = &HorizonError{Err: err}
-		json.Unmarshal(body, &horizonError.Problem)
+		json.Unmarshal(body, &horizonError.(*HorizonError).Problem)
 		return
 	}
 

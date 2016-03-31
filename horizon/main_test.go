@@ -42,7 +42,8 @@ var _ = Describe("Horizon", func() {
 
 			_, err := TestHorizonClient.LoadAccount("GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H")
 			Expect(err).NotTo(BeNil())
-			Expect(err.Problem.Title).To(Equal("Resource Missing"))
+			horizonError := err.(*HorizonError)
+			Expect(horizonError.Problem.Title).To(Equal("Resource Missing"))
 		})
 	})
 
@@ -70,7 +71,8 @@ var _ = Describe("Horizon", func() {
 
 			_, err := TestHorizonClient.SubmitTransaction("GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H")
 			Expect(err).NotTo(BeNil())
-			Expect(err.Problem.Title).To(Equal("Transaction Failed"))
+			horizonError := err.(*HorizonError)
+			Expect(horizonError.Problem.Title).To(Equal("Transaction Failed"))
 		})
 	})
 })
