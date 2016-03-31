@@ -43,7 +43,7 @@ type Client struct {
 
 // LoadAccount loads the account state from horizon. horizonError is HorizonError struct that implements error interface.
 func (c *Client) LoadAccount(accountId string) (account res.Account, horizonError error) {
-	c.clientInit.Do(c.initHttpClient)
+	c.initHttpClient()
 	resp, err := c.Client.Get(c.URL + "/accounts/" + accountId)
 	if err != nil {
 		horizonError = &HorizonError{Err: err}
@@ -59,7 +59,7 @@ func (c *Client) SubmitTransaction(transactionEnvelopeXdr string) (response res.
 	v := url.Values{}
 	v.Set("tx", transactionEnvelopeXdr)
 
-	c.clientInit.Do(c.initHttpClient)
+	c.initHttpClient()
 	resp, err := c.Client.PostForm(c.URL+"/transactions", v)
 	if err != nil {
 		horizonError = &HorizonError{Err: err}
@@ -71,9 +71,11 @@ func (c *Client) SubmitTransaction(transactionEnvelopeXdr string) (response res.
 }
 
 func (c *Client) initHttpClient() {
-	if c.Client == nil {
-		c.Client = &http.Client{}
-	}
+	c.clientInit.Do(func() {
+		if c.Client == nil {
+			c.Client = &http.Client{}
+		}
+	})
 }
 
 func decodeResponse(resp *http.Response, object interface{}) (horizonError error) {

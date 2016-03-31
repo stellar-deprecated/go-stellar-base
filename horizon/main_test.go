@@ -17,6 +17,18 @@ func TestHorizon(t *testing.T) {
 }
 
 var _ = Describe("Horizon", func() {
+	Describe("initHttpClient", func() {
+		It("does not run into race condition", func() {
+			// Race condition should be detected by race-detector:
+			// http://blog.golang.org/race-detector
+			init := func() {
+				DefaultTestNetClient.initHttpClient()
+			}
+			go init()
+			go init()
+		})
+	})
+
 	Describe("LoadAccount", func() {
 		It("success response", func() {
 			TestHorizonClient.Client = &TestHttpClient{
