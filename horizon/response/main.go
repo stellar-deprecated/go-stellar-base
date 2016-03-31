@@ -1,4 +1,4 @@
-package structs
+package response
 
 type Problem struct {
 	Type     string                 `json:"type"`

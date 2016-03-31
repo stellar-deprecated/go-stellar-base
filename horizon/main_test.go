@@ -19,7 +19,7 @@ func TestHorizon(t *testing.T) {
 var _ = Describe("Horizon", func() {
 	Describe("LoadAccount", func() {
 		It("success response", func() {
-			TestHorizonClient.client = &TestHttpClient{
+			TestHorizonClient.Client = &TestHttpClient{
 				Response: http.Response{
 					StatusCode: 200,
 					Body:       ioutil.NopCloser(bytes.NewBufferString(accountResponse)),
@@ -33,7 +33,7 @@ var _ = Describe("Horizon", func() {
 		})
 
 		It("failure response", func() {
-			TestHorizonClient.client = &TestHttpClient{
+			TestHorizonClient.Client = &TestHttpClient{
 				Response: http.Response{
 					StatusCode: 404,
 					Body:       ioutil.NopCloser(bytes.NewBufferString(notFoundResponse)),
@@ -50,7 +50,7 @@ var _ = Describe("Horizon", func() {
 
 	Describe("SubmitTransaction", func() {
 		It("success response", func() {
-			TestHorizonClient.client = &TestHttpClient{
+			TestHorizonClient.Client = &TestHttpClient{
 				Response: http.Response{
 					StatusCode: 200,
 					Body:       ioutil.NopCloser(bytes.NewBufferString(submitResponse)),
@@ -63,7 +63,7 @@ var _ = Describe("Horizon", func() {
 		})
 
 		It("failure response", func() {
-			TestHorizonClient.client = &TestHttpClient{
+			TestHorizonClient.Client = &TestHttpClient{
 				Response: http.Response{
 					StatusCode: 400,
 					Body:       ioutil.NopCloser(bytes.NewBufferString(transactionFailure)),
@@ -80,7 +80,7 @@ var _ = Describe("Horizon", func() {
 })
 
 var TestHorizonClient = &Client{
-	client: &TestHttpClient{},
+	Client: &TestHttpClient{},
 }
 
 type TestHttpClient struct {
