@@ -27,7 +27,7 @@ type HorizonError struct {
 }
 
 func (herror *HorizonError) Error() string {
-	return herror.Error()
+	return herror.Err.Error()
 }
 
 type HorizonHttpClient interface {
