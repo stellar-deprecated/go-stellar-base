@@ -71,11 +71,11 @@ func (c *Client) SubmitTransaction(transactionEnvelopeXdr string) (response res.
 }
 
 func (c *Client) initHttpClient() {
-	c.clientInit.Do(func() {
+	//c.clientInit.Do(func() {
 		if c.Client == nil {
 			c.Client = &http.Client{}
 		}
-	})
+	//})
 }
 
 func decodeResponse(resp *http.Response, object interface{}) (horizonError error) {
