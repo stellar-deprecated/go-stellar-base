@@ -8,18 +8,20 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/stellar/horizon/render/problem"
-	"github.com/stellar/horizon/resource"
+	"github.com/stellar/go-stellar-base/horizon/structs"
 )
 
 const TIMEOUT = 30 * time.Second
 
+// DefaultTestNetClient is a default client to connect to test network
 var DefaultTestNetClient = &Client{URL: "https://horizon-testnet.stellar.org"}
+// DefaultPublicNetClient is a default client to connect to public network
 var DefaultPublicNetClient = &Client{URL: "https://horizon.stellar.org"}
 
+// HorizonError struct contains error and problem returned by Horizon
 type HorizonError struct {
 	Err     error
-	Problem problem.P
+	Problem structs.Problem
 }
 
 type HorizonHttpClient interface {
@@ -27,12 +29,14 @@ type HorizonHttpClient interface {
 	PostForm(url string, data url.Values) (resp *http.Response, err error)
 }
 
+// Client struct contains data required to connect to Horizon instance
 type Client struct {
 	URL    string
 	client HorizonHttpClient
 }
 
-func (c *Client) LoadAccount(accountId string) (account resource.Account, horizonError *HorizonError) {
+// LoadAccount loads the account state from horizon
+func (c *Client) LoadAccount(accountId string) (account structs.Account, horizonError *HorizonError) {
 	httpClient := c.getHttpClient()
 	resp, err := httpClient.Get(c.URL + "/accounts/" + accountId)
 	if err != nil {
@@ -63,7 +67,8 @@ func (c *Client) LoadAccount(accountId string) (account resource.Account, horizo
 	return
 }
 
-func (c *Client) SubmitTransaction(transactionEnvelopeXdr string) (response resource.TransactionSuccess, horizonError *HorizonError) {
+// SubmitTransaction submits a transaction to the network
+func (c *Client) SubmitTransaction(transactionEnvelopeXdr string) (response structs.TransactionSuccess, horizonError *HorizonError) {
 	v := url.Values{}
 	v.Set("tx", transactionEnvelopeXdr)
 
