@@ -2,7 +2,6 @@ package horizon
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/url"
 	"sync"
@@ -16,14 +15,14 @@ var DefaultTestNetClient = &Client{URL: "https://horizon-testnet.stellar.org"}
 // DefaultPublicNetClient is a default client to connect to public network
 var DefaultPublicNetClient = &Client{URL: "https://horizon.stellar.org"}
 
-// HorizonError struct contains error and problem returned by Horizon
-type HorizonError struct {
-	Err     error
-	Problem *res.Problem
+// HorizonError struct contains the problem returned by Horizon
+type Error struct {
+	Response *http.Response
+	Problem  res.Problem
 }
 
-func (herror *HorizonError) Error() string {
-	return herror.Err.Error()
+func (herror *Error) Error() string {
+	return "Horizon error"
 }
 
 type HorizonHttpClient interface {
@@ -41,32 +40,30 @@ type Client struct {
 	clientInit sync.Once
 }
 
-// LoadAccount loads the account state from horizon. horizonError is HorizonError struct that implements error interface.
-func (c *Client) LoadAccount(accountId string) (account res.Account, horizonError error) {
+// LoadAccount loads the account state from horizon. err can be either error object or horizon.Error object.
+func (c *Client) LoadAccount(accountId string) (account res.Account, err error) {
 	c.initHttpClient()
 	resp, err := c.Client.Get(c.URL + "/accounts/" + accountId)
 	if err != nil {
-		horizonError = &HorizonError{Err: err}
 		return
 	}
 
-	horizonError = decodeResponse(resp, &account)
+	err = decodeResponse(resp, &account)
 	return
 }
 
-// SubmitTransaction submits a transaction to the network. horizonError is HorizonError struct that implements error interface.
-func (c *Client) SubmitTransaction(transactionEnvelopeXdr string) (response res.TransactionSuccess, horizonError error) {
+// SubmitTransaction submits a transaction to the network. err can be either error object or horizon.Error object.
+func (c *Client) SubmitTransaction(transactionEnvelopeXdr string) (response res.TransactionSuccess, err error) {
 	v := url.Values{}
 	v.Set("tx", transactionEnvelopeXdr)
 
 	c.initHttpClient()
 	resp, err := c.Client.PostForm(c.URL+"/transactions", v)
 	if err != nil {
-		horizonError = &HorizonError{Err: err}
 		return
 	}
 
-	horizonError = decodeResponse(resp, &response)
+	err = decodeResponse(resp, &response)
 	return
 }
 
@@ -78,25 +75,23 @@ func (c *Client) initHttpClient() {
 	})
 }
 
-func decodeResponse(resp *http.Response, object interface{}) (horizonError error) {
+func decodeResponse(resp *http.Response, object interface{}) (err error) {
 	defer resp.Body.Close()
 	decoder := json.NewDecoder(resp.Body)
 
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		horizonError = &HorizonError{
-			Err:     errors.New("Error response"),
-			Problem: &res.Problem{},
+		horizonError := &Error{
+			Response: resp,
 		}
-		err := decoder.Decode(&horizonError.(*HorizonError).Problem)
-		if err != nil {
-			horizonError = &HorizonError{Err: err}
+		decodeError := decoder.Decode(&horizonError.Problem)
+		if decodeError != nil {
+			return decodeError
 		}
-		return
+		return horizonError
 	}
 
-	err := decoder.Decode(&object)
+	err = decoder.Decode(&object)
 	if err != nil {
-		horizonError = &HorizonError{Err: err}
 		return
 	}
 	return

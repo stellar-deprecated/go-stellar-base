@@ -2,6 +2,7 @@ package horizon
 
 import (
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -54,13 +55,28 @@ var _ = Describe("Horizon", func() {
 
 			_, err := TestHorizonClient.LoadAccount("GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H")
 			Expect(err).NotTo(BeNil())
-			Expect(err.Error()).To(Equal("Error response"))
-			horizonError := err.(*HorizonError)
+			Expect(err.Error()).To(Equal("Horizon error"))
+			horizonError, ok := err.(*Error)
+			Expect(ok).To(BeTrue())
 			Expect(horizonError.Problem.Title).To(Equal("Resource Missing"))
+		})
+
+		It("connection error", func() {
+			TestHorizonClient.Client = &TestHttpClient{
+				Error: errors.New("http.Client error"),
+			}
+
+			_, err := TestHorizonClient.LoadAccount("GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H")
+			Expect(err).NotTo(BeNil())
+			Expect(err.Error()).To(Equal("http.Client error"))
+			_, ok := err.(*Error)
+			Expect(ok).To(BeFalse())
 		})
 	})
 
 	Describe("SubmitTransaction", func() {
+		var tx = "AAAAADSMMRmQGDH6EJzkgi/7PoKhphMHyNGQgDp2tlS/dhGXAAAAZAAT3TUAAAAwAAAAAAAAAAAAAAABAAAAAAAAAAMAAAABSU5SAAAAAAA0jDEZkBgx+hCc5IIv+z6CoaYTB8jRkIA6drZUv3YRlwAAAAFVU0QAAAAAADSMMRmQGDH6EJzkgi/7PoKhphMHyNGQgDp2tlS/dhGXAAAAAAX14QAAAAAKAAAAAQAAAAAAAAAAAAAAAAAAAAG/dhGXAAAAQLuStfImg0OeeGAQmvLkJSZ1MPSkCzCYNbGqX5oYNuuOqZ5SmWhEsC7uOD9ha4V7KengiwNlc0oMNqBVo22S7gk="
+
 		It("success response", func() {
 			TestHorizonClient.Client = &TestHttpClient{
 				Response: http.Response{
@@ -69,7 +85,7 @@ var _ = Describe("Horizon", func() {
 				},
 			}
 
-			account, err := TestHorizonClient.SubmitTransaction("AAAAADSMMRmQGDH6EJzkgi/7PoKhphMHyNGQgDp2tlS/dhGXAAAAZAAT3TUAAAAwAAAAAAAAAAAAAAABAAAAAAAAAAMAAAABSU5SAAAAAAA0jDEZkBgx+hCc5IIv+z6CoaYTB8jRkIA6drZUv3YRlwAAAAFVU0QAAAAAADSMMRmQGDH6EJzkgi/7PoKhphMHyNGQgDp2tlS/dhGXAAAAAAX14QAAAAAKAAAAAQAAAAAAAAAAAAAAAAAAAAG/dhGXAAAAQLuStfImg0OeeGAQmvLkJSZ1MPSkCzCYNbGqX5oYNuuOqZ5SmWhEsC7uOD9ha4V7KengiwNlc0oMNqBVo22S7gk=")
+			account, err := TestHorizonClient.SubmitTransaction(tx)
 			Expect(err).To(BeNil())
 			Expect(account.Ledger).To(Equal(int32(3128812)))
 		})
@@ -82,11 +98,24 @@ var _ = Describe("Horizon", func() {
 				},
 			}
 
-			_, err := TestHorizonClient.SubmitTransaction("GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H")
+			_, err := TestHorizonClient.SubmitTransaction(tx)
 			Expect(err).NotTo(BeNil())
-			Expect(err.Error()).To(Equal("Error response"))
-			horizonError := err.(*HorizonError)
+			Expect(err.Error()).To(Equal("Horizon error"))
+			horizonError, ok := err.(*Error)
+			Expect(ok).To(BeTrue())
 			Expect(horizonError.Problem.Title).To(Equal("Transaction Failed"))
+		})
+
+		It("connection error", func() {
+			TestHorizonClient.Client = &TestHttpClient{
+				Error: errors.New("http.Client error"),
+			}
+
+			_, err := TestHorizonClient.SubmitTransaction(tx)
+			Expect(err).NotTo(BeNil())
+			Expect(err.Error()).To(Equal("http.Client error"))
+			_, ok := err.(*Error)
+			Expect(ok).To(BeFalse())
 		})
 	})
 })
