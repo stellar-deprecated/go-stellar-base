@@ -1,4 +1,5 @@
-package response
+// This file contains response structs from horizon
+package horizon
 
 type Problem struct {
 	Type     string                 `json:"type"`
