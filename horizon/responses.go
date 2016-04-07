@@ -90,3 +90,39 @@ type Signer struct {
 	PublicKey string `json:"public_key"`
 	Weight    int32  `json:"weight"`
 }
+
+type Ledger struct {
+	Links struct {
+		Self         Link `json:"self"`
+		Transactions Link `json:"transactions"`
+		Operations   Link `json:"operations"`
+		Payments     Link `json:"payments"`
+		Effects      Link `json:"effects"`
+	} `json:"_links"`
+
+	ID               string `json:"id"`
+	PagingToken      string `json:"paging_token"`
+	Hash             string `json:"hash"`
+	PrevHash         string `json:"prev_hash"`
+	Sequence         uint32 `json:"sequence"`
+	TransactionCount uint64 `json:"transaction_count"`
+	OperationCount   uint64 `json:"operation_count"`
+	ClosedAt         string `json:"closed_at"`
+	TotalCoins       string `json:"total_coins"`
+	FeePool          string `json:"fee_pool"`
+	BaseFee          uint32 `json:"base_fee"`
+	BaseReserve      string `json:"base_reserve"`
+	MaxTxSetSize     uint64 `json:"max_tx_set_size"`
+}
+
+type LedgerList struct {
+	Links struct {
+		Self Link `json:"self"`
+		Next Link `json:"next"`
+		Prev Link `json:"prev"`
+	} `json:"_links"`
+
+	Embedded struct {
+		Records []Ledger `json:"records"`
+	} `json:"_embedded"`
+}

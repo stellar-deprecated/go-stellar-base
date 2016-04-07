@@ -2,6 +2,7 @@ package horizon
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"sync"
@@ -47,6 +48,33 @@ func (c *Client) LoadAccount(accountId string) (account Account, err error) {
 	}
 
 	err = decodeResponse(resp, &account)
+	return
+}
+
+// LoadLedger loads the state of the given ledger from Horizon.
+// set ledgerNum to 0 to get the current ledger
+func (c *Client) LoadLedger(ledgerNum uint64) (ledger Ledger, err error) {
+	c.initHttpClient()
+	var resp *http.Response
+	if ledgerNum == 0 {
+		resp, err = c.Client.Get(c.URL + "/ledgers?cursor=now&limit=1&order=desc")
+		if err != nil {
+			return
+		}
+		var ledgerList LedgerList
+		err = decodeResponse(resp, &ledgerList)
+		if err != nil || len(ledgerList.Embedded.Records) < 1 {
+			return
+		}
+		ledger = ledgerList.Embedded.Records[0]
+	} else {
+		resp, err = c.Client.Get(fmt.Sprintf("%s/ledgers/%d", c.URL, ledgerNum))
+		if err != nil {
+			return
+		}
+
+		err = decodeResponse(resp, &ledger)
+	}
 	return
 }
 
