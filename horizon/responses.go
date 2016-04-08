@@ -1,6 +1,11 @@
 // This file contains response structs from horizon
 package horizon
 
+import (
+	"encoding/json"
+	"strconv"
+)
+
 type Problem struct {
 	Type     string                 `json:"type"`
 	Title    string                 `json:"title"`
@@ -8,6 +13,25 @@ type Problem struct {
 	Detail   string                 `json:"detail,omitempty"`
 	Instance string                 `json:"instance,omitempty"`
 	Extras   map[string]interface{} `json:"extras,omitempty"`
+}
+
+type Amount int64
+
+func (s *Amount) UnmarshalJSON(d []byte) error {
+	var raw string
+
+	err := json.Unmarshal(d, &raw)
+	if err != nil {
+		return err
+	}
+
+	parsed, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	*s = Amount(parsed)
+	return nil
 }
 
 type Account struct {
@@ -31,14 +55,14 @@ type Account struct {
 	Signers              []Signer          `json:"signers"`
 }
 
-func (a Account) GetNativeBalance() string {
+func (a Account) GetNativeBalance() int64 {
 	for _, balance := range a.Balances {
 		if balance.Asset.Type == "native" {
-			return balance.Balance
+			return int64(balance.Balance)
 		}
 	}
 
-	return "0"
+	return 0
 }
 
 type AccountFlags struct {
@@ -59,7 +83,7 @@ type Asset struct {
 }
 
 type Balance struct {
-	Balance string `json:"balance"`
+	Balance Amount `json:"balance"`
 	Limit   string `json:"limit,omitempty"`
 	Asset
 }
@@ -108,10 +132,10 @@ type Ledger struct {
 	TransactionCount uint64 `json:"transaction_count"`
 	OperationCount   uint64 `json:"operation_count"`
 	ClosedAt         string `json:"closed_at"`
-	TotalCoins       string `json:"total_coins"`
-	FeePool          string `json:"fee_pool"`
+	TotalCoins       Amount `json:"total_coins"`
+	FeePool          Amount `json:"fee_pool"`
 	BaseFee          uint32 `json:"base_fee"`
-	BaseReserve      string `json:"base_reserve"`
+	BaseReserve      Amount `json:"base_reserve"`
 	MaxTxSetSize     uint64 `json:"max_tx_set_size"`
 }
 
