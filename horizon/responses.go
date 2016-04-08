@@ -31,6 +31,16 @@ type Account struct {
 	Signers              []Signer          `json:"signers"`
 }
 
+func (a Account) GetNativeBalance() string {
+	for _, balance := range a.Balances {
+		if balance.Asset.Type == "native" {
+			return balance.Balance
+		}
+	}
+
+	return "0"
+}
+
 type AccountFlags struct {
 	AuthRequired  bool `json:"auth_required"`
 	AuthRevocable bool `json:"auth_revocable"`
