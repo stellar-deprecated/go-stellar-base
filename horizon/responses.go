@@ -38,7 +38,7 @@ func (a Account) GetNativeBalance() string {
 		}
 	}
 
-	panic("Account with no native balance")
+	return "0"
 }
 
 type AccountFlags struct {
