@@ -8,6 +8,9 @@
 package build
 
 import (
+	"math"
+
+	"github.com/stellar/go-stellar-base/amount"
 	"github.com/stellar/go-stellar-base/network"
 	"github.com/stellar/go-stellar-base/xdr"
 )
@@ -91,7 +94,7 @@ type Limit struct {
 }
 
 // MaxLimit represents the maximum value that can be passed as trutline Limit
-var MaxLimit = Limit{"922337203685.4775807"}
+var MaxLimit = Limit{amount.String(math.MaxInt64)}
 
 // MemoID is a mutator that sets a memo on the mutated transaction of type
 // MEMO_ID.
