@@ -75,7 +75,7 @@ func ExampleChangeTrust() {
 	txeB64, _ := txe.Base64()
 
 	fmt.Printf("tx base64: %s", txeB64)
-	// Output: tx base64: AAAAADZY/nWY0gx6beMpf4S8Ur0qHsjA8fbFtBzBx1cbQzHwAAAAZAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABVVNEAAAAAAAtJGku0Iu/Z5uhmUSIcNIZHodv7Nkv3Z9tJ02k5t4TQX//////////AAAAAAAAAAEbQzHwAAAAQJQC6R3RqNaw5rOmaxqpAE0lD5onM/njn9I2RVlhtS2SGi2Z7xm65USYVWXTJFVqTCfTwwu+QXFcOuqgJjVtHAk=
+	// Output: tx base64: AAAAADZY/nWY0gx6beMpf4S8Ur0qHsjA8fbFtBzBx1cbQzHwAAAAZAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABVVNEAAAAAAAtJGku0Iu/Z5uhmUSIcNIZHodv7Nkv3Z9tJ02k5t4TQQAAAAA7wO+gAAAAAAAAAAEbQzHwAAAAQOIy19X38Y3jcFzvhDsmXu6iDzrzb4iwfS2NAq9GGAFiRJUGoFX85vKtlNcXzQppF4X8oIMNPEb74fuZE/N+GAE=
 }
 
 // ExampleChangeTrustMaxLimit creates and signs a simple transaction with ChangeTrust operation (maximum limit), and then
