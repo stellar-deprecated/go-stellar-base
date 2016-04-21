@@ -37,6 +37,9 @@ var (
 	DefaultNetwork = TestNetwork
 )
 
+// Amount is a mutator capable of setting the amount
+type Amount string
+
 // Asset is struct used in path_payment mutators
 type Asset struct {
 	Code   string
@@ -89,12 +92,10 @@ type MemoHash struct {
 }
 
 // Limit is a mutator that sets a limit on the change_trust operation
-type Limit struct {
-	Amount string
-}
+type Limit Amount
 
 // MaxLimit represents the maximum value that can be passed as trutline Limit
-var MaxLimit = Limit{amount.String(math.MaxInt64)}
+var MaxLimit = Limit(amount.String(math.MaxInt64))
 
 // MemoID is a mutator that sets a memo on the mutated transaction of type
 // MEMO_ID.

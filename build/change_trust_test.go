@@ -113,7 +113,7 @@ var _ = Describe("ChangeTrustBuilder Mutators", func() {
 	Describe("Limit", func() {
 		Context("sets limit properly", func() {
 			BeforeEach(func() {
-				mut = Limit{"20"}
+				mut = Limit("20")
 			})
 
 			It("sets limit value properly", func() {

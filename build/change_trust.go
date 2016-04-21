@@ -59,6 +59,43 @@ func (m Asset) MutateChangeTrust(o *xdr.ChangeTrustOp) (err error) {
 
 // MutateChangeTrust for Limit sets the ChangeTrustOp's Limit field
 func (m Limit) MutateChangeTrust(o *xdr.ChangeTrustOp) (err error) {
-	o.Limit, err = amount.Parse(m.Amount)
+	o.Limit, err = amount.Parse(string(m))
 	return
+}
+
+// Trust is a helper that creates ChangeTrustBuilder
+func Trust(code, issuer string, args ...interface{}) (result ChangeTrustBuilder) {
+	mutators := []interface{}{
+		CreditAsset(code, issuer),
+	}
+
+	limitSet := false
+
+	for _, mut := range args {
+		mutators = append(mutators, mut)
+		_, isLimit := mut.(Limit)
+		if isLimit {
+			limitSet = true
+		}
+	}
+
+	if !limitSet {
+		mutators = append(mutators, MaxLimit)
+	}
+
+	return ChangeTrust(mutators...)
+}
+
+// RemoveTrust is a helper that creates ChangeTrustBuilder
+func RemoveTrust(code, issuer string, args ...interface{}) (result ChangeTrustBuilder) {
+	mutators := []interface{}{
+		CreditAsset(code, issuer),
+		Limit("0"),
+	}
+
+	for _, mut := range args {
+		mutators = append(mutators, mut)
+	}
+
+	return ChangeTrust(mutators...)
 }
