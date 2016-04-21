@@ -1,6 +1,11 @@
 // This file contains response structs from horizon
 package horizon
 
+import (
+	"encoding/json"
+	"strconv"
+)
+
 type Problem struct {
 	Type     string                 `json:"type"`
 	Title    string                 `json:"title"`
@@ -8,6 +13,25 @@ type Problem struct {
 	Detail   string                 `json:"detail,omitempty"`
 	Instance string                 `json:"instance,omitempty"`
 	Extras   map[string]interface{} `json:"extras,omitempty"`
+}
+
+type Amount int64
+
+func (s *Amount) UnmarshalJSON(d []byte) error {
+	var raw string
+
+	err := json.Unmarshal(d, &raw)
+	if err != nil {
+		return err
+	}
+
+	parsed, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	*s = Amount(parsed)
+	return nil
 }
 
 type Account struct {
@@ -31,14 +55,14 @@ type Account struct {
 	Signers              []Signer          `json:"signers"`
 }
 
-func (a Account) GetNativeBalance() string {
+func (a Account) GetNativeBalance() int64 {
 	for _, balance := range a.Balances {
 		if balance.Asset.Type == "native" {
-			return balance.Balance
+			return int64(balance.Balance)
 		}
 	}
 
-	return "0"
+	return 0
 }
 
 type AccountFlags struct {
@@ -59,7 +83,7 @@ type Asset struct {
 }
 
 type Balance struct {
-	Balance string `json:"balance"`
+	Balance Amount `json:"balance"`
 	Limit   string `json:"limit,omitempty"`
 	Asset
 }
@@ -89,4 +113,40 @@ type TransactionSuccess struct {
 type Signer struct {
 	PublicKey string `json:"public_key"`
 	Weight    int32  `json:"weight"`
+}
+
+type Ledger struct {
+	Links struct {
+		Self         Link `json:"self"`
+		Transactions Link `json:"transactions"`
+		Operations   Link `json:"operations"`
+		Payments     Link `json:"payments"`
+		Effects      Link `json:"effects"`
+	} `json:"_links"`
+
+	ID               string `json:"id"`
+	PagingToken      string `json:"paging_token"`
+	Hash             string `json:"hash"`
+	PrevHash         string `json:"prev_hash"`
+	Sequence         uint32 `json:"sequence"`
+	TransactionCount uint64 `json:"transaction_count"`
+	OperationCount   uint64 `json:"operation_count"`
+	ClosedAt         string `json:"closed_at"`
+	TotalCoins       Amount `json:"total_coins"`
+	FeePool          Amount `json:"fee_pool"`
+	BaseFee          uint32 `json:"base_fee"`
+	BaseReserve      Amount `json:"base_reserve"`
+	MaxTxSetSize     uint64 `json:"max_tx_set_size"`
+}
+
+type LedgerList struct {
+	Links struct {
+		Self Link `json:"self"`
+		Next Link `json:"next"`
+		Prev Link `json:"prev"`
+	} `json:"_links"`
+
+	Embedded struct {
+		Records []Ledger `json:"records"`
+	} `json:"_embedded"`
 }
