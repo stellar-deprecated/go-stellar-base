@@ -8,6 +8,7 @@
 package build
 
 import (
+	"errors"
 	"math"
 
 	"github.com/stellar/go-stellar-base/amount"
@@ -45,6 +46,37 @@ type Asset struct {
 	Code   string
 	Issuer string
 	Native bool
+}
+
+// ToXdrObject creates xdr.Asset object from build.Asset object
+func (a Asset) ToXdrObject() (xdr.Asset, error) {
+	if a.Native {
+		return xdr.NewAsset(xdr.AssetTypeAssetTypeNative, nil)
+	}
+
+	var issuer xdr.AccountId
+	err := setAccountId(a.Issuer, &issuer)
+	if err != nil {
+		return xdr.Asset{}, err
+	}
+
+	length := len(a.Code)
+	switch {
+	case length >= 1 && length <= 4:
+		var codeArray [4]byte
+		byteArray := []byte(a.Code)
+		copy(codeArray[:], byteArray[0:length])
+		asset := xdr.AssetAlphaNum4{codeArray, issuer}
+		return xdr.NewAsset(xdr.AssetTypeAssetTypeCreditAlphanum4, asset)
+	case length >= 5 && length <= 12:
+		var codeArray [12]byte
+		byteArray := []byte(a.Code)
+		copy(codeArray[:], byteArray[0:length])
+		asset := xdr.AssetAlphaNum12{codeArray, issuer}
+		return xdr.NewAsset(xdr.AssetTypeAssetTypeCreditAlphanum12, asset)
+	default:
+		return xdr.Asset{}, errors.New("Asset code length is invalid")
+	}
 }
 
 // AllowTrustAsset is a mutator capable of setting the asset on
@@ -121,6 +153,9 @@ type NativeAmount struct {
 	Amount string
 }
 
+// OfferID is a mutator that sets offer ID on offer operations
+type OfferID uint64
+
 // PayWithPath is a mutator that configures a path_payment's send asset and max amount
 type PayWithPath struct {
 	Asset
@@ -140,6 +175,16 @@ func PayWith(sendAsset Asset, maxAmount string) PayWithPath {
 		Asset:     sendAsset,
 		MaxAmount: maxAmount,
 	}
+}
+
+// Price is a mutator that sets price on offer operations
+type Price string
+
+// Rate is a mutator that sets selling/buying asset and price on offer operations
+type Rate struct {
+	Selling Asset
+	Buying  Asset
+	Price
 }
 
 // Sequence is a mutator that sets the sequence number on a transaction

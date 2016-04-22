@@ -113,3 +113,64 @@ func ExampleRemoveTrust() {
 	fmt.Printf("tx base64: %s", txeB64)
 	// Output: tx base64: AAAAADZY/nWY0gx6beMpf4S8Ur0qHsjA8fbFtBzBx1cbQzHwAAAAZAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAQAAAACqkTaHkZTphDK+U/SnLXSJrA2mitA3sgOhIWTCRPQzIQAAAAYAAAABVVNEAAAAAAAtJGku0Iu/Z5uhmUSIcNIZHodv7Nkv3Z9tJ02k5t4TQQAAAAAAAAAAAAAAAAAAAAEbQzHwAAAAQD5FeGBEwJyeauK+WKfcxYBeKw62EtCqvC0p9Z+1cY32fKQ+5Jz9uE1LaDsHW5NurtStKcUTiG5j2qNDf1QpYgw=
 }
+
+// ExampleManageOffer creates and signs a simple transaction with ManageOffer operations, and then
+// encodes it into a base64 string capable of being submitted to stellar-core.
+func ExampleManageOffer() {
+	rate := Rate{
+		Selling: NativeAsset(),
+		Buying:  CreditAsset("USD", "GAWSI2JO2CF36Z43UGMUJCDQ2IMR5B3P5TMS7XM7NUTU3JHG3YJUDQXA"),
+		Price:   Price("125.12"),
+	}
+
+	seed := "SDOTALIMPAM2IV65IOZA7KZL7XWZI5BODFXTRVLIHLQZQCKK57PH5F3H"
+	tx := Transaction(
+		SourceAccount{seed},
+		Sequence{1},
+		CreateOffer(rate, "20"),
+		UpdateOffer(rate, "40", OfferID(2)),
+		DeleteOffer(rate, OfferID(1)),
+	)
+
+	txe := tx.Sign(seed)
+	txeB64, _ := txe.Base64()
+
+	fmt.Printf("tx base64: %s", txeB64)
+	// Output: tx base64: AAAAADZY/nWY0gx6beMpf4S8Ur0qHsjA8fbFtBzBx1cbQzHwAAABLAAAAAAAAAABAAAAAAAAAAAAAAADAAAAAAAAAAMAAAAAAAAAAVVTRAAAAAAALSRpLtCLv2eboZlEiHDSGR6Hb+zZL92fbSdNpObeE0EAAAAAC+vCAAAADDgAAAAZAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAABVVNEAAAAAAAtJGku0Iu/Z5uhmUSIcNIZHodv7Nkv3Z9tJ02k5t4TQQAAAAAX14QAAAAMOAAAABkAAAAAAAAAAgAAAAAAAAADAAAAAAAAAAFVU0QAAAAAAC0kaS7Qi79nm6GZRIhw0hkeh2/s2S/dn20nTaTm3hNBAAAAAAAAAAAAAAw4AAAAGQAAAAAAAAABAAAAAAAAAAEbQzHwAAAAQBfosk+t8qpULHP4ppNX2xVPih8lmnbHFZdeuxSP6pgpCCX05S7zZ4PsjVQY2nOnLru6mBTc1r8So+vxHs3FXAc=
+}
+
+// ExampleAccountMerge creates and signs a simple transaction with AccountMerge operation, and then
+// encodes it into a base64 string capable of being submitted to stellar-core.
+func ExampleAccountMerge() {
+	seed := "SDOTALIMPAM2IV65IOZA7KZL7XWZI5BODFXTRVLIHLQZQCKK57PH5F3H"
+	tx := Transaction(
+		SourceAccount{seed},
+		Sequence{1},
+		AccountMerge(
+			Destination{"GBDT3K42LOPSHNAEHEJ6AVPADIJ4MAR64QEKKW2LQPBSKLYD22KUEH4P"},
+		),
+	)
+
+	txe := tx.Sign(seed)
+	txeB64, _ := txe.Base64()
+
+	fmt.Printf("tx base64: %s", txeB64)
+	// Output: tx base64: AAAAADZY/nWY0gx6beMpf4S8Ur0qHsjA8fbFtBzBx1cbQzHwAAAAZAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAgAAAAARz2rmlufI7QEORPgVeAaE8YCPuQIpVtLg8MlLwPWlUIAAAAAAAAAARtDMfAAAABAh3qZrP5T9Xg0LdzwOLx/eA/B7bzj+8j+s9eXNuu7/Ldch7I6kW5iYz6Vfy32FVnKNtoykToB7nQY2o2vo1tqAw==
+}
+
+// ExampleInflation creates and signs a simple transaction with Inflation operation, and then
+// encodes it into a base64 string capable of being submitted to stellar-core.
+func ExampleInflation() {
+	seed := "SDOTALIMPAM2IV65IOZA7KZL7XWZI5BODFXTRVLIHLQZQCKK57PH5F3H"
+	tx := Transaction(
+		SourceAccount{seed},
+		Sequence{1},
+		Inflation(),
+	)
+
+	txe := tx.Sign(seed)
+	txeB64, _ := txe.Base64()
+
+	fmt.Printf("tx base64: %s", txeB64)
+	// Output: tx base64: AAAAADZY/nWY0gx6beMpf4S8Ur0qHsjA8fbFtBzBx1cbQzHwAAAAZAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAAARtDMfAAAABAzzDG4V7KzynWY0ER/V4HH0WgDvl3hrIizDcKW3qEQY4Ib3yXufVvdbzsET/Dj5js5dgDkcYgikHwRCpqi/J8BQ==
+}
