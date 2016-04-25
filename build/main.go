@@ -90,6 +90,12 @@ type Authorize struct {
 	Value bool
 }
 
+// AutoSequence loads the sequence to use for the transaction from an external
+// provider.
+type AutoSequence struct {
+	SequenceProvider
+}
+
 // NativeAsset is a helper method to create native Asset object
 func NativeAsset() Asset {
 	return Asset{Native: true}
@@ -199,6 +205,12 @@ type Rate struct {
 // Sequence is a mutator that sets the sequence number on a transaction
 type Sequence struct {
 	Sequence uint64
+}
+
+// SequenceProvider is the interface that other packages may implement to be
+// used with the `AutoSequence` mutator.
+type SequenceProvider interface {
+	SequenceForAccount(aid string) (xdr.SequenceNumber, error)
 }
 
 // Sign is a mutator that contributes a signature of the provided envelope's

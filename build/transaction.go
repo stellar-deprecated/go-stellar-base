@@ -123,6 +123,18 @@ func (m AllowTrustBuilder) MutateTransaction(o *TransactionBuilder) error {
 	return m.Err
 }
 
+// MutateTransaction for AutoSequence loads the sequence and sets it on the tx.
+func (m AutoSequence) MutateTransaction(o *TransactionBuilder) error {
+	source := o.TX.SourceAccount
+	seq, err := m.SequenceForAccount(source.Address())
+	if err != nil {
+		return err
+	}
+
+	o.TX.SeqNum = seq
+	return nil
+}
+
 // MutateTransaction for ChangeTrustBuilder causes the underylying
 // CreateAccountOp to be added to the operation list for the provided
 // transaction
