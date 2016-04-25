@@ -131,7 +131,7 @@ func (m AutoSequence) MutateTransaction(o *TransactionBuilder) error {
 		return err
 	}
 
-	o.TX.SeqNum = seq
+	o.TX.SeqNum = seq + 1
 	return nil
 }
 
