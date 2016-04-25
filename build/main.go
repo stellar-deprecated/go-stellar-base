@@ -117,6 +117,12 @@ type Destination struct {
 	AddressOrSeed string
 }
 
+// InflationDest is a mutator capable of setting the inflation destination
+type InflationDest string
+
+// HomeDomain is a mutator capable of setting home domain of the account
+type HomeDomain string
+
 // MemoHash is a mutator that sets a memo on the mutated transaction of type
 // MEMO_HASH.
 type MemoHash struct {
@@ -125,6 +131,9 @@ type MemoHash struct {
 
 // Limit is a mutator that sets a limit on the change_trust operation
 type Limit Amount
+
+// MasterWeight is a mutator that sets account's master weight
+type MasterWeight uint32
 
 // MaxLimit represents the maximum value that can be passed as trutline Limit
 var MaxLimit = Limit(amount.String(math.MaxInt64))
@@ -198,10 +207,29 @@ type Sign struct {
 	Seed string
 }
 
+// SetFlag is a mutator capable of setting account flags
+type SetFlag int32
+
+// ClearFlag is a mutator capable of clearing account flags
+type ClearFlag int32
+
+// Signer is a mutator capable of adding, updating and deleting account signer
+type Signer struct {
+	PublicKey string
+	Weight    uint32
+}
+
 // SourceAccount is a mutator capable of setting the source account on
 // an xdr.Operation and an xdr.Transaction
 type SourceAccount struct {
 	AddressOrSeed string
+}
+
+// Thresholds is a mutator capable of setting account thresholds
+type Thresholds struct {
+	Low    *uint32
+	Medium *uint32
+	High   *uint32
 }
 
 // Trustor is a mutator capable of setting the trustor on

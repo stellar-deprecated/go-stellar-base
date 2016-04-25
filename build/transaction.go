@@ -255,6 +255,19 @@ func (m PaymentBuilder) MutateTransaction(o *TransactionBuilder) error {
 	return m.Err
 }
 
+// MutateTransaction for SetOptionsBuilder causes the underylying
+// SetOptionsOp to be added to the operation list for the provided
+// transaction
+func (m SetOptionsBuilder) MutateTransaction(o *TransactionBuilder) error {
+	if m.Err != nil {
+		return m.Err
+	}
+
+	m.O.Body, m.Err = xdr.NewOperationBody(xdr.OperationTypeSetOptions, m.SO)
+	o.TX.Operations = append(o.TX.Operations, m.O)
+	return m.Err
+}
+
 // MutateTransaction for Sequence sets the SeqNum on the transaction.
 func (m Sequence) MutateTransaction(o *TransactionBuilder) error {
 	o.TX.SeqNum = xdr.SequenceNumber(m.Sequence)

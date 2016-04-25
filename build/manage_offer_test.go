@@ -125,6 +125,47 @@ var _ = Describe("ManageOffer", func() {
 		})
 	})
 
+	Describe("CreatePassiveOfferBuilder", func() {
+		var (
+			subject ManageOfferBuilder
+			mut     interface{}
+
+			rate = Rate{
+				Selling: CreditAsset("EUR", "GAWSI2JO2CF36Z43UGMUJCDQ2IMR5B3P5TMS7XM7NUTU3JHG3YJUDQXA"),
+				Buying:  NativeAsset(),
+				Price:   Price("41.265"),
+			}
+		)
+
+		JustBeforeEach(func() {
+			subject = ManageOfferBuilder{}
+			subject.Mutate(mut)
+		})
+
+		Describe("CreatePassiveOffer", func() {
+			Context("creates offer properly", func() {
+				It("sets values properly", func() {
+					builder := CreatePassiveOffer(rate, "20")
+
+					Expect(builder.PO.Amount).To(Equal(xdr.Int64(200000000)))
+
+					Expect(builder.PO.Selling.Type).To(Equal(xdr.AssetTypeAssetTypeCreditAlphanum4))
+					Expect(builder.PO.Selling.AlphaNum4.AssetCode).To(Equal([4]byte{'E', 'U', 'R', 0}))
+					aid, _ := stellarbase.AddressToAccountId(rate.Selling.Issuer)
+					Expect(builder.PO.Selling.AlphaNum4.Issuer.MustEd25519()).To(Equal(aid.MustEd25519()))
+					Expect(builder.PO.Selling.AlphaNum12).To(BeNil())
+
+					Expect(builder.PO.Buying.Type).To(Equal(xdr.AssetTypeAssetTypeNative))
+					Expect(builder.PO.Buying.AlphaNum4).To(BeNil())
+					Expect(builder.PO.Buying.AlphaNum12).To(BeNil())
+
+					Expect(builder.PO.Price.N).To(Equal(xdr.Int32(8253)))
+					Expect(builder.PO.Price.D).To(Equal(xdr.Int32(200)))
+				})
+			})
+		})
+	})
+
 	Describe("continuedFraction", func() {
 		It("succeeds", func() {
 			Expect(continuedFraction("0.1")).To(Equal(xdr.Price{1, 10}))
