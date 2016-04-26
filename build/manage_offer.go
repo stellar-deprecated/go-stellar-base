@@ -2,10 +2,9 @@ package build
 
 import (
 	"errors"
-	"math"
 
-	"github.com/shopspring/decimal"
 	"github.com/stellar/go-stellar-base/amount"
+	"github.com/stellar/go-stellar-base/price"
 	"github.com/stellar/go-stellar-base/xdr"
 )
 
@@ -116,7 +115,7 @@ func (m Rate) MutateManageOffer(o interface{}) (err error) {
 			return
 		}
 
-		o.Price, err = continuedFraction(m.Price)
+		o.Price, err = price.Parse(string(m.Price))
 	case *xdr.CreatePassiveOfferOp:
 		o.Selling, err = m.Selling.ToXdrObject()
 		if err != nil {
@@ -128,55 +127,7 @@ func (m Rate) MutateManageOffer(o interface{}) (err error) {
 			return
 		}
 
-		o.Price, err = continuedFraction(m.Price)
+		o.Price, err = price.Parse(string(m.Price))
 	}
 	return
-}
-
-// continuedFraction calculates and returns the best rational approximation of the given real number.
-func continuedFraction(price Price) (xdrPrice xdr.Price, err error) {
-	number, err := decimal.NewFromString(string(price))
-	if err != nil {
-		return
-	}
-
-	maxInt32 := decimal.New(int64(math.MaxInt32), 0)
-
-	fractions := [][2]decimal.Decimal{
-		{decimal.Decimal{}, decimal.New(1, 0)},
-		{decimal.New(1, 0), decimal.Decimal{}},
-	}
-
-	i := 2
-	for {
-		if number.Cmp(maxInt32) == 1 {
-			break
-		}
-
-		a := number.Floor()
-		f := number.Sub(a)
-		h := a.Mul(fractions[i-1][0]).Add(fractions[i-2][0])
-		k := a.Mul(fractions[i-1][1]).Add(fractions[i-2][1])
-		if h.Cmp(maxInt32) == 1 || k.Cmp(maxInt32) == 1 {
-			break
-		}
-
-		fractions = append(fractions, [2]decimal.Decimal{h, k})
-		if f.Cmp(decimal.Decimal{}) == 0 {
-			break
-		}
-		number = decimal.New(1, 0).Div(f)
-		i++
-	}
-
-	n, d := fractions[len(fractions)-1][0], fractions[len(fractions)-1][1]
-
-	if n.Cmp(decimal.Decimal{}) == 0 || d.Cmp(decimal.Decimal{}) == 0 {
-		return xdrPrice, errors.New("Couldn't find approximation")
-	}
-
-	return xdr.Price{
-		N: xdr.Int32(n.IntPart()),
-		D: xdr.Int32(d.IntPart()),
-	}, nil
 }

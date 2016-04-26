@@ -165,36 +165,4 @@ var _ = Describe("ManageOffer", func() {
 			})
 		})
 	})
-
-	Describe("continuedFraction", func() {
-		It("succeeds", func() {
-			Expect(continuedFraction("0.1")).To(Equal(xdr.Price{1, 10}))
-			Expect(continuedFraction("0.01")).To(Equal(xdr.Price{1, 100}))
-			Expect(continuedFraction("0.001")).To(Equal(xdr.Price{1, 1000}))
-			Expect(continuedFraction("543.017930")).To(Equal(xdr.Price{54301793, 100000}))
-			Expect(continuedFraction("319.69983")).To(Equal(xdr.Price{31969983, 100000}))
-			Expect(continuedFraction("0.93")).To(Equal(xdr.Price{93, 100}))
-			Expect(continuedFraction("0.5")).To(Equal(xdr.Price{1, 2}))
-			Expect(continuedFraction("1.730")).To(Equal(xdr.Price{173, 100}))
-			Expect(continuedFraction("0.85334384")).To(Equal(xdr.Price{5333399, 6250000}))
-			Expect(continuedFraction("5.5")).To(Equal(xdr.Price{11, 2}))
-			Expect(continuedFraction("2.72783")).To(Equal(xdr.Price{272783, 100000}))
-			Expect(continuedFraction("638082.0")).To(Equal(xdr.Price{638082, 1}))
-			Expect(continuedFraction("2.93850088")).To(Equal(xdr.Price{36731261, 12500000}))
-			Expect(continuedFraction("58.04")).To(Equal(xdr.Price{1451, 25}))
-			Expect(continuedFraction("41.265")).To(Equal(xdr.Price{8253, 200}))
-			Expect(continuedFraction("5.1476")).To(Equal(xdr.Price{12869, 2500}))
-			Expect(continuedFraction("95.14")).To(Equal(xdr.Price{4757, 50}))
-			Expect(continuedFraction("0.74580")).To(Equal(xdr.Price{3729, 5000}))
-			Expect(continuedFraction("4119.0")).To(Equal(xdr.Price{4119, 1}))
-		})
-
-		It("fails for invalid values", func() {
-			var err error
-			_, err = continuedFraction("0.0000000003")
-			Expect(err).Should(HaveOccurred())
-			_, err = continuedFraction("2147483648")
-			Expect(err).Should(HaveOccurred())
-		})
-	})
 })
