@@ -196,8 +196,13 @@ func (m ManageOfferBuilder) MutateTransaction(o *TransactionBuilder) error {
 		return m.Err
 	}
 
-	m.O.Body, m.Err = xdr.NewOperationBody(xdr.OperationTypeManageOffer, m.MO)
-	o.TX.Operations = append(o.TX.Operations, m.O)
+	if m.PassiveOffer {
+		m.O.Body, m.Err = xdr.NewOperationBody(xdr.OperationTypeCreatePassiveOffer, m.PO)
+		o.TX.Operations = append(o.TX.Operations, m.O)
+	} else {
+		m.O.Body, m.Err = xdr.NewOperationBody(xdr.OperationTypeManageOffer, m.MO)
+		o.TX.Operations = append(o.TX.Operations, m.O)
+	}
 	return m.Err
 }
 

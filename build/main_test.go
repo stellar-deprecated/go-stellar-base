@@ -195,6 +195,29 @@ func ExampleManageOffer() {
 	// Output: tx base64: AAAAADZY/nWY0gx6beMpf4S8Ur0qHsjA8fbFtBzBx1cbQzHwAAABLAAAAAAAAAABAAAAAAAAAAAAAAADAAAAAAAAAAMAAAAAAAAAAVVTRAAAAAAALSRpLtCLv2eboZlEiHDSGR6Hb+zZL92fbSdNpObeE0EAAAAAC+vCAAAADDgAAAAZAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAABVVNEAAAAAAAtJGku0Iu/Z5uhmUSIcNIZHodv7Nkv3Z9tJ02k5t4TQQAAAAAX14QAAAAMOAAAABkAAAAAAAAAAgAAAAAAAAADAAAAAAAAAAFVU0QAAAAAAC0kaS7Qi79nm6GZRIhw0hkeh2/s2S/dn20nTaTm3hNBAAAAAAAAAAAAAAw4AAAAGQAAAAAAAAABAAAAAAAAAAEbQzHwAAAAQBfosk+t8qpULHP4ppNX2xVPih8lmnbHFZdeuxSP6pgpCCX05S7zZ4PsjVQY2nOnLru6mBTc1r8So+vxHs3FXAc=
 }
 
+// ExampleCreatePassiveOffer creates and signs a simple transaction with CreatePassiveOffer operation, and then
+// encodes it into a base64 string capable of being submitted to stellar-core.
+func ExampleCreatePassiveOffer() {
+	rate := Rate{
+		Selling: NativeAsset(),
+		Buying:  CreditAsset("USD", "GAWSI2JO2CF36Z43UGMUJCDQ2IMR5B3P5TMS7XM7NUTU3JHG3YJUDQXA"),
+		Price:   Price("125.12"),
+	}
+
+	seed := "SDOTALIMPAM2IV65IOZA7KZL7XWZI5BODFXTRVLIHLQZQCKK57PH5F3H"
+	tx := Transaction(
+		SourceAccount{seed},
+		Sequence{1},
+		CreatePassiveOffer(rate, "20"),
+	)
+
+	txe := tx.Sign(seed)
+	txeB64, _ := txe.Base64()
+
+	fmt.Printf("tx base64: %s", txeB64)
+	// Output: tx base64: AAAAADZY/nWY0gx6beMpf4S8Ur0qHsjA8fbFtBzBx1cbQzHwAAAAZAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAQAAAAAAAAAAVVTRAAAAAAALSRpLtCLv2eboZlEiHDSGR6Hb+zZL92fbSdNpObeE0EAAAAAC+vCAAAADDgAAAAZAAAAAAAAAAEbQzHwAAAAQHv/1xLn+ArfIUoWjn3V0zVka6tulqMYx4zJZhGqdmTw8iCXY0ZtHS+y+7YGgR3vM1DpKOdvWTmhee+sCXIppQA=
+}
+
 // ExampleAccountMerge creates and signs a simple transaction with AccountMerge operation, and then
 // encodes it into a base64 string capable of being submitted to stellar-core.
 func ExampleAccountMerge() {
