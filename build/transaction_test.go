@@ -106,4 +106,30 @@ var _ = Describe("Transaction Mutators:", func() {
 		It("sets the sequence", func() { Expect(subject.TX.SeqNum).To(BeEquivalentTo(12345)) })
 	})
 
+	Describe("AutoSequence", func() {
+		BeforeEach(func() {
+			mock := &MockSequenceProvider{
+				Data: map[string]xdr.SequenceNumber{
+					"GAXEMCEXBERNSRXOEKD4JAIKVECIXQCENHEBRVSPX2TTYZPMNEDSQCNQ": 2,
+				},
+			}
+
+			mut = AutoSequence{mock}
+		})
+
+		Context("with no source account set", func() {
+			It("fails", func() { Expect(subject.Err).To(HaveOccurred()) })
+		})
+
+		Context("with a source account set", func() {
+			BeforeEach(func() {
+				subject.Mutate(SourceAccount{
+					"GAXEMCEXBERNSRXOEKD4JAIKVECIXQCENHEBRVSPX2TTYZPMNEDSQCNQ",
+				})
+			})
+
+			It("succeeds", func() { Expect(subject.Err).NotTo(HaveOccurred()) })
+			It("sets the sequence", func() { Expect(subject.TX.SeqNum).To(BeEquivalentTo(3)) })
+		})
+	})
 })

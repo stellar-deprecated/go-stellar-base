@@ -124,8 +124,15 @@ func (m AllowTrustBuilder) MutateTransaction(o *TransactionBuilder) error {
 }
 
 // MutateTransaction for AutoSequence loads the sequence and sets it on the tx.
+// NOTE:  this mutator assumes that the source account has already been set on
+// the transaction and will error if that has not occurred.
 func (m AutoSequence) MutateTransaction(o *TransactionBuilder) error {
 	source := o.TX.SourceAccount
+
+	if source == (xdr.AccountId{}) {
+		return errors.New("auto sequence used prior to setting source account")
+	}
+
 	seq, err := m.SequenceForAccount(source.Address())
 	if err != nil {
 		return err
