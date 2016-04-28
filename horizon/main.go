@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"strconv"
 	"sync"
+
+	"github.com/stellar/go-stellar-base/xdr"
 )
 
 // DefaultTestNetClient is a default client to connect to test network
@@ -13,7 +16,7 @@ var DefaultTestNetClient = &Client{URL: "https://horizon-testnet.stellar.org"}
 // DefaultPublicNetClient is a default client to connect to public network
 var DefaultPublicNetClient = &Client{URL: "https://horizon.stellar.org"}
 
-// HorizonError struct contains the problem returned by Horizon
+// Error struct contains the problem returned by Horizon
 type Error struct {
 	Response *http.Response
 	Problem  Problem
@@ -38,16 +41,35 @@ type Client struct {
 	clientInit sync.Once
 }
 
-// LoadAccount loads the account state from horizon. err can be either error object or horizon.Error object.
-func (c *Client) LoadAccount(accountId string) (account Account, err error) {
+// LoadAccount loads the account state from horizon. err can be either error
+// object or horizon.Error object.
+func (c *Client) LoadAccount(accountID string) (account Account, err error) {
 	c.initHttpClient()
-	resp, err := c.Client.Get(c.URL + "/accounts/" + accountId)
+	resp, err := c.Client.Get(c.URL + "/accounts/" + accountID)
 	if err != nil {
 		return
 	}
 
 	err = decodeResponse(resp, &account)
 	return
+}
+
+// SequenceForAccount implements build.SequenceProvider
+func (c *Client) SequenceForAccount(
+	accountID string,
+) (xdr.SequenceNumber, error) {
+
+	a, err := c.LoadAccount(accountID)
+	if err != nil {
+		return 0, err
+	}
+
+	seq, err := strconv.ParseUint(a.Sequence, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return xdr.SequenceNumber(seq), nil
 }
 
 // SubmitTransaction submits a transaction to the network. err can be either error object or horizon.Error object.
