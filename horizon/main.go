@@ -2,6 +2,7 @@ package horizon
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -23,10 +24,11 @@ type Error struct {
 }
 
 func (herror *Error) Error() string {
-	return "Horizon error"
+	return fmt.Sprintf("Horizon error: [%s] %s\nExtras: %s", herror.Problem.Title, herror.Problem.Detail, herror.Problem.Extras)
 }
 
-type HorizonHttpClient interface {
+// HTTPClient contains http.Client methods used by horizon.Client.
+type HTTPClient interface {
 	Get(url string) (resp *http.Response, err error)
 	PostForm(url string, data url.Values) (resp *http.Response, err error)
 }
@@ -36,7 +38,7 @@ type Client struct {
 	// URL of Horizon server to connect
 	URL string
 	// Will be populated with &http.Client when nil. If you want to configure your http.Client make sure Timeout is at least 10 seconds.
-	Client HorizonHttpClient
+	Client HTTPClient
 	// clientInit initializes http client once
 	clientInit sync.Once
 }
@@ -44,7 +46,7 @@ type Client struct {
 // LoadAccount loads the account state from horizon. err can be either error
 // object or horizon.Error object.
 func (c *Client) LoadAccount(accountID string) (account Account, err error) {
-	c.initHttpClient()
+	c.initHTTPClient()
 	resp, err := c.Client.Get(c.URL + "/accounts/" + accountID)
 	if err != nil {
 		return
@@ -77,7 +79,7 @@ func (c *Client) SubmitTransaction(transactionEnvelopeXdr string) (response Tran
 	v := url.Values{}
 	v.Set("tx", transactionEnvelopeXdr)
 
-	c.initHttpClient()
+	c.initHTTPClient()
 	resp, err := c.Client.PostForm(c.URL+"/transactions", v)
 	if err != nil {
 		return
@@ -87,7 +89,7 @@ func (c *Client) SubmitTransaction(transactionEnvelopeXdr string) (response Tran
 	return
 }
 
-func (c *Client) initHttpClient() {
+func (c *Client) initHTTPClient() {
 	c.clientInit.Do(func() {
 		if c.Client == nil {
 			c.Client = &http.Client{}

@@ -21,12 +21,12 @@ func TestHorizon(t *testing.T) {
 var _ build.SequenceProvider = TestHorizonClient
 
 var _ = Describe("Horizon", func() {
-	Describe("initHttpClient", func() {
+	Describe("initHTTPClient", func() {
 		It("does not run into race condition", func() {
 			// Race condition should be detected by race-detector:
 			// http://blog.golang.org/race-detector
 			init := func() {
-				DefaultTestNetClient.initHttpClient()
+				DefaultTestNetClient.initHTTPClient()
 			}
 			go init()
 			go init()
@@ -59,7 +59,6 @@ var _ = Describe("Horizon", func() {
 
 			_, err := TestHorizonClient.LoadAccount("GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H")
 			Expect(err).NotTo(BeNil())
-			Expect(err.Error()).To(Equal("Horizon error"))
 			horizonError, ok := err.(*Error)
 			Expect(ok).To(BeTrue())
 			Expect(horizonError.Problem.Title).To(Equal("Resource Missing"))
@@ -104,7 +103,6 @@ var _ = Describe("Horizon", func() {
 
 			_, err := TestHorizonClient.SubmitTransaction(tx)
 			Expect(err).NotTo(BeNil())
-			Expect(err.Error()).To(Equal("Horizon error"))
 			horizonError, ok := err.(*Error)
 			Expect(ok).To(BeTrue())
 			Expect(horizonError.Problem.Title).To(Equal("Transaction Failed"))
