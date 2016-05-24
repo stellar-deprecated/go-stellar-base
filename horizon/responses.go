@@ -29,6 +29,7 @@ type Account struct {
 	Flags                AccountFlags      `json:"flags"`
 	Balances             []Balance         `json:"balances"`
 	Signers              []Signer          `json:"signers"`
+	Data                 map[string]string `json:"data"`
 }
 
 func (a Account) GetNativeBalance() string {
