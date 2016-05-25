@@ -47,6 +47,7 @@ var _ = Describe("Horizon", func() {
 			Expect(account.ID).To(Equal("GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H"))
 			Expect(account.PT).To(Equal("1"))
 			Expect(account.GetNativeBalance()).To(Equal("948522307.6146000"))
+			Expect(account.Data["foo"]).To(Equal("+xbxLlS9Exgb4n6tWSK6ruUmejywOykOHw1zCrotEgtNHeBzykVmdMhPipUOI839q1tybb9NUkrsteMoJas1/w=="))
 		})
 
 		It("failure response", func() {
@@ -190,7 +191,10 @@ var accountResponse = `{
       "public_key": "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H",
       "weight": 1
     }
-  ]
+  ],
+  "data": {
+	"foo": "+xbxLlS9Exgb4n6tWSK6ruUmejywOykOHw1zCrotEgtNHeBzykVmdMhPipUOI839q1tybb9NUkrsteMoJas1/w=="
+  }
 }`
 
 var notFoundResponse = `{
