@@ -3,7 +3,9 @@ package horizon
 import (
 	"bytes"
 	"errors"
+	// "fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"testing"
@@ -16,6 +18,29 @@ import (
 func TestHorizon(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Package: github.com/stellar/go-stellar-base/horizon")
+}
+
+// ExampleAccountsPage shows how to load consecutive pages of accounts.
+func ExampleAccountsPage() {
+	accounts, err := DefaultTestNetClient.LoadAccounts(Limit(100), OrderDesc)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("First Page:")
+	for i, account := range accounts.Embedded.Records {
+		log.Println(i, account.ID)
+	}
+
+	accounts, err = DefaultTestNetClient.LoadAccounts(accounts.Links.GetNextPageParams())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Second Page:")
+	for i, account := range accounts.Embedded.Records {
+		log.Println(i, account.ID)
+	}
 }
 
 var _ build.SequenceProvider = TestHorizonClient
@@ -35,7 +60,7 @@ var _ = Describe("Horizon", func() {
 
 	Describe("LoadAccount", func() {
 		It("success response", func() {
-			TestHorizonClient.Client = &TestHttpClient{
+			TestHorizonClient.Client = &TestHTTPClient{
 				Response: http.Response{
 					StatusCode: 200,
 					Body:       ioutil.NopCloser(bytes.NewBufferString(accountResponse)),
@@ -51,7 +76,7 @@ var _ = Describe("Horizon", func() {
 		})
 
 		It("failure response", func() {
-			TestHorizonClient.Client = &TestHttpClient{
+			TestHorizonClient.Client = &TestHTTPClient{
 				Response: http.Response{
 					StatusCode: 404,
 					Body:       ioutil.NopCloser(bytes.NewBufferString(notFoundResponse)),
@@ -66,7 +91,7 @@ var _ = Describe("Horizon", func() {
 		})
 
 		It("connection error", func() {
-			TestHorizonClient.Client = &TestHttpClient{
+			TestHorizonClient.Client = &TestHTTPClient{
 				Error: errors.New("http.Client error"),
 			}
 
@@ -78,11 +103,116 @@ var _ = Describe("Horizon", func() {
 		})
 	})
 
+	Describe("LoadAccounts", func() {
+		It("success response", func() {
+			TestHorizonClient.Client = &TestHTTPClient{
+				Response: http.Response{
+					StatusCode: 200,
+					Body:       ioutil.NopCloser(bytes.NewBufferString(accountsResponse)),
+				},
+			}
+
+			accounts, err := TestHorizonClient.LoadAccounts()
+			Expect(err).To(BeNil())
+
+			nextParams, err := accounts.Links.GetNextPageParams()
+			Expect(err).To(BeNil())
+			Expect(nextParams.Order).To(Equal(OrderDirection("asc")))
+			Expect(nextParams.Limit).To(Equal(Limit(10)))
+			Expect(nextParams.Cursor).To(Equal(Cursor("8388071133185")))
+
+			prevParams, err := accounts.Links.GetPrevPageParams()
+			Expect(err).To(BeNil())
+			Expect(prevParams.Order).To(Equal(OrderDirection("desc")))
+			Expect(prevParams.Limit).To(Equal(Limit(10)))
+			Expect(prevParams.Cursor).To(Equal(Cursor("1")))
+
+			Expect(accounts.Embedded.Records[0].ID).To(Equal("GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H"))
+			Expect(accounts.Embedded.Records[0].PT).To(Equal("1"))
+			Expect(accounts.Embedded.Records[9].ID).To(Equal("GBLZWJINHGQ4YLBCQVVI6EGUH3OH63KPA2RMBF6RNCPS2IF5GCGF4AZO"))
+			Expect(accounts.Embedded.Records[9].PT).To(Equal("8388071133185"))
+		})
+	})
+
+	Describe("LoadLedger", func() {
+		It("success response", func() {
+			TestHorizonClient.Client = &TestHTTPClient{
+				Response: http.Response{
+					StatusCode: 200,
+					Body:       ioutil.NopCloser(bytes.NewBufferString(ledgerResponse)),
+				},
+			}
+
+			ledger, err := TestHorizonClient.LoadLedger(1)
+			Expect(err).To(BeNil())
+			Expect(ledger.ID).To(Equal("63d98f536ee68d1b27b5b89f23af5311b7569a24faf1403ad0b52b633b07be99"))
+			Expect(ledger.PT).To(Equal("4294967296"))
+			Expect(ledger.TotalCoins).To(Equal("100000000000.0000000"))
+		})
+	})
+
+	Describe("LoadLedgers", func() {
+		It("success response", func() {
+			TestHorizonClient.Client = &TestHTTPClient{
+				Response: http.Response{
+					StatusCode: 200,
+					Body:       ioutil.NopCloser(bytes.NewBufferString(ledgersResponse)),
+				},
+			}
+
+			ledgers, err := TestHorizonClient.LoadLedgers()
+			Expect(err).To(BeNil())
+			Expect(ledgers.Embedded.Records[0].ID).To(Equal("63d98f536ee68d1b27b5b89f23af5311b7569a24faf1403ad0b52b633b07be99"))
+			Expect(ledgers.Embedded.Records[0].PT).To(Equal("4294967296"))
+			Expect(ledgers.Embedded.Records[0].TotalCoins).To(Equal("100000000000.0000000"))
+			Expect(ledgers.Embedded.Records[9].ID).To(Equal("651a974af2c39bed94975269aa3f762d4e311728b8075a7a394fadf75db4a2e7"))
+			Expect(ledgers.Embedded.Records[9].PT).To(Equal("42949672960"))
+			Expect(ledgers.Embedded.Records[9].Sequence).To(Equal(int32(10)))
+		})
+	})
+
+	Describe("LoadTransaction", func() {
+		It("success response", func() {
+			TestHorizonClient.Client = &TestHTTPClient{
+				Response: http.Response{
+					StatusCode: 200,
+					Body:       ioutil.NopCloser(bytes.NewBufferString(transactionResponse)),
+				},
+			}
+
+			ledger, err := TestHorizonClient.LoadTransaction("e7791b6d3040a09216d4ed696ddc245f1e833e280d8cc2cf7d902c80e9e487f1")
+			Expect(err).To(BeNil())
+			Expect(ledger.ID).To(Equal("e7791b6d3040a09216d4ed696ddc245f1e833e280d8cc2cf7d902c80e9e487f1"))
+			Expect(ledger.PT).To(Equal("4672924422144"))
+			Expect(ledger.Ledger).To(Equal(int32(1088)))
+		})
+	})
+
+	Describe("LoadTransactions", func() {
+		It("success response", func() {
+			TestHorizonClient.Client = &TestHTTPClient{
+				Response: http.Response{
+					StatusCode: 200,
+					Body:       ioutil.NopCloser(bytes.NewBufferString(transactionsResponse)),
+				},
+			}
+
+			transactions, err := TestHorizonClient.LoadTransactions()
+			Expect(err).To(BeNil())
+			Expect(transactions.Embedded.Records[0].ID).To(Equal("e7791b6d3040a09216d4ed696ddc245f1e833e280d8cc2cf7d902c80e9e487f1"))
+			Expect(transactions.Embedded.Records[0].PT).To(Equal("4672924422144"))
+			Expect(transactions.Embedded.Records[0].Ledger).To(Equal(int32(1088)))
+			Expect(transactions.Embedded.Records[2].ID).To(Equal("02a142294acde3e8920fc1e3879b34763df56b9c387a6dcf16d613b21cb9b87a"))
+			Expect(transactions.Embedded.Records[2].PT).To(Equal("6859062775808"))
+			Expect(transactions.Embedded.Records[2].Ledger).To(Equal(int32(1597)))
+		})
+	})
+
 	Describe("SubmitTransaction", func() {
 		var tx = "AAAAADSMMRmQGDH6EJzkgi/7PoKhphMHyNGQgDp2tlS/dhGXAAAAZAAT3TUAAAAwAAAAAAAAAAAAAAABAAAAAAAAAAMAAAABSU5SAAAAAAA0jDEZkBgx+hCc5IIv+z6CoaYTB8jRkIA6drZUv3YRlwAAAAFVU0QAAAAAADSMMRmQGDH6EJzkgi/7PoKhphMHyNGQgDp2tlS/dhGXAAAAAAX14QAAAAAKAAAAAQAAAAAAAAAAAAAAAAAAAAG/dhGXAAAAQLuStfImg0OeeGAQmvLkJSZ1MPSkCzCYNbGqX5oYNuuOqZ5SmWhEsC7uOD9ha4V7KengiwNlc0oMNqBVo22S7gk="
 
 		It("success response", func() {
-			TestHorizonClient.Client = &TestHttpClient{
+			TestHorizonClient.Client = &TestHTTPClient{
 				Response: http.Response{
 					StatusCode: 200,
 					Body:       ioutil.NopCloser(bytes.NewBufferString(submitResponse)),
@@ -95,7 +225,7 @@ var _ = Describe("Horizon", func() {
 		})
 
 		It("failure response", func() {
-			TestHorizonClient.Client = &TestHttpClient{
+			TestHorizonClient.Client = &TestHTTPClient{
 				Response: http.Response{
 					StatusCode: 400,
 					Body:       ioutil.NopCloser(bytes.NewBufferString(transactionFailure)),
@@ -110,7 +240,7 @@ var _ = Describe("Horizon", func() {
 		})
 
 		It("connection error", func() {
-			TestHorizonClient.Client = &TestHttpClient{
+			TestHorizonClient.Client = &TestHTTPClient{
 				Error: errors.New("http.Client error"),
 			}
 
@@ -124,111 +254,18 @@ var _ = Describe("Horizon", func() {
 })
 
 var TestHorizonClient = &Client{
-	Client: &TestHttpClient{},
+	Client: &TestHTTPClient{},
 }
 
-type TestHttpClient struct {
+type TestHTTPClient struct {
 	Response http.Response
 	Error    error
 }
 
-func (tc *TestHttpClient) Get(url string) (*http.Response, error) {
+func (tc *TestHTTPClient) Get(url string) (*http.Response, error) {
 	return &tc.Response, tc.Error
 }
 
-func (tc *TestHttpClient) PostForm(url string, data url.Values) (resp *http.Response, err error) {
+func (tc *TestHTTPClient) PostForm(url string, data url.Values) (resp *http.Response, err error) {
 	return &tc.Response, tc.Error
 }
-
-var accountResponse = `{
-  "_links": {
-    "self": {
-      "href": "https://horizon-testnet.stellar.org/accounts/GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H"
-    },
-    "transactions": {
-      "href": "https://horizon-testnet.stellar.org/accounts/GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H/transactions{?cursor,limit,order}",
-      "templated": true
-    },
-    "operations": {
-      "href": "https://horizon-testnet.stellar.org/accounts/GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H/operations{?cursor,limit,order}",
-      "templated": true
-    },
-    "payments": {
-      "href": "https://horizon-testnet.stellar.org/accounts/GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H/payments{?cursor,limit,order}",
-      "templated": true
-    },
-    "effects": {
-      "href": "https://horizon-testnet.stellar.org/accounts/GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H/effects{?cursor,limit,order}",
-      "templated": true
-    },
-    "offers": {
-      "href": "https://horizon-testnet.stellar.org/accounts/GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H/Offers{?cursor,limit,order}",
-      "templated": true
-    }
-  },
-  "id": "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H",
-  "paging_token": "1",
-  "account_id": "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H",
-  "sequence": "7384",
-  "subentry_count": 0,
-  "thresholds": {
-    "low_threshold": 0,
-    "med_threshold": 0,
-    "high_threshold": 0
-  },
-  "flags": {
-    "auth_required": false,
-    "auth_revocable": false
-  },
-  "balances": [
-    {
-      "balance": "948522307.6146000",
-      "asset_type": "native"
-    }
-  ],
-  "signers": [
-    {
-      "public_key": "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H",
-      "weight": 1
-    }
-  ],
-  "data": {
-	"foo": "+xbxLlS9Exgb4n6tWSK6ruUmejywOykOHw1zCrotEgtNHeBzykVmdMhPipUOI839q1tybb9NUkrsteMoJas1/w=="
-  }
-}`
-
-var notFoundResponse = `{
-  "type": "https://stellar.org/horizon-errors/not_found",
-  "title": "Resource Missing",
-  "status": 404,
-  "detail": "The resource at the url requested was not found.  This is usually occurs for one of two reasons:  The url requested is not valid, or no data in our database could be found with the parameters provided.",
-  "instance": "horizon-live-001/61KdRW8tKi-18408110"
-}`
-
-var submitResponse = `{
-  "_links": {
-    "transaction": {
-      "href": "https://horizon-testnet.stellar.org/transactions/ee14b93fcd31d4cfe835b941a0a8744e23a6677097db1fafe0552d8657bed940"
-    }
-  },
-  "hash": "ee14b93fcd31d4cfe835b941a0a8744e23a6677097db1fafe0552d8657bed940",
-  "ledger": 3128812,
-  "envelope_xdr": "AAAAADSMMRmQGDH6EJzkgi/7PoKhphMHyNGQgDp2tlS/dhGXAAAAZAAT3TUAAAAwAAAAAAAAAAAAAAABAAAAAAAAAAMAAAABSU5SAAAAAAA0jDEZkBgx+hCc5IIv+z6CoaYTB8jRkIA6drZUv3YRlwAAAAFVU0QAAAAAADSMMRmQGDH6EJzkgi/7PoKhphMHyNGQgDp2tlS/dhGXAAAAAAX14QAAAAAKAAAAAQAAAAAAAAAAAAAAAAAAAAG/dhGXAAAAQLuStfImg0OeeGAQmvLkJSZ1MPSkCzCYNbGqX5oYNuuOqZ5SmWhEsC7uOD9ha4V7KengiwNlc0oMNqBVo22S7gk=",
-  "result_xdr": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAADAAAAAAAAAAAAAAAAAAAAADSMMRmQGDH6EJzkgi/7PoKhphMHyNGQgDp2tlS/dhGXAAAAAAAAAPEAAAABSU5SAAAAAAA0jDEZkBgx+hCc5IIv+z6CoaYTB8jRkIA6drZUv3YRlwAAAAFVU0QAAAAAADSMMRmQGDH6EJzkgi/7PoKhphMHyNGQgDp2tlS/dhGXAAAAAAX14QAAAAAKAAAAAQAAAAAAAAAAAAAAAA==",
-  "result_meta_xdr": "AAAAAAAAAAEAAAACAAAAAAAvoHwAAAACAAAAADSMMRmQGDH6EJzkgi/7PoKhphMHyNGQgDp2tlS/dhGXAAAAAAAAAPEAAAABSU5SAAAAAAA0jDEZkBgx+hCc5IIv+z6CoaYTB8jRkIA6drZUv3YRlwAAAAFVU0QAAAAAADSMMRmQGDH6EJzkgi/7PoKhphMHyNGQgDp2tlS/dhGXAAAAAAX14QAAAAAKAAAAAQAAAAAAAAAAAAAAAAAAAAEAL6B8AAAAAAAAAAA0jDEZkBgx+hCc5IIv+z6CoaYTB8jRkIA6drZUv3YRlwAAABZ9zvNAABPdNQAAADAAAAAEAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=="
-}`
-
-var transactionFailure = `{
-  "type": "https://stellar.org/horizon-errors/transaction_failed",
-  "title": "Transaction Failed",
-  "status": 400,
-  "detail": "The transaction failed when submitted to the stellar network. The extras.result_codes field on this response contains further details.  Descriptions of each code can be found at: https://www.stellar.org/developers/learn/concepts/list-of-operations.html",
-  "instance": "horizon-testnet-001.prd.stellar001.internal.stellar-ops.com/4elYz2fHhC-528285",
-  "extras": {
-    "envelope_xdr": "AAAAAKpmDL6Z4hvZmkTBkYpHftan4ogzTaO4XTB7joLgQnYYAAAAZAAAAAAABeoyAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAABAAAAAD3sEVVGZGi/NoC3ta/8f/YZKMzyi9ZJpOi0H47x7IqYAAAAAAAAAAAF9eEAAAAAAAAAAAA=",
-    "result_codes": {
-      "transaction": "tx_no_source_account"
-    },
-    "result_xdr": "AAAAAAAAAAD////4AAAAAA=="
-  }
-}`

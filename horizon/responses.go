@@ -1,6 +1,12 @@
 // This file contains response structs from horizon
 package horizon
 
+import (
+	u "net/url"
+	"strconv"
+	"time"
+)
+
 type Problem struct {
 	Type     string                 `json:"type"`
 	Title    string                 `json:"title"`
@@ -53,6 +59,13 @@ type AccountThresholds struct {
 	HighThreshold byte `json:"high_threshold"`
 }
 
+type AccountsPage struct {
+	Links    `json:"_links"`
+	Embedded struct {
+		Records []HistoryAccount `json:"records"`
+	} `json:"_embedded"`
+}
+
 type Asset struct {
 	Type   string `json:"asset_type"`
 	Code   string `json:"asset_code,omitempty"`
@@ -71,9 +84,98 @@ type HistoryAccount struct {
 	AccountID string `json:"account_id"`
 }
 
+// Ledger represents a single closed ledger
+type Ledger struct {
+	ID               string    `json:"id"`
+	PT               string    `json:"paging_token"`
+	Hash             string    `json:"hash"`
+	PrevHash         string    `json:"prev_hash,omitempty"`
+	Sequence         int32     `json:"sequence"`
+	TransactionCount int32     `json:"transaction_count"`
+	OperationCount   int32     `json:"operation_count"`
+	ClosedAt         time.Time `json:"closed_at"`
+	TotalCoins       string    `json:"total_coins"`
+	FeePool          string    `json:"fee_pool"`
+	BaseFee          int32     `json:"base_fee"`
+	BaseReserve      string    `json:"base_reserve"`
+	MaxTxSetSize     int32     `json:"max_tx_set_size"`
+}
+
+type LedgersPage struct {
+	Links    `json:"_links"`
+	Embedded struct {
+		Records []Ledger `json:"records"`
+	} `json:"_embedded"`
+}
+
 type Link struct {
 	Href      string `json:"href"`
 	Templated bool   `json:"templated,omitempty"`
+}
+
+type Links struct {
+	Self Link `json:"self"`
+	Next Link `json:"next"`
+	Prev Link `json:"prev"`
+}
+
+func urlToPageParams(link string) (params PageParams, err error) {
+	url, err := u.Parse(link)
+	if err != nil {
+		return
+	}
+
+	values, err := u.ParseQuery(url.RawQuery)
+	if err != nil {
+		return
+	}
+
+	limit, err := strconv.Atoi(values.Get("limit"))
+	if err != nil {
+		return
+	}
+
+	params.Order = OrderDirection(values.Get("order"))
+	params.Cursor = Cursor(values.Get("cursor"))
+	params.Limit = Limit(limit)
+	return
+}
+
+func (links Links) GetNextPageParams() (PageParams, error) {
+	return urlToPageParams(links.Next.Href)
+}
+
+func (links Links) GetPrevPageParams() (PageParams, error) {
+	return urlToPageParams(links.Prev.Href)
+}
+
+// Transaction represents a single, successful transaction
+type Transaction struct {
+	ID              string    `json:"id"`
+	PT              string    `json:"paging_token"`
+	Hash            string    `json:"hash"`
+	Ledger          int32     `json:"ledger"`
+	LedgerCloseTime time.Time `json:"created_at"`
+	Account         string    `json:"source_account"`
+	AccountSequence string    `json:"source_account_sequence"`
+	FeePaid         int32     `json:"fee_paid"`
+	OperationCount  int32     `json:"operation_count"`
+	EnvelopeXdr     string    `json:"envelope_xdr"`
+	ResultXdr       string    `json:"result_xdr"`
+	ResultMetaXdr   string    `json:"result_meta_xdr"`
+	FeeMetaXdr      string    `json:"fee_meta_xdr"`
+	MemoType        string    `json:"memo_type"`
+	Memo            string    `json:"memo,omitempty"`
+	Signatures      []string  `json:"signatures"`
+	ValidAfter      string    `json:"valid_after,omitempty"`
+	ValidBefore     string    `json:"valid_before,omitempty"`
+}
+
+type TransactionsPage struct {
+	Links    `json:"_links"`
+	Embedded struct {
+		Records []Transaction `json:"records"`
+	} `json:"_embedded"`
 }
 
 type TransactionSuccess struct {

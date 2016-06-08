@@ -11,6 +11,30 @@ import (
 	"github.com/stellar/go-stellar-base/xdr"
 )
 
+// OrderDirection is a type that represents `order` param values
+type OrderDirection string
+
+const (
+	// OrderAsc represents ascending order
+	OrderAsc OrderDirection = "asc"
+	// OrderDesc represents descending order
+	OrderDesc OrderDirection = "desc"
+)
+
+// Cursor is a type that represents `cursor` param values
+type Cursor string
+
+// Limit is a type that represents `limit` param values
+type Limit int
+
+// PageParams contains all query params that allow fetching
+// a specific results page. Helpful for loading next/previous page of results.
+type PageParams struct {
+	Order OrderDirection
+	Cursor
+	Limit
+}
+
 // DefaultTestNetClient is a default client to connect to test network
 var DefaultTestNetClient = &Client{URL: "https://horizon-testnet.stellar.org"}
 
@@ -43,19 +67,6 @@ type Client struct {
 	clientInit sync.Once
 }
 
-// LoadAccount loads the account state from horizon. err can be either error
-// object or horizon.Error object.
-func (c *Client) LoadAccount(accountID string) (account Account, err error) {
-	c.initHTTPClient()
-	resp, err := c.Client.Get(c.URL + "/accounts/" + accountID)
-	if err != nil {
-		return
-	}
-
-	err = decodeResponse(resp, &account)
-	return
-}
-
 // SequenceForAccount implements build.SequenceProvider
 func (c *Client) SequenceForAccount(
 	accountID string,
@@ -72,21 +83,6 @@ func (c *Client) SequenceForAccount(
 	}
 
 	return xdr.SequenceNumber(seq), nil
-}
-
-// SubmitTransaction submits a transaction to the network. err can be either error object or horizon.Error object.
-func (c *Client) SubmitTransaction(transactionEnvelopeXdr string) (response TransactionSuccess, err error) {
-	v := url.Values{}
-	v.Set("tx", transactionEnvelopeXdr)
-
-	c.initHTTPClient()
-	resp, err := c.Client.PostForm(c.URL+"/transactions", v)
-	if err != nil {
-		return
-	}
-
-	err = decodeResponse(resp, &response)
-	return
 }
 
 func (c *Client) initHTTPClient() {
