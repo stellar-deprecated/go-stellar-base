@@ -37,6 +37,44 @@ func (c *Client) LoadTransactions(params ...interface{}) (page TransactionsPage,
 	return
 }
 
+func (c *Client) LoadTransactionsForAccount(accountID string, params ...interface{}) (page TransactionsPage, err error) {
+	c.initHTTPClient()
+	rb := &requestBuilder{BaseURL: c.URL}
+	url := rb.
+		AddSegment("accounts").
+		AddSegment(accountID).
+		AddSegment("transactions").
+		Params(params...).
+		Build()
+
+	resp, err := c.Client.Get(url)
+	if err != nil {
+		return
+	}
+
+	err = decodeResponse(resp, &page)
+	return
+}
+
+func (c *Client) LoadTransactionsForLedger(sequence int32, params ...interface{}) (page TransactionsPage, err error) {
+	c.initHTTPClient()
+	rb := &requestBuilder{BaseURL: c.URL}
+	url := rb.
+		AddSegment("ledgers").
+		AddSegment(sequence).
+		AddSegment("transactions").
+		Params(params...).
+		Build()
+
+	resp, err := c.Client.Get(url)
+	if err != nil {
+		return
+	}
+
+	err = decodeResponse(resp, &page)
+	return
+}
+
 // SubmitTransaction submits a transaction to the network. err can be either error object or horizon.Error object.
 func (c *Client) SubmitTransaction(transactionEnvelopeXdr string) (response TransactionSuccess, err error) {
 	v := url.Values{}

@@ -3,6 +3,7 @@ package horizon
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -30,7 +31,8 @@ type Limit int
 // PageParams contains all query params that allow fetching
 // a specific results page. Helpful for loading next/previous page of results.
 type PageParams struct {
-	Order OrderDirection
+	Segments []string
+	Order    OrderDirection
 	Cursor
 	Limit
 }
@@ -94,23 +96,22 @@ func (c *Client) initHTTPClient() {
 }
 
 func decodeResponse(resp *http.Response, object interface{}) (err error) {
-	defer resp.Body.Close()
-	decoder := json.NewDecoder(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
 
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 		horizonError := &Error{
 			Response: resp,
 		}
-		decodeError := decoder.Decode(&horizonError.Problem)
+		decodeError := json.Unmarshal(body, &horizonError.Problem)
 		if decodeError != nil {
 			return decodeError
 		}
 		return horizonError
 	}
 
-	err = decoder.Decode(&object)
-	if err != nil {
-		return
-	}
+	err = json.Unmarshal(body, &object)
 	return
 }

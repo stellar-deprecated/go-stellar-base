@@ -134,6 +134,36 @@ var _ = Describe("Horizon", func() {
 		})
 	})
 
+	Describe("LoadEffects", func() {
+		It("success response", func() {
+			TestHorizonClient.Client = &TestHTTPClient{
+				Response: http.Response{
+					StatusCode: 200,
+					Body:       ioutil.NopCloser(bytes.NewBufferString(effectsResponse)),
+				},
+			}
+
+			effects, err := TestHorizonClient.LoadEffects()
+			Expect(err).To(BeNil())
+
+			Expect(effects.Embedded.Records[0].ID).To(Equal("0005987652562063361-0000000004"))
+			Expect(effects.Embedded.Records[0].Type).To(Equal("trade"))
+			Expect(effects.Embedded.Records[0].Trade.Seller).To(Equal("GC3AMRZPOWP2VA4JA3CNV23G3KW7FU6GRBYIGJC5HE5ZRET6ILBPP7TY"))
+			Expect(effects.Embedded.Records[0].Trade.SoldAssetCode).To(Equal("ZAR"))
+
+			Expect(effects.Embedded.Records[1].ID).To(Equal("0005987652562063361-0000000003"))
+			Expect(effects.Embedded.Records[1].Type).To(Equal("trade"))
+			Expect(effects.Embedded.Records[1].Trade.Seller).To(Equal("GBLZWJINHGQ4YLBCQVVI6EGUH3OH63KPA2RMBF6RNCPS2IF5GCGF4AZO"))
+
+			Expect(effects.Embedded.Records[2].ID).To(Equal("0005987652562063361-0000000002"))
+			Expect(effects.Embedded.Records[2].Type).To(Equal("account_debited"))
+			Expect(effects.Embedded.Records[2].AccountDebited.Amount).To(Equal("10.0196334"))
+			Expect(effects.Embedded.Records[2].AccountDebited.Asset.Type).To(Equal("credit_alphanum4"))
+			Expect(effects.Embedded.Records[2].AccountDebited.Asset.Code).To(Equal("USD"))
+			Expect(effects.Embedded.Records[2].AccountDebited.Asset.Issuer).To(Equal("GBWLLK6C5HF6PZQ7HKSWHCXH355AFF55SPEYYM7BMDHKO2PIT66QP7GJ"))
+		})
+	})
+
 	Describe("LoadLedger", func() {
 		It("success response", func() {
 			TestHorizonClient.Client = &TestHTTPClient{

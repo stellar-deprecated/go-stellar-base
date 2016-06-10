@@ -125,6 +125,102 @@ var accountsResponse = `{
   }
 }`
 
+var effectsResponse = `{
+  "_links": {
+    "self": {
+      "href": "https://horizon-testnet.stellar.org/effects?order=desc\u0026limit=3\u0026cursor="
+    },
+    "next": {
+      "href": "https://horizon-testnet.stellar.org/effects?order=desc\u0026limit=3\u0026cursor=5987652562063361-2"
+    },
+    "prev": {
+      "href": "https://horizon-testnet.stellar.org/effects?order=asc\u0026limit=3\u0026cursor=5987652562063361-4"
+    }
+  },
+  "_embedded": {
+    "records": [
+      {
+        "_links": {
+          "operation": {
+            "href": "https://horizon-testnet.stellar.org/operations/5987652562063361"
+          },
+          "succeeds": {
+            "href": "https://horizon-testnet.stellar.org/effects?order=desc\u0026cursor=5987652562063361-4"
+          },
+          "precedes": {
+            "href": "https://horizon-testnet.stellar.org/effects?order=asc\u0026cursor=5987652562063361-4"
+          }
+        },
+        "id": "0005987652562063361-0000000004",
+        "paging_token": "5987652562063361-4",
+        "account": "GBLZWJINHGQ4YLBCQVVI6EGUH3OH63KPA2RMBF6RNCPS2IF5GCGF4AZO",
+        "type": "trade",
+        "type_i": 33,
+        "seller": "GC3AMRZPOWP2VA4JA3CNV23G3KW7FU6GRBYIGJC5HE5ZRET6ILBPP7TY",
+        "offer_id": 17,
+        "sold_amount": "145.1700000",
+        "sold_asset_type": "credit_alphanum4",
+        "sold_asset_code": "ZAR",
+        "sold_asset_issuer": "GBQMCYLX7NWGVRETHIO2P3U2UMFUBST3QSVTFM3FCZFDWZ7NYTFUHHLJ",
+        "bought_amount": "10.0196334",
+        "bought_asset_type": "credit_alphanum4",
+        "bought_asset_code": "USD",
+        "bought_asset_issuer": "GBWLLK6C5HF6PZQ7HKSWHCXH355AFF55SPEYYM7BMDHKO2PIT66QP7GJ"
+      },
+      {
+        "_links": {
+          "operation": {
+            "href": "https://horizon-testnet.stellar.org/operations/5987652562063361"
+          },
+          "succeeds": {
+            "href": "https://horizon-testnet.stellar.org/effects?order=desc\u0026cursor=5987652562063361-3"
+          },
+          "precedes": {
+            "href": "https://horizon-testnet.stellar.org/effects?order=asc\u0026cursor=5987652562063361-3"
+          }
+        },
+        "id": "0005987652562063361-0000000003",
+        "paging_token": "5987652562063361-3",
+        "account": "GC3AMRZPOWP2VA4JA3CNV23G3KW7FU6GRBYIGJC5HE5ZRET6ILBPP7TY",
+        "type": "trade",
+        "type_i": 33,
+        "seller": "GBLZWJINHGQ4YLBCQVVI6EGUH3OH63KPA2RMBF6RNCPS2IF5GCGF4AZO",
+        "offer_id": 17,
+        "sold_amount": "10.0196334",
+        "sold_asset_type": "credit_alphanum4",
+        "sold_asset_code": "USD",
+        "sold_asset_issuer": "GBWLLK6C5HF6PZQ7HKSWHCXH355AFF55SPEYYM7BMDHKO2PIT66QP7GJ",
+        "bought_amount": "145.1700000",
+        "bought_asset_type": "credit_alphanum4",
+        "bought_asset_code": "ZAR",
+        "bought_asset_issuer": "GBQMCYLX7NWGVRETHIO2P3U2UMFUBST3QSVTFM3FCZFDWZ7NYTFUHHLJ"
+      },
+      {
+        "_links": {
+          "operation": {
+            "href": "https://horizon-testnet.stellar.org/operations/5987652562063361"
+          },
+          "succeeds": {
+            "href": "https://horizon-testnet.stellar.org/effects?order=desc\u0026cursor=5987652562063361-2"
+          },
+          "precedes": {
+            "href": "https://horizon-testnet.stellar.org/effects?order=asc\u0026cursor=5987652562063361-2"
+          }
+        },
+        "id": "0005987652562063361-0000000002",
+        "paging_token": "5987652562063361-2",
+        "account": "GC3AMRZPOWP2VA4JA3CNV23G3KW7FU6GRBYIGJC5HE5ZRET6ILBPP7TY",
+        "type": "account_debited",
+        "type_i": 3,
+        "asset_type": "credit_alphanum4",
+        "asset_code": "USD",
+        "asset_issuer": "GBWLLK6C5HF6PZQ7HKSWHCXH355AFF55SPEYYM7BMDHKO2PIT66QP7GJ",
+        "amount": "10.0196334"
+      }
+    ]
+  }
+}`
+
 var ledgerResponse = `{
   "_links": {
     "self": {
