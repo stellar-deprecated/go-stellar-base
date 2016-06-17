@@ -201,6 +201,66 @@ var _ = Describe("Horizon", func() {
 		})
 	})
 
+	Describe("LoadOperation", func() {
+		It("success response", func() {
+			TestHorizonClient.Client = &TestHTTPClient{
+				Response: http.Response{
+					StatusCode: 200,
+					Body:       ioutil.NopCloser(bytes.NewBufferString(operationResponse)),
+				},
+			}
+
+			operation, err := TestHorizonClient.LoadOperation("6299132180303873")
+			Expect(err).To(BeNil())
+			Expect(operation.ID).To(Equal("6299132180303873"))
+			Expect(operation.PT).To(Equal("6299132180303873"))
+			Expect(operation.Type).To(Equal("path_payment"))
+
+			Expect(operation.Payment).To(BeNil())
+			Expect(operation.PathPayment).NotTo(BeNil())
+			Expect(operation.PathPayment.From).To(Equal("GA4UBSTU6JCBV6HFXPHMTES5V2SH4RHGT7P2WAZ3KEJK5XNNLZFHQ56O"))
+			Expect(operation.PathPayment.To).To(Equal("GAMAXXPWISK3WSPDKB2QPOKAVB7DOPDCDKY7IJPVFJOGMTEOV7F57DFX"))
+			Expect(operation.PathPayment.Amount).To(Equal("1.0000000"))
+			Expect(operation.PathPayment.Asset.Type).To(Equal("credit_alphanum4"))
+			Expect(operation.PathPayment.Asset.Code).To(Equal("ZAR"))
+			Expect(operation.PathPayment.Asset.Issuer).To(Equal("GCU3KWOEHGFJL2FTEHFPY6DIIBX5HKVZABV35YI6JNVNYDHJSGPHR22G"))
+			Expect(operation.PathPayment.SourceMax).To(Equal("20.0000000"))
+			Expect(operation.PathPayment.SourceAssetType).To(Equal("credit_alphanum4"))
+			Expect(operation.PathPayment.SourceAssetCode).To(Equal("USD"))
+			Expect(operation.PathPayment.SourceAssetIssuer).To(Equal("GDGCTUHHOY7CX6LLY3MP3YAYJPSP3R7HXK4TFCX3JWT33K2AUG6AYME5"))
+		})
+	})
+
+	Describe("LoadOperations", func() {
+		It("success response", func() {
+			TestHorizonClient.Client = &TestHTTPClient{
+				Response: http.Response{
+					StatusCode: 200,
+					Body:       ioutil.NopCloser(bytes.NewBufferString(operationsResponse)),
+				},
+			}
+
+			operations, err := TestHorizonClient.LoadOperations()
+			Expect(err).To(BeNil())
+
+			nextParams, err := operations.Links.GetNextPageParams()
+			Expect(err).To(BeNil())
+			Expect(nextParams.Order).To(Equal(OrderDirection("desc")))
+			Expect(nextParams.Limit).To(Equal(Limit(3)))
+			Expect(nextParams.Cursor).To(Equal(Cursor("6663890867851265")))
+
+			Expect(operations.Embedded.Records[0].ID).To(Equal("6664032601772033"))
+			Expect(operations.Embedded.Records[0].PT).To(Equal("6664032601772033"))
+			Expect(operations.Embedded.Records[0].Type).To(Equal("change_trust"))
+			Expect(operations.Embedded.Records[0].ChangeTrust).NotTo(BeNil())
+
+			Expect(operations.Embedded.Records[2].ID).To(Equal("6663890867851265"))
+			Expect(operations.Embedded.Records[2].PT).To(Equal("6663890867851265"))
+			Expect(operations.Embedded.Records[2].Type).To(Equal("change_trust"))
+			Expect(operations.Embedded.Records[2].ChangeTrust).NotTo(BeNil())
+		})
+	})
+
 	Describe("LoadTransaction", func() {
 		It("success response", func() {
 			TestHorizonClient.Client = &TestHTTPClient{

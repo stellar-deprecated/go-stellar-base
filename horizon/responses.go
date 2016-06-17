@@ -149,6 +149,11 @@ func (links Links) GetPrevPageParams() (PageParams, error) {
 	return urlToPageParams(links.Prev.Href)
 }
 
+type Price struct {
+	N int32 `json:"n"`
+	D int32 `json:"d"`
+}
+
 // Transaction represents a single, successful transaction
 type Transaction struct {
 	ID              string    `json:"id"`

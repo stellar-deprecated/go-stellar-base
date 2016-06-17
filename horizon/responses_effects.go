@@ -64,7 +64,7 @@ type effect struct {
 	Weight            int32  `json:"weight"`
 }
 
-// ToExportedEffect creates Effect object from unexported effect.
+// ToExported creates Effect object from unexported effect.
 func (e effect) ToExported() (effect Effect) {
 	effect.ID = e.ID
 	effect.PT = e.PT

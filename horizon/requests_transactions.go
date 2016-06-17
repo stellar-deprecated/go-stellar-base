@@ -37,6 +37,9 @@ func (c *Client) LoadTransactions(params ...interface{}) (page TransactionsPage,
 	return
 }
 
+// LoadTransactionsForAccount returns list of transactions for a specified account returned by Horizon `/accounts/{accountID}/transactions` endpoint.
+// `params` can be any of `OrderDirection`, `Cursor`, `Limit` or `PageParams`.
+// err can be either error object or horizon.Error object.
 func (c *Client) LoadTransactionsForAccount(accountID string, params ...interface{}) (page TransactionsPage, err error) {
 	c.initHTTPClient()
 	rb := &requestBuilder{BaseURL: c.URL}
@@ -56,6 +59,9 @@ func (c *Client) LoadTransactionsForAccount(accountID string, params ...interfac
 	return
 }
 
+// LoadTransactionsForLedger returns list of transactions for a specified ledger returned by Horizon `/ledgers/{sequence}/transactions` endpoint.
+// `params` can be any of `OrderDirection`, `Cursor`, `Limit` or `PageParams`.
+// err can be either error object or horizon.Error object.
 func (c *Client) LoadTransactionsForLedger(sequence int32, params ...interface{}) (page TransactionsPage, err error) {
 	c.initHTTPClient()
 	rb := &requestBuilder{BaseURL: c.URL}

@@ -634,6 +634,147 @@ var ledgersResponse = `{
   }
 }`
 
+var operationResponse = `{
+  "_links": {
+    "self": {
+      "href": "https://horizon-testnet.stellar.org/operations/6299132180303873"
+    },
+    "transaction": {
+      "href": "https://horizon-testnet.stellar.org/transactions/d1183bc8591bd4ec336fe95471124d8d37ee05d367d720ba1bdc10d5631a4888"
+    },
+    "effects": {
+      "href": "https://horizon-testnet.stellar.org/operations/6299132180303873/effects"
+    },
+    "succeeds": {
+      "href": "https://horizon-testnet.stellar.org/effects?order=desc\u0026cursor=6299132180303873"
+    },
+    "precedes": {
+      "href": "https://horizon-testnet.stellar.org/effects?order=asc\u0026cursor=6299132180303873"
+    }
+  },
+  "id": "6299132180303873",
+  "paging_token": "6299132180303873",
+  "source_account": "GA4UBSTU6JCBV6HFXPHMTES5V2SH4RHGT7P2WAZ3KEJK5XNNLZFHQ56O",
+  "type": "path_payment",
+  "type_i": 2,
+  "asset_type": "credit_alphanum4",
+  "asset_code": "ZAR",
+  "asset_issuer": "GCU3KWOEHGFJL2FTEHFPY6DIIBX5HKVZABV35YI6JNVNYDHJSGPHR22G",
+  "from": "GA4UBSTU6JCBV6HFXPHMTES5V2SH4RHGT7P2WAZ3KEJK5XNNLZFHQ56O",
+  "to": "GAMAXXPWISK3WSPDKB2QPOKAVB7DOPDCDKY7IJPVFJOGMTEOV7F57DFX",
+  "amount": "1.0000000",
+  "path": [],
+  "source_max": "20.0000000",
+  "source_asset_type": "credit_alphanum4",
+  "source_asset_code": "USD",
+  "source_asset_issuer": "GDGCTUHHOY7CX6LLY3MP3YAYJPSP3R7HXK4TFCX3JWT33K2AUG6AYME5"
+}`
+
+var operationsResponse = `{
+  "_links": {
+    "self": {
+      "href": "https://horizon-testnet.stellar.org/operations?order=desc\u0026limit=3\u0026cursor="
+    },
+    "next": {
+      "href": "https://horizon-testnet.stellar.org/operations?order=desc\u0026limit=3\u0026cursor=6663890867851265"
+    },
+    "prev": {
+      "href": "https://horizon-testnet.stellar.org/operations?order=asc\u0026limit=3\u0026cursor=6664032601772033"
+    }
+  },
+  "_embedded": {
+    "records": [
+      {
+        "_links": {
+          "self": {
+            "href": "https://horizon-testnet.stellar.org/operations/6664032601772033"
+          },
+          "transaction": {
+            "href": "https://horizon-testnet.stellar.org/transactions/c556374aa2b985b6360c1c99b032b7c459dcfa2ad37da597610fc8f3411835fe"
+          },
+          "effects": {
+            "href": "https://horizon-testnet.stellar.org/operations/6664032601772033/effects"
+          },
+          "succeeds": {
+            "href": "https://horizon-testnet.stellar.org/effects?order=desc\u0026cursor=6664032601772033"
+          },
+          "precedes": {
+            "href": "https://horizon-testnet.stellar.org/effects?order=asc\u0026cursor=6664032601772033"
+          }
+        },
+        "id": "6664032601772033",
+        "paging_token": "6664032601772033",
+        "source_account": "GACAWZAFSCI2LJ54L3JH5CLKLCYYAIWLDGGQ2TSGFS2ENBO7E4TUJBZZ",
+        "type": "change_trust",
+        "type_i": 6,
+        "asset_type": "credit_alphanum12",
+        "asset_code": "PROXI",
+        "asset_issuer": "GAMOSHRHELOHGNQRBBMM4XZJJGFZ2GQUAFS64JBYGMXYSJNM7TWY6DW4",
+        "limit": "100.0000000",
+        "trustee": "GAMOSHRHELOHGNQRBBMM4XZJJGFZ2GQUAFS64JBYGMXYSJNM7TWY6DW4",
+        "trustor": "GACAWZAFSCI2LJ54L3JH5CLKLCYYAIWLDGGQ2TSGFS2ENBO7E4TUJBZZ"
+      },
+      {
+        "_links": {
+          "self": {
+            "href": "https://horizon-testnet.stellar.org/operations/6664024011837441"
+          },
+          "transaction": {
+            "href": "https://horizon-testnet.stellar.org/transactions/23aa805b3b2dbd13c063f6b342b168d44850e63dd062990186d54a0d9c1523a1"
+          },
+          "effects": {
+            "href": "https://horizon-testnet.stellar.org/operations/6664024011837441/effects"
+          },
+          "succeeds": {
+            "href": "https://horizon-testnet.stellar.org/effects?order=desc\u0026cursor=6664024011837441"
+          },
+          "precedes": {
+            "href": "https://horizon-testnet.stellar.org/effects?order=asc\u0026cursor=6664024011837441"
+          }
+        },
+        "id": "6664024011837441",
+        "paging_token": "6664024011837441",
+        "source_account": "GAMOSHRHELOHGNQRBBMM4XZJJGFZ2GQUAFS64JBYGMXYSJNM7TWY6DW4",
+        "type": "create_account",
+        "type_i": 0,
+        "starting_balance": "40.0000000",
+        "funder": "GAMOSHRHELOHGNQRBBMM4XZJJGFZ2GQUAFS64JBYGMXYSJNM7TWY6DW4",
+        "account": "GACAWZAFSCI2LJ54L3JH5CLKLCYYAIWLDGGQ2TSGFS2ENBO7E4TUJBZZ"
+      },
+      {
+        "_links": {
+          "self": {
+            "href": "https://horizon-testnet.stellar.org/operations/6663890867851265"
+          },
+          "transaction": {
+            "href": "https://horizon-testnet.stellar.org/transactions/ee9a83f42c75ac03d7a2e649dc1e7ebd12ed9b67797b854c2ea224ec06a02418"
+          },
+          "effects": {
+            "href": "https://horizon-testnet.stellar.org/operations/6663890867851265/effects"
+          },
+          "succeeds": {
+            "href": "https://horizon-testnet.stellar.org/effects?order=desc\u0026cursor=6663890867851265"
+          },
+          "precedes": {
+            "href": "https://horizon-testnet.stellar.org/effects?order=asc\u0026cursor=6663890867851265"
+          }
+        },
+        "id": "6663890867851265",
+        "paging_token": "6663890867851265",
+        "source_account": "GD3NJDTT7D3Y6WWWM4Q6VWT27AFVYMOBOHSJNUBD5GMLVLDAET7E6DWZ",
+        "type": "change_trust",
+        "type_i": 6,
+        "asset_type": "credit_alphanum12",
+        "asset_code": "PROXI",
+        "asset_issuer": "GAMOSHRHELOHGNQRBBMM4XZJJGFZ2GQUAFS64JBYGMXYSJNM7TWY6DW4",
+        "limit": "100.0000000",
+        "trustee": "GAMOSHRHELOHGNQRBBMM4XZJJGFZ2GQUAFS64JBYGMXYSJNM7TWY6DW4",
+        "trustor": "GD3NJDTT7D3Y6WWWM4Q6VWT27AFVYMOBOHSJNUBD5GMLVLDAET7E6DWZ"
+      }
+    ]
+  }
+}`
+
 var transactionResponse = `{
   "_links": {
     "self": {
