@@ -113,3 +113,6 @@ func ExampleLowLevelTransaction() {
 ## Contributing
 
 Please [see CONTRIBUTING.md for details](CONTRIBUTING.md).
+
+## License
+go-stellar-base is licensed under an Apache-2.0 license. See the [LICENSE](https://github.com/stellar/go-stellar-base/blob/master/LICENSE) file for details.
